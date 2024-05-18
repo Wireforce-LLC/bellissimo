@@ -1,0 +1,21 @@
+version: "3.8"
+services:
+  mongo:
+    container_name: mongo
+    image: mongo
+    volumes:
+      - ./docker/mongodb:/data
+
+  redis:
+    image: redis
+
+  bellissimo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - REDIS_URI=redis://redis/
+      - MONGO_URI=mongodb://mongo:27017
+    depends_on:
+      - redis
+      - mongo
