@@ -10,7 +10,8 @@
 #[path = "collector.rs"] mod collector;
 
 pub use args::Args;
-use rocket::http::{ContentType, Status};
+use asn_db::Ipv4Addr;
+use rocket::{http::{ContentType, Status}, Config};
 
 #[get("/")]
 async fn future_disallow() -> (Status, (ContentType, String)) {
@@ -47,7 +48,13 @@ async fn list_routes() -> (Status, (ContentType, String)) {
 
 
 async fn launch_rocket(args: &Args) {
-  let rocket_server = rocket::build()
+  let config = Config {
+    port: 8000,
+    address: Ipv4Addr::new(0, 0, 0, 0).into(),
+    ..Config::debug_default()
+  };
+
+  let rocket_server = rocket::custom(&config)
     .mount("/", routes![router::router])
     .mount("/api", if !args.disable_api { routes![list_routes] } else { routes![future_disallow] })
     .mount("/service", if !args.disable_postbacks { routes![postback_get] } else { routes![future_disallow] });
