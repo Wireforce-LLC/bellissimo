@@ -1,8 +1,8 @@
 FROM rust:latest
 
-WORKDIR /usr/src/myapp
+WORKDIR /usr/src/app
 COPY . .
 
-RUN cargo install --path .
+RUN cargo build --release
 
-CMD ["myapp"]
+CMD ["/usr/src/app/target/release/bellissimo"]
