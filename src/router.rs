@@ -7,27 +7,23 @@
 
 use mongodb::options::{FindOneOptions};
 use nanoid::nanoid;
-use once_cell::sync::Lazy;
 use redis::{Client, Commands, Connection, FromRedisValue};
-use reqwest::Response;
 use rocket::http::{ContentType, Header, Status};
 use rocket::request::{FromRequest, Outcome};
 use rocket::response::{self, Redirect, Responder};
 use rocket::{Request};
 use std::any::{self, Any};
-use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
-use std::time::{self, SystemTime, UNIX_EPOCH};
+use std::time;
 use mongodb::bson::doc;
 use mongodb::sync::Collection;
 use std::io::BufReader;
 use std::fs::File;
-use asn_db::{Db, Record};
-use chrono::{prelude::*, Duration};
+use asn_db::{Db};
+use chrono::prelude::*;
 
 use self::database::get_database;
-use self::filter::Condition;
 use self::resource::Resource;
 use std::env;
 
@@ -53,11 +49,11 @@ lazy_static! {
 
 struct XRealIp<'r>(&'r str);
 
+/**
+ * X-Real-IP header error 
+ */
 #[derive(Debug)]
-enum XRealError {
-    Missing,
-    Invalid,
-}
+enum XRealError {}
 
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for XRealIp<'r> {

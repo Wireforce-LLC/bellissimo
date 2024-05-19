@@ -13,7 +13,25 @@
 pub use args::Args;
 
 use asn_db::Ipv4Addr;
-use rocket::{http::{ContentType, Status}, Config};
+use chrono::Utc;
+use mongodb::{bson::doc, sync::Collection};
+use rocket::{http::{ContentType, Status}, time::Instant, Config};
+use serde::{Deserialize, Serialize};
+
+use crate::database::get_database;
+
+#[derive(FromForm)]
+#[derive(Serialize, Deserialize, Debug)]
+struct PostbackPayoutPostback {
+  uuid: Option<String>,
+  date: Option<String>,
+  status: Option<String>,
+  ip: Option<String>,
+  amount: Option<u128>,
+  stream: Option<String>,
+  currency: Option<String>,
+  time: Option<i64>
+}
 
 #[get("/")]
 async fn future_disallow() -> (Status, (ContentType, String)) {
@@ -26,8 +44,24 @@ async fn future_disallow() -> (Status, (ContentType, String)) {
   )
 }
 
-#[get("/postback")]
-async fn postback_get() -> (Status, (ContentType, String)) {
+#[get("/postback?<payload..>")]
+async fn postback_get(payload: PostbackPayoutPostback) -> (Status, (ContentType, String)) {
+  println!("{:?}", payload);  
+
+  let collection: Collection<PostbackPayoutPostback> = get_database(String::from("requests")).collection("postback");
+  let now = Utc::now();
+
+  let _ = collection.insert_one(PostbackPayoutPostback {
+    uuid: payload.uuid,
+    date: payload.date,
+    status: payload.status,
+    ip: payload.ip,
+    amount: payload.amount,
+    stream: payload.stream,
+    currency: payload.currency,
+    time: Option::Some(now.timestamp_micros())
+  }, None);
+
   return (
     Status::NoContent,
     (
@@ -36,21 +70,6 @@ async fn postback_get() -> (Status, (ContentType, String)) {
     )
   )
 }
-
-#[get("/routes/list")]
-async fn list_routes() -> (Status, (ContentType, String)) {
-  return (
-    Status::NoContent,
-    (
-      ContentType::Plain,
-      "".to_string()
-    )
-  )
-}
-
-
-
-
 
 async fn launch_rocket(args: &Args) {
   let config = Config {
@@ -63,7 +82,12 @@ async fn launch_rocket(args: &Args) {
     .mount("/", routes![router::router])
   
     .mount("/api", if !args.disable_api { routes![api::create_new_route] } else { routes![future_disallow] })
+    .mount("/api", if !args.disable_api { routes![api::create_new_filter] } else { routes![future_disallow] })
+    .mount("/api", if !args.disable_api { routes![api::create_new_resource] } else { routes![future_disallow] })
+    
     .mount("/api", if !args.disable_api { routes![api::get_all_routes] } else { routes![future_disallow] })
+    .mount("/api", if !args.disable_api { routes![api::get_all_filters] } else { routes![future_disallow] })
+    .mount("/api", if !args.disable_api { routes![api::get_all_resources] } else { routes![future_disallow] })
     
     .mount("/service", if !args.disable_postbacks { routes![postback_get] } else { routes![future_disallow] });
       
