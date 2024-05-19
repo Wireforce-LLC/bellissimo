@@ -13,6 +13,7 @@ services:
 
   grafana:
     image: grafana/grafana
+    user: root
     restart: always
     ports:
       - "8080:3000"
