@@ -1,0 +1,22 @@
+version: "3.8"
+include:
+  - docker-compose.yaml
+
+services:
+  influxdb:
+    image: influxdb:1.7
+    restart: always
+    volumes:
+      - ./docker/influxdb-storage:/var/lib/influxdb
+    environment:
+      INFLUXDB_DB: actualdb
+
+  grafana:
+    image: grafana/grafana
+    restart: always
+    ports:
+      - "8080:3000"
+    depends_on:
+      - influxdb
+    volumes:
+      - ./docker/grafana-storage:/var/lib/grafana
