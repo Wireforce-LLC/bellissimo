@@ -14,6 +14,8 @@ services:
   grafana:
     image: grafana/grafana
     user: root
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-clock-panel, grafana-simple-json-datasource, volkovlabs-grapi-datasource
     restart: always
     ports:
       - "8080:3000"
