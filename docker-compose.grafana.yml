@@ -1,6 +1,6 @@
 version: "3.8"
 include:
-  - docker-compose.yaml
+  - docker-compose.yml
 
 services:
   influxdb:
