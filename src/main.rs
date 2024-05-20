@@ -33,6 +33,30 @@ struct PostbackPayoutPostback {
   time: Option<i64>
 }
 
+#[get("/robots.txt")]
+fn robots() -> (Status, (ContentType, String)) {
+  let robots = include_str!("../robots.txt");
+  return (
+    Status::Ok,
+    (
+      ContentType::Plain,
+      String::from(robots)
+    )
+  )
+}
+
+
+#[get("/")]
+fn not_found() -> (Status, (ContentType, String)) {
+  return (
+    Status::NotFound,
+    (
+      ContentType::Plain,
+      "Not found".to_string()
+    )
+  )
+}
+
 #[get("/")]
 async fn future_disallow() -> (Status, (ContentType, String)) {
   return (
@@ -80,7 +104,8 @@ async fn launch_rocket(args: &Args) {
 
   let rocket_server = rocket::custom(&config)
     .mount("/", routes![router::router])
-  
+    .mount("/", if !args.disable_robots { routes![robots] } else { routes![not_found] })
+
     .mount("/api", if !args.disable_api { routes![api::create_new_route] } else { routes![future_disallow] })
     .mount("/api", if !args.disable_api { routes![api::create_new_filter] } else { routes![future_disallow] })
     .mount("/api", if !args.disable_api { routes![api::create_new_resource] } else { routes![future_disallow] })

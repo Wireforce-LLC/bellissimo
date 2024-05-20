@@ -13,6 +13,10 @@ pub struct Args {
   #[arg(short, long, default_value_t = String::from("server"))]
   pub mode: String,
 
+  /// Allow robots.txt
+  #[arg(short = 'r', long, default_value_t = false)]
+  pub disable_robots: bool,
+
   /// Allow API access
   #[arg(short = 'a', long, default_value_t = false)]
   pub disable_api: bool,

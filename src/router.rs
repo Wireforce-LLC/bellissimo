@@ -5,6 +5,7 @@
 #[path = "database.rs"] mod database;
 #[path = "dto/json_router.rs"] mod json_router;
 
+use isbot::Bots;
 use mongodb::options::{FindOneOptions};
 use nanoid::nanoid;
 use redis::{Client, Commands, Connection, FromRedisValue};
@@ -48,6 +49,7 @@ lazy_static! {
 }
 
 struct XRealIp<'r>(&'r str);
+struct UserAgent<'r>(&'r str);
 
 /**
  * X-Real-IP header error 
@@ -55,20 +57,40 @@ struct XRealIp<'r>(&'r str);
 #[derive(Debug)]
 enum XRealError {}
 
+/**
+ * User agent error
+ */
+#[derive(Debug)]
+enum UserAgentError {}
+
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for XRealIp<'r> {
-    type Error = XRealError;
+  type Error = XRealError;
 
-    async fn from_request(req: &'r Request<'_>) -> Outcome<Self, XRealError> {
-        /// Returns true if `key` is a valid API key string.
-        fn is_valid(_key: &str) -> bool {true}
+  async fn from_request(req: &'r Request<'_>) -> Outcome<Self, XRealError> {
+    fn is_valid(_key: &str) -> bool {true}
 
-        match req.headers().get_one("x-real-ip") {
-            None => Outcome::Success(XRealIp("")),
-            Some(key) if is_valid(key) => Outcome::Success(XRealIp(key)),
-            Some(_) => Outcome::Success(XRealIp("")),
-        }
+    match req.headers().get_one("x-real-ip") {
+      None => Outcome::Success(XRealIp("")),
+      Some(key) if is_valid(key) => Outcome::Success(XRealIp(key)),
+      Some(_) => Outcome::Success(XRealIp("")),
     }
+  }
+}
+
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for UserAgent<'r> {
+  type Error = UserAgentError;
+
+  async fn from_request(req: &'r Request<'_>) -> Outcome<Self, UserAgentError> {
+    fn is_valid(_key: &str) -> bool {true}
+
+    match req.headers().get_one("user-agent") {
+      None => Outcome::Success(UserAgent("")),
+      Some(key) if is_valid(key) => Outcome::Success(UserAgent(key)),
+      Some(_) => Outcome::Success(UserAgent("")),
+    }
+  }
 }
 
 pub async fn get_website_content(url: &str) -> reqwest::Response {
@@ -156,8 +178,77 @@ fn check_conflict_in_resource_links(result_id: &char) -> Option<(Status, (Conten
   }
 }
 
-async fn render_resource(resource: &Resource, raw_data: &str) -> (Status, (ContentType, String)) {
+async fn render_resource(
+  resource: &Resource, 
+  raw_data: &str
+) -> (Status, (ContentType, String)) {
   match resource.driver.as_ref() {
+    "redirect::meta" => {
+      if !resource.file_path.is_none() {
+        return (
+          Status::InternalServerError,
+          (
+            ContentType::Plain,
+            "File path is set but driver is set to redirect::meta".to_string()
+          )
+        );
+      }
+
+      let uri = resource.raw_content.clone().unwrap();
+
+      return (
+        Status::Ok,
+        (
+          ContentType::HTML,
+          "
+          <!DOCTYPE html>
+          <html>
+          <body>
+            <meta http-equiv='refresh' content='2;URL=*'>
+            <p>You are being redirected to <a href='*'>*</a>.</p>
+          </body>
+          </html>
+          ".replace("*", &uri)
+        )
+      )
+      
+    }
+
+    "redirect::javascript" => {
+      if !resource.file_path.is_none() {
+        return (
+          Status::InternalServerError,
+          (
+            ContentType::Plain,
+            "File path is set but driver is set to redirect::javascript".to_string()
+          )
+        );
+      }
+
+      let uri = resource.raw_content.clone().unwrap();
+
+      return (
+        Status::Ok,
+        (
+          ContentType::HTML,
+          "
+          <!DOCTYPE html>
+          <html>
+          <body>
+            <p>You are being redirected to <a href='*'>*</a>.</p>
+            <script>
+              setTimeout(function (){
+                window.location.replace('*');
+              }, 1000)
+            </script>
+          </body>
+          </html>
+          ".replace("*", &uri)
+        )
+      )
+      
+    }
+
     "html_proxy" => {
       if !resource.file_path.is_none() {
         return (
@@ -248,7 +339,13 @@ async fn render_resource(resource: &Resource, raw_data: &str) -> (Status, (Conte
 }
 
 #[get("/<router..>")]
-pub async fn router(x_real_ip: XRealIp<'_>, router: PathBuf) -> (Status, (ContentType, String)) {  
+pub async fn router(
+  x_real_ip: XRealIp<'_>,
+  user_agent: UserAgent<'_>,  
+  router: PathBuf
+) -> (Status, (ContentType, String)) {  
+  let bots = Bots::default();
+
   let request_id = nanoid!();
   let asn_record = DATABASE
     .as_ref()
@@ -343,12 +440,14 @@ pub async fn router(x_real_ip: XRealIp<'_>, router: PathBuf) -> (Status, (Conten
       return check_conflict.clone().unwrap();
     }
     
+    // ip plugin
     if condition.plugin == "ip" {
       if condition.value == x_real_ip.0 {
         return render_resource(&resource, raw_data_for_render).await;
       }
     }
 
+    // asn plugin
     if condition.plugin == "asn" || condition.plugin == "asn::owner" {
       if !asn_record.is_none() {
         let result_record = asn_record
@@ -358,6 +457,20 @@ pub async fn router(x_real_ip: XRealIp<'_>, router: PathBuf) -> (Status, (Conten
         if condition.value.to_lowercase() == result_record.owner.to_lowercase() {
           return render_resource(&resource, raw_data_for_render).await;
         }
+      }
+    }
+  
+    // user-agent plugin
+    if condition.plugin == "user_agent" {
+      if condition.value.to_lowercase() == user_agent.0.to_lowercase() {
+        return render_resource(&resource, raw_data_for_render).await;
+      }
+    }
+
+    // bot plugin
+    if condition.plugin == "bot" {
+      if bots.is_bot(&user_agent.0) {
+        return render_resource(&resource, raw_data_for_render).await;
       }
     }
   }
