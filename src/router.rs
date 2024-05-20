@@ -100,7 +100,8 @@ pub async fn get_website_content(url: &str) -> reqwest::Response {
     .get(url)
     .header(
       "User-Agent", 
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+      include_str!("../containers/htmlproxy_ua.txt")
+      // "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
       // fake_useragent::UserAgents::new().random().to_string()
     )
     .header(
