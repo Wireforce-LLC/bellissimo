@@ -203,7 +203,7 @@ async fn render_resource(
         Status::Ok,
         (
           ContentType::HTML,
-          fs::read_to_string("containers/meta_redirect.html").unwrap().replace("*", &uri)
+          fs::read_to_string("../containers/meta_redirect.html").unwrap().replace("*", &uri)
         )
       )
       
@@ -226,7 +226,7 @@ async fn render_resource(
         Status::Ok,
         (
           ContentType::HTML,
-          fs::read_to_string("containers/javascript_redirect.html").unwrap().replace("*", &uri)
+          fs::read_to_string("../containers/javascript_redirect.html").unwrap().replace("*", &uri)
 
         )
       )
