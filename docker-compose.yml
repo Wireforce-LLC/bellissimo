@@ -1,15 +1,18 @@
 version: "3.8"
 services:
   mongo:
+    restart: always
     container_name: mongo
     image: mongo
     volumes:
       - ./docker/mongodb:/data
 
   redis:
+    restart: always
     image: redis
 
   bellissimo:
+    restart: always
     build:
       context: .
       dockerfile: Dockerfile
@@ -21,6 +24,7 @@ services:
       - mongo
 
   nginx:
+    restart: always
     image: nginx:latest
     container_name: reverse_proxy
     volumes:

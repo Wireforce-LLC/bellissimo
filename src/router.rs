@@ -13,7 +13,9 @@ use rocket::http::{ContentType, Header, Status};
 use rocket::request::{FromRequest, Outcome};
 use rocket::response::{self, Redirect, Responder};
 use rocket::{Request};
+use tera::{Context, Tera};
 use std::any::{self, Any};
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time;
@@ -180,7 +182,8 @@ fn check_conflict_in_resource_links(result_id: &char) -> Option<(Status, (Conten
 
 async fn render_resource(
   resource: &Resource, 
-  raw_data: &str
+  raw_data: &str,
+  meta: HashMap<String, String>
 ) -> (Status, (ContentType, String)) {
   match resource.driver.as_ref() {
     "redirect::meta" => {
@@ -249,7 +252,8 @@ async fn render_resource(
       
     }
 
-    "html_proxy" => {
+    // HTML proxy
+    "proxy::html" => {
       if !resource.file_path.is_none() {
         return (
           Status::InternalServerError,
@@ -301,6 +305,7 @@ async fn render_resource(
       );
     }
 
+    // JSON response
     "json" => {      
       let json_raw_string = "{\"value\": *}".replace("*", raw_data);
 
@@ -316,12 +321,46 @@ async fn render_resource(
       );
     }
 
-    "redirect" => {
+    // 
+    // When this will be registered in the database:
+    // Use:
+    //  db.routes.insert({
+    //    "path": "/html",
+    //    "name": "HTML", 
+    //    "resource_id": "html", 
+    //    "filter_id": "..."
+    //  })
+    //  db.resources.insert({
+    //    "resource_id": "html",
+    //    "raw_content": "index.html",
+    //    "driver": "html", 
+    //    "file_path": null
+    //  })
+    "html" => {
+      let tera = Tera::new("public/**/*").unwrap();
+
+      let time = Utc::now().timestamp_micros();
+      let mut context = Context::new();
+      
+      context.insert("hello_rust", "Rust");
+      context.insert("time", &time);
+      context.insert("raw", &raw_data);
+      context.insert("u", &raw_data);
+      
+      let template_name = resource
+        .raw_content
+        .clone()
+        .unwrap()
+        .replace("./public/", "")
+        .replace("/public/", "")
+        .replace("public/", "")
+        .replace("/public", "");
+
       return (
-        Status::TemporaryRedirect,
+        Status::Ok,
         (
-          ContentType::Plain,
-          raw_data.to_string()
+          ContentType::HTML,
+          tera.render(template_name.as_str(), &context).unwrap().to_string()
         )
       );
     }
@@ -431,6 +470,11 @@ pub async fn router(
     .expect("Unable to find filter")
     .expect("Filter not found");
 
+  let mut meta = HashMap::new();
+
+  meta.insert("ip".to_string(), x_real_ip.0.to_string());
+  meta.insert("user_agent".to_string(), user_agent.0.to_string());
+
   for condition in filter.conditions {
     let resource = require_resource(condition.resource_id.unwrap().as_str());
     let (result_id, resource_raw) = require_resource_raw(&resource);
@@ -444,7 +488,7 @@ pub async fn router(
     // ip plugin
     if condition.plugin == "ip" {
       if condition.value == x_real_ip.0 {
-        return render_resource(&resource, raw_data_for_render).await;
+        return render_resource(&resource, raw_data_for_render, meta).await;
       }
     }
 
@@ -456,7 +500,7 @@ pub async fn router(
           .clone();
 
         if condition.value.to_lowercase() == result_record.owner.to_lowercase() {
-          return render_resource(&resource, raw_data_for_render).await;
+          return render_resource(&resource, raw_data_for_render, meta).await;
         }
       }
     }
@@ -464,14 +508,14 @@ pub async fn router(
     // user-agent plugin
     if condition.plugin == "user_agent" {
       if condition.value.to_lowercase() == user_agent.0.to_lowercase() {
-        return render_resource(&resource, raw_data_for_render).await;
+        return render_resource(&resource, raw_data_for_render, meta).await;
       }
     }
 
     // bot plugin
     if condition.plugin == "bot" {
       if bots.is_bot(&user_agent.0) {
-        return render_resource(&resource, raw_data_for_render).await;
+        return render_resource(&resource, raw_data_for_render, meta).await;
       }
     }
   }
@@ -482,7 +526,7 @@ pub async fn router(
     let _ = check_conflict_in_resource_links(&result_id);
     let raw_data_for_render = resource_raw.as_ref().unwrap().as_str();
 
-    return render_resource(&resource, raw_data_for_render).await;
+    return render_resource(&resource, raw_data_for_render, meta).await;
   }
 
   return (
