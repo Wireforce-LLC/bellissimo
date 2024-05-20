@@ -345,6 +345,7 @@ pub async fn router(
   router: PathBuf
 ) -> (Status, (ContentType, String)) {  
   let bots = Bots::default();
+  // let geoip = geoip2::Reader:
 
   let request_id = nanoid!();
   let asn_record = DATABASE

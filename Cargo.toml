@@ -10,6 +10,7 @@ asn-db = "0.1.4"
 chrono = "0.4.38"
 clap = { version = "4.5.4", features = ["derive"] }
 fake-useragent = "0.1.3"
+geoip2 = "0.1.7"
 isbot = "0.1.3"
 lazy_static = "1.4.0"
 mongodb = {version = "2.8.2", features = ["sync"], default-features = false}

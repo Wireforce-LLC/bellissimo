@@ -72,7 +72,7 @@ async fn future_disallow() -> (Status, (ContentType, String)) {
 async fn postback_get(payload: PostbackPayoutPostback) -> (Status, (ContentType, String)) {
   println!("{:?}", payload);  
 
-  let collection: Collection<PostbackPayoutPostback> = get_database(String::from("requests")).collection("postback");
+  let collection: Collection<PostbackPayoutPostback> = get_database(String::from("requests")).collection("postbacks");
   let now = Utc::now();
 
   let _ = collection.insert_one(PostbackPayoutPostback {
