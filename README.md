@@ -4,7 +4,7 @@
 <h1 align="center" style="border: none;">
     Bellissimo
 </h1>
-<h3 align="center" style="margin: 0px; border: none;">
+<h3 align="center" style="margin: 0px; border: none; text-align: center;">
     Affiliate tracker. Open & Free
 </h3>
 <p align="center">
