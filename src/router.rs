@@ -18,7 +18,7 @@ use std::any::{self, Any};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
-use std::time;
+use std::{fs, time};
 use mongodb::bson::doc;
 use mongodb::sync::Collection;
 use std::io::BufReader;
@@ -203,15 +203,7 @@ async fn render_resource(
         Status::Ok,
         (
           ContentType::HTML,
-          "
-          <!DOCTYPE html>
-          <html>
-          <body>
-            <meta http-equiv='refresh' content='2;URL=*'>
-            <p>You are being redirected to <a href='*'>*</a>.</p>
-          </body>
-          </html>
-          ".replace("*", &uri)
+          fs::read_to_string("containers/meta_redirect.html").unwrap().replace("*", &uri)
         )
       )
       
@@ -234,19 +226,8 @@ async fn render_resource(
         Status::Ok,
         (
           ContentType::HTML,
-          "
-          <!DOCTYPE html>
-          <html>
-          <body>
-            <p>You are being redirected to <a href='*'>*</a>.</p>
-            <script>
-              setTimeout(function (){
-                window.location.replace('*');
-              }, 1000)
-            </script>
-          </body>
-          </html>
-          ".replace("*", &uri)
+          fs::read_to_string("containers/javascript_redirect.html").unwrap().replace("*", &uri)
+
         )
       )
       
