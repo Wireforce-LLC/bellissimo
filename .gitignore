@@ -2,3 +2,7 @@
 Cargo.lock
 /docker
 client-history.txt
+web/node_modules
+web/.gitignore
+web/package-lock.json
+web/yarn.lock

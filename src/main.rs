@@ -57,6 +57,17 @@ fn not_found() -> (Status, (ContentType, String)) {
   )
 }
 
+#[get("/ping")]
+fn ping() -> (Status, (ContentType, String)) {
+  return (
+    Status::NotFound,
+    (
+      ContentType::Plain,
+      "Not found".to_string()
+    )
+  )
+}
+
 #[get("/")]
 async fn future_disallow() -> (Status, (ContentType, String)) {
   return (

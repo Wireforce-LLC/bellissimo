@@ -11,6 +11,18 @@ services:
     restart: always
     image: redis
 
+  bellissimo-web:
+    restart: always
+    image: node:20
+    container_name: bellissimo-web
+    volumes:
+      - ./bellissimo-web:/app
+    working_dir: /app
+    command: npm run start
+    depends_on:
+      - redis
+      - mongo
+
   bellissimo:
     restart: always
     build:
