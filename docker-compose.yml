@@ -16,7 +16,7 @@ services:
     image: node:20
     container_name: bellissimo-web
     volumes:
-      - ./bellissimo-web:/app
+      - ./web:/app
     working_dir: /app
     command: npm run start
     depends_on:
