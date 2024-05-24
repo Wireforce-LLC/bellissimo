@@ -13,9 +13,10 @@ use rocket::http::{ContentType, Header, Status};
 use rocket::request::{FromRequest, Outcome};
 use rocket::response::{self, Redirect, Responder};
 use rocket::{Request};
+use serde_json::json;
 use tera::{Context, Tera};
 use std::any::{self, Any};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::{fs, time};
@@ -25,6 +26,8 @@ use std::io::BufReader;
 use std::fs::File;
 use asn_db::{Db};
 use chrono::prelude::*;
+use handlebars::Handlebars;
+
 
 use self::database::get_database;
 use self::resource::Resource;
@@ -64,6 +67,15 @@ enum XRealError {}
  */
 #[derive(Debug)]
 enum UserAgentError {}
+
+lazy_static! {
+  static ref HANDLEBARS: Arc<Handlebars<'static>> = {
+      let mut handlebars = Handlebars::new();
+      // Настройки Handlebars, если необходимо
+      Arc::new(handlebars)
+  };
+}
+
 
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for XRealIp<'r> {
@@ -202,7 +214,7 @@ async fn render_resource(
         Status::Ok,
         (
           ContentType::HTML,
-          fs::read_to_string("../containers/meta_redirect.html").unwrap().replace("*", &uri)
+          fs::read_to_string("./containers/meta_redirect.html").unwrap().replace("*", &uri)
         )
       )
       
@@ -225,7 +237,7 @@ async fn render_resource(
         Status::Ok,
         (
           ContentType::HTML,
-          fs::read_to_string("../containers/javascript_redirect.html").unwrap().replace("*", &uri)
+          fs::read_to_string("./containers/javascript_redirect.html").unwrap().replace("*", &uri)
 
         )
       )
@@ -244,7 +256,7 @@ async fn render_resource(
         );
       }
 
-      let key_path = resource.raw_content.clone().unwrap();
+      let key_path = resource.raw_content.as_ref().unwrap().to_string();
       let mut mem_cache = REQUEST_CACHE_STORAGE.as_ref().lock().unwrap();
       
       if false && key_path == mem_cache.0 {
@@ -317,30 +329,65 @@ async fn render_resource(
     //    "file_path": null
     //  })
     "html" => {
-      let tera = Tera::new("public/**/*").unwrap();
-
       let time = Utc::now().timestamp_micros();
-      let mut context = Context::new();
-      
-      context.insert("hello_rust", "Rust");
-      context.insert("time", &time);
-      context.insert("raw", &raw_data);
-      context.insert("u", &raw_data);
-      
-      let template_name = resource
-        .raw_content
-        .clone()
-        .unwrap()
-        .replace("./public/", "")
-        .replace("/public/", "")
-        .replace("public/", "")
-        .replace("/public", "");
+
+      let mut params = HashMap::new();
+
+      params.insert("time", time.to_string());
+      params.insert("raw", raw_data.to_string());
+      params.insert("hello_rust", "Rust".to_string());
+
+      if &resource.file_path.is_some() == &true {       
+        let template_name = resource
+          .raw_content
+          .as_ref()
+          .unwrap()
+          .replace("./public/", "")
+          .replace("/public/", "")
+          .replace("public/", "")
+          .replace("/public", "");
+
+        let mut result = fs::read_to_string("./public/*".replace("*", &template_name)).unwrap();
+        
+        for key in params.keys() {
+          result = result.replace(
+            &"{{*}}".replace("*", key).to_string(),
+            params.get(key).unwrap()
+          );
+        }
+
+        return (
+          Status::Ok,
+          (
+            ContentType::HTML,
+            String::from(result)
+          )
+        );
+
+      } else if &resource.raw_content.is_some() == &true {
+        let mut result: String = String::from(resource.raw_content.as_ref().unwrap());
+        
+        for key in params.keys() {
+          result = result.replace(
+            &"{{*}}".replace("*", key).to_string(),
+            params.get(key).unwrap()
+          );
+        }
+
+        return (
+          Status::Ok,
+          (
+            ContentType::HTML,
+            String::from(result)
+          )
+        );
+      }
 
       return (
-        Status::Ok,
+        Status::InternalServerError,
         (
           ContentType::HTML,
-          tera.render(template_name.as_str(), &context).unwrap().to_string()
+          "Unable to render resource".to_string()
         )
       );
     }
@@ -456,13 +503,26 @@ pub async fn router(
   meta.insert("user_agent".to_string(), user_agent.0.to_string());
 
   for condition in filter.conditions {
-    let resource = require_resource(condition.resource_id.unwrap().as_str());
+    let resource = require_resource(condition.resource_id.expect("Unable to get resource").as_str());
     let (result_id, resource_raw) = require_resource_raw(&resource);
     let check_conflict = check_conflict_in_resource_links(&result_id);
-    let raw_data_for_render = resource_raw.as_ref().unwrap().as_str();
+    
+    let raw_out = resource_raw.as_ref();
+
+    if raw_out.is_none() {
+      return (
+        Status::NotFound,
+        (
+          ContentType::Plain,
+          "PAGE!!!!".to_string() + result_id.to_string().as_str()
+        )
+      );
+    }
+
+    let raw_data_for_render = raw_out.expect("Unable to get raw data").as_str();
 
     if !check_conflict.is_none() {
-      return check_conflict.clone().unwrap();
+      return check_conflict.clone().expect("Unable to get check conflict");
     }
     
     // ip plugin

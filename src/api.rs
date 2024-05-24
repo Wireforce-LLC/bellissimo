@@ -246,6 +246,34 @@ pub fn create_new_resource(input: Form<CreateResource>) -> (Status, (ContentType
     "resource_id": &input.resource_id.clone()
   }, None).expect("Unable to count documents");
 
+  if input.file_path.is_some() && input.raw_data.is_some() {
+    return (
+      Status::BadRequest, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "You are trying to set 2 types of data at the same time: raw and a link to a file",
+          "value": null
+        }).to_string()
+      )
+    );
+  }
+
+  if input.file_path.is_none() && input.raw_data.is_none() {
+    return (
+      Status::BadRequest, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Both content parameters of content were not set",
+          "value": null
+        }).to_string()
+      )
+    );
+  }
+
   if resource_count != 0 {
     return (
       Status::Conflict, 

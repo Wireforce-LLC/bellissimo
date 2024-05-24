@@ -6,3 +6,8 @@ web/node_modules
 web/.gitignore
 web/package-lock.json
 web/yarn.lock
+test
+*/node_modules
+node_modules
+.debug
+vite-config.ts.*

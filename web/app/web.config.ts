@@ -6,9 +6,9 @@ export enum ApiPathEnum {
   Filters = "/api/filter/list",
   Resources = "/api/resource/list",
 
+  CreateRoutes = "/api/route/create",
   CreateResources = "/api/resource/create",
   CreateFilters = "/api/filter/create",
-
 }
 
 // API endpoint host

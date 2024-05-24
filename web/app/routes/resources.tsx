@@ -8,6 +8,7 @@ import Card from "~/components/Card";
 import GrayWrapper from "~/components/GrayWrapper";
 import Input from "~/components/Input";
 import Label from "~/components/Label";
+import Link from "~/components/Link";
 import LoadingActivity from "~/components/LoadingActivity";
 import Modal from "~/components/Modal";
 import ProgressMini from "~/components/ProgressMini";
@@ -29,12 +30,7 @@ export const meta: MetaFunction = () => {
 export default function Resources() {
   const [data, setData] = useState<any[]|undefined>(undefined);
 
-  const [modelResourceId, setModelResourceId] = useState<string|undefined>();
-  const [modelDriver, setModelDriver] = useState<string|undefined>();
-  const [modelFileUri, setModelFileUri] = useState<string|undefined>();
-  const [modelContent, setModelContent] = useState<string|undefined>();
-
-  const [isModalCreateVisible, setIsModalCreateVisible] = useState(false);
+  const [typeOfContent, setTypeOfContent] = useState<number>(0);
 
   const [availableDrivers] = useState([
     {name: "JSON", value: "json"},
@@ -43,6 +39,13 @@ export default function Resources() {
     {name: "Meta Redirect", value: "redirect::meta"},
     {name: "HTML Proxy", value: "proxy::html"},
   ])
+
+  const [modelResourceId, setModelResourceId] = useState<string|undefined>();
+  const [modelDriver, setModelDriver] = useState<string|undefined>(availableDrivers[0].value);
+  const [modelFileUri, setModelFileUri] = useState<string|undefined>();
+  const [modelContent, setModelContent] = useState<string|undefined>();
+
+  const [isModalCreateVisible, setIsModalCreateVisible] = useState(false);
 
   useEffect(() => {
     fether()
@@ -61,8 +64,14 @@ export default function Resources() {
     
     data.append("resource_id", modelResourceId || "");
     data.append("driver", modelDriver || "");
-    data.append("file_path", modelFileUri || "");
-    data.append("raw_data", modelContent || "");
+
+    if (typeOfContent == 0) {
+      data.append("file_path", modelFileUri || "");
+    }
+    
+    if (typeOfContent == 1) {
+      data.append("raw_data", modelContent || "");
+    }
 
     webConfig.axiosFactory("PRIVATE").then(i => {
       i.post(webConfig.apiEndpointFactory(ApiPathEnum.CreateResources), data).then(res => {
@@ -73,7 +82,7 @@ export default function Resources() {
       })
     })
 
-  }, [modelContent, modelDriver, modelFileUri, modelResourceId])
+  }, [modelContent, modelDriver, modelFileUri, modelResourceId, typeOfContent])
 
   return (
     <DashboardLayout
@@ -87,8 +96,18 @@ export default function Resources() {
           <Input label="Resource ID" value={modelResourceId} onChangeValue={setModelResourceId}/>
       
           <Select label="Driver" values={availableDrivers} value={modelDriver} onChangeValue={setModelDriver}/>
-          <Input label="File URI" value={modelFileUri} onChangeValue={setModelFileUri}/>
-          <BigInput label="RAW Content" value={modelContent} onChangeValue={setModelContent}/>
+          
+          {
+            typeOfContent == 0 && <Input label="File URI" value={modelFileUri} onChangeValue={setModelFileUri}/>
+          }
+          
+          {
+            typeOfContent == 1 && <BigInput label="RAW Content" value={modelContent} onChangeValue={setModelContent}/>
+          }
+
+          <a className="text-blue-500 text-xs" href="#" onClick={() => setTypeOfContent(typeOfContent == 0 ? 1 : 0)}>
+            Toogle content type
+          </a>  
 
           <Button onPress={onCreateResource}>Create</Button>
         </div>
@@ -98,8 +117,11 @@ export default function Resources() {
         title={string("dashboard.subtitle.resources")} 
         onCreateAction={() => setIsModalCreateVisible(true)}/>
 
-      <Table headers={["Resource ID", "Params", "Content", "File path"]} data={
-        data
+      <Table headers={["Resource ID", "Driver", "Content", "File path"]} data={
+        data?.map((i: any) => ({
+          ...i, 
+          raw_content: i.raw_content ? _.take(i.raw_content, 64) : undefined
+        }))
       } />
 
     </DashboardLayout>
