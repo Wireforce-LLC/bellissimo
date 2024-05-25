@@ -126,13 +126,13 @@ export default function Routes() {
         setIsModalCreateVisible(false)
       }}>
 
-        {(!filters && resources) && notFoundFilters}
+        {(_.isEmpty(filters) && !_.isEmpty(resources)) && notFoundFilters}
 
-        {(!resources && filters) && notFoundResources}
+        {(!_.isEmpty(filters) && _.isEmpty(resources)) && notFoundResources}
 
-        {(!resources && !filters) && notFoundAnything}
+        {(_.isEmpty(filters) && _.isEmpty(resources)) && notFoundAnything}
 
-        {(resources && filters) && <div className="space-y-4">
+        {(!_.isEmpty(filters) && !_.isEmpty(resources)) && <div className="space-y-4">
           <Input label="Name" value={modelName} onChangeValue={setModelName}/>
 
           <div>
