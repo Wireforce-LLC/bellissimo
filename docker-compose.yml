@@ -1,5 +1,16 @@
 version: "3.8"
 services:
+  nginx-basic-auth-proxy:
+    container_name: nginx-basic-auth-proxy
+    ports:
+      - 8080:80
+    environment:
+      - BASIC_AUTH_USERNAME=username
+      - BASIC_AUTH_PASSWORD=password
+      - PROXY_PASS=bellissimo-web
+      - PORT=80
+    image: quay.io/dtan4/nginx-basic-auth-proxy
+
   mongo:
     restart: always
     container_name: mongo
@@ -19,8 +30,8 @@ services:
       - ./web:/app
     working_dir: /app
     command: npm run start
-    ports:
-      - 3000:3000
+    # ports:
+    #   - 3000:3000
     depends_on:
       - redis
       - mongo
