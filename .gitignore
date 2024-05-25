@@ -13,3 +13,4 @@ node_modules
 vite-config.ts.*
 docker.env
 *.env
+web/app/production.ts

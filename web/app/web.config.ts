@@ -1,4 +1,5 @@
 import axios from "axios";
+import production from "./production";
 
 export enum ApiPathEnum {
   Ping = "/ping",
@@ -14,7 +15,7 @@ export enum ApiPathEnum {
 // API endpoint host
 const API_ENDPOINT = process.env.NODE_ENV === 'development' ?
   "http://localhost:8000" :
-  process.env.API_HOST;
+  production.API_HOST;
 
 /* @deprecated */
 const AXIOS_INSTANCE_PUBLIC = axios.create({
