@@ -5,7 +5,7 @@ services:
     container_name: bellissimo-nginx
     restart: always
     environment:
-      - HTPASSWD=foo:$apr1$odHl5EJN$KbxMfo86Qdve2FH4owePn.
+      - HTPASSWD=admin:$apr1$xu5g0csj$GKyGduMtMXBAt1HaQ7Rpk/
       - FORWARD_PORT=3000
       - FORWARD_HOST=bellissimo-web
     ports:
