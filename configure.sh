@@ -1,4 +1,6 @@
 #!/bin/bash
+bold=$(tput bold)
+normal=$(tput sgr0)
 
 if [ "$(uname)" != "Linux" -a "$(uname)" != "Darwin" ]; then
     echo "Only Linux and macOS are supported" >&2
@@ -30,15 +32,15 @@ Please answer the following questions:
 ----------------------------------
 
 What is your API host? (result of 'curl ipinfo.io/ip', without http:// or https://)
-Or use default: $_TIP_API_HOST (its your public IP by default)
+Or use default: ${bold}$_TIP_API_HOST${normal} (its your public IP by default)
 """
 
 read -p "API_HOST: " API_HOST
 
 echo """
 What is your HTPASSWD? (result of 'htpasswd -nb admin password')
-Or use default: $_TIP_HTTPPASS
-If you want to use it also remember your password: $_TIP_PASSWORD
+Or use default: ${bold}$_TIP_HTTPPASS${normal}
+If you want to use it also remember your ${bold}$password${normal}: ${bold}$_TIP_PASSWORD${normal}
 """
 read -p "HTPASSWD: " HTPASSWD
 
