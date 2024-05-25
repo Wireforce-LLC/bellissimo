@@ -72,6 +72,20 @@ services:
       - redis
       - mongo
 
+  bellissimo-collector:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - REDIS_URI=redis://redis/
+      - MONGO_URI=mongodb://mongo:27017
+    command: '/usr/src/app/target/release/bellissimo --mode=collector --disable-api --disable-postbacks'
+    depends_on:
+      - redis
+      - mongo
+
+
   nginx:
     restart: always
     image: nginx:latest
