@@ -15,9 +15,13 @@ if [ "$(uname)" == "Linux" ]; then
     fi
 fi
 
+
 export _TIP_API_HOST="$(curl -s https://ipinfo.io/ip)"
 export _TIP_PASSWORD="$(openssl rand -base64 10)"
-export _TIP_HTTPPASS="$(htpasswd -nb admin $_TIP_PASSWORD)"
+export _TIP_HTTPPASS=$(htpasswd -nb admin "$_TIP_PASSWORD")
+
+export _Python="print('$_TIP_HTTPPASS'.replace('\$', '\$\$'))"
+export _TIP_HTTPPASS="$(python3 -c "$_Python")"
 
 echo """
 ----------------------------------
