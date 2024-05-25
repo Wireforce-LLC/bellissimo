@@ -76,6 +76,11 @@ echo "Running build..."
 /bin/bash ./build.sh
 
 echo "Running docker compose..."
-/bin/docker compose up --force-recreate -d bellissimo-web
+/bin/docker compose up \
+    --force-recreate \
+    --remove-orphans \
+    -d \
+    bellissimo-web \
+    bellissimo-web-auth
 
 echo "Done!"
