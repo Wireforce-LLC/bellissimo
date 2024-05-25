@@ -1,16 +1,24 @@
 version: "3"
 
 services:
-  bellissimo-nginx-proxy:
-    container_name: bellissimo-nginx
-    restart: always
-    environment:
-      - HTPASSWD=admin:$apr1$xu5g0csj$GKyGduMtMXBAt1HaQ7Rpk/
-      - FORWARD_PORT=3000
-      - FORWARD_HOST=bellissimo-web
+  # bellissimo-nginx-proxy:
+  #   container_name: bellissimo-nginx
+  #   restart: always
+  #   environment:
+  #     - HTPASSWD=admin:$apr1$xu5g0csj$GKyGduMtMXBAt1HaQ7Rpk/
+  #     - FORWARD_PORT=3000
+  #     - FORWARD_HOST=bellissimo-web
+  #   ports:
+  #     - 1337:80
+  #   image: beevelop/nginx-basic-auth
+
+  pomerium:
+    image: cr.pomerium.com/pomerium/pomerium:latest
+    volumes:
+      ## Mount your config file: https://www.pomerium.com/docs/reference/
+      - ./pomerium.yml:/pomerium/config.yaml:ro
     ports:
-      - 1337:80
-    image: beevelop/nginx-basic-auth
+      - 1337:443
 
   mongo:
     restart: always
