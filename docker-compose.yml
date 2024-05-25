@@ -1,4 +1,5 @@
-version: "3.8"
+version: "3"
+
 services:
   bellissimo-nginx-proxy:
     container_name: bellissimo-nginx
