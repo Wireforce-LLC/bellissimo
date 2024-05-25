@@ -12,6 +12,17 @@ services:
   #     - 1337:80
   #   image: beevelop/nginx-basic-auth
 
+  mongo_seed:
+    image: mongo:latest
+    depends_on:
+      - mongo
+    volumes:
+      - ./containers/import_db.sh:/import_db.sh:ro
+      - ./containers/mongo_default_filters.json:/mongo_default_filters.json:ro
+      
+      - ./docker/mongodb:/data
+    command: /import.sh
+
   bellissimo-web-auth:
     image: 'beevelop/nginx-basic-auth'
     ports:
@@ -25,13 +36,13 @@ services:
   mongo:
     restart: always
     container_name: mongo
-    image: mongo
+    image: mongo:latest
     volumes:
       - ./docker/mongodb:/data
 
   redis:
     restart: always
-    image: redis
+    image: redis:latest
 
   bellissimo-web:
     restart: always

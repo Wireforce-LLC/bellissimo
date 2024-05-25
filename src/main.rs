@@ -115,6 +115,7 @@ async fn launch_rocket(args: &Args) {
 
   let rocket_server = rocket::custom(&config)
     .mount("/", routes![router::router])
+    .mount("/", routes![ping])
     .mount("/", if !args.disable_robots { routes![robots] } else { routes![not_found] })
 
     .mount("/api", if !args.disable_api { routes![api::create_new_route] } else { routes![future_disallow] })
