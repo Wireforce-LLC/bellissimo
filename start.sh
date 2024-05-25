@@ -1,30 +1,36 @@
 #!/bin/bash
 
-echo "Starting Bellissimo..."
+echo """
+----------------------------------
+Welcome to Bellissimo Builder!
+
+This script will build and start the Bellissimo server for you.
+Automatically configure docker.env and build the binaries.
+Traffic affiliate tools have never been so accessible and open before.
+(!) We will answer some questions.
+----------------------------------
+"""
+
+echo "Pulling latest changes..."
 git pull
 
-echo "Checking dependencies..."
-if [ "$(uname)" != "Linux" ] && [ "$(uname)" != "Darwin" ]; then
-    echo "Only Linux and macOS are supported" >&2
+if [ "$(uname)" == "Darwin" ]; then
+    echo "Sorry, this script is not supported on macOS"
+    echo ""
+    echo "Please, build server manually"
+    echo " 1) bash configure.sh"
+    echo " 2) bash build.sh"
+    echo " 3) docker compose up --force-recreate -d --build"
     exit 0
-fi
 
-echo "Checking dependencies..."
-if ! command -v curl &> /dev/null; then
-    echo "CURL is not installed. Installing..."
-    
-    if [ "$(uname)" == "Linux" ]; then
-        echo "Installing CURL..."
-        sudo apt update
-        sudo apt install -y curl
-    
-    elif [ "$(uname)" == "Darwin" ]; then
-        if ! command -v brew &> /dev/null; then
-            echo "Homebrew is not installed." >&2
-            exit 1
-        fi
-        brew install curl
-    fi
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    echo "Starting Bellissimo..."
+elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+    echo "Sorry, this script is not supported on Windows"
+    exit 0
+elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW64_NT" ]; then
+    echo "Sorry, this script is not supported on Windows"
+    exit 0
 fi
 
 echo "Checking docker.env..."
