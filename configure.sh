@@ -50,8 +50,11 @@ If https, type 'https':
 """
 read -p "HTTP/s: " HTTP
 
+echo "Removing old config..."
 rm docker.env
+rm ./web/app/production.ts
 
+echo "Writing new config..."
 echo """
 NODE_ENV=production
 API_HOST=$API_HOST
@@ -60,14 +63,17 @@ FORWARD_HOST=bellissimo-web
 FORWARD_PORT=3000
 """ >> docker.env
 
+echo "Writing new production.ts..."
 echo """
 export default {
     API_HOST: '$HTTP://$API_HOST'
 }
 """ >> ./web/app/production.ts
 
+echo "Running build..."
 /bin/bash ./build.sh
 
+echo "Running docker compose..."
 /bin/docker compose up --force-recreate -d bellissimo-web
 
 echo "Done!"
