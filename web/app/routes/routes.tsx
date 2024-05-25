@@ -1,18 +1,11 @@
-import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import _, { divide } from "lodash";
-import moment from "moment";
+import type { MetaFunction } from "@remix-run/node";
+import _ from "lodash";
 import { useState, useEffect, useCallback } from "react";
 import Button from "~/components/Button";
-import Card from "~/components/Card";
 import ErrorString from "~/components/ErrorString";
-import GrayWrapper from "~/components/GrayWrapper";
 import Input from "~/components/Input";
-import Label from "~/components/Label";
-import LoadingActivity from "~/components/LoadingActivity";
 import Modal from "~/components/Modal";
-import ProgressMini from "~/components/ProgressMini";
 import Select from "~/components/Select";
-import SharedCardEventsGroup from "~/components/SharedCardEventsGroup";
 import SubNavbar from "~/components/SubNavbar";
 import Table from "~/components/Table";
 import DashboardLayout, { LeftActiveBarItem } from "~/layouts/DashboardLayout";
@@ -65,6 +58,13 @@ export default function Routes() {
       })
     })
   }, [])
+
+  useEffect(() => {
+    if (filters && resources) {
+      setModelFilterId(filters[0].value)
+      setModelResourceId(resources[0].value)
+    }
+  }, [filters, resources])
 
   const onCreateResource = useCallback(() => {
     if (!modelPath?.startsWith("/")) {
