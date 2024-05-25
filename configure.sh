@@ -56,7 +56,10 @@ echo """
 export default {
     API_HOST: '$API_HOST'
 }
-""" >> web/app/production.ts
+""" >> ./web/app/production.ts
 
+/bin/bash ./build.sh
+
+/bin/docker compose up --force-recreate -d bellissimo-web
 
 echo "Done!"

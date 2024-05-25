@@ -11,10 +11,12 @@ fi
 echo "Checking dependencies..."
 if ! command -v curl &> /dev/null; then
     echo "CURL is not installed. Installing..."
+    
     if [ "$(uname)" == "Linux" ]; then
         echo "Installing CURL..."
         sudo apt update
         sudo apt install -y curl
+    
     elif [ "$(uname)" == "Darwin" ]; then
         if ! command -v brew &> /dev/null; then
             echo "Homebrew is not installed." >&2
