@@ -12,13 +12,17 @@ services:
   #     - 1337:80
   #   image: beevelop/nginx-basic-auth
 
-  pomerium:
-    image: cr.pomerium.com/pomerium/pomerium:latest
-    volumes:
-      ## Mount your config file: https://www.pomerium.com/docs/reference/
-      - ./pomerium.yml:/pomerium/config.yaml:ro
+  bellissimo-web-auth:
+    image: 'beevelop/nginx-basic-auth'
     ports:
-      - 1337:443
+      - '1337:80'
+    environment:
+      - PORT=80
+      - FORWARD_HOST=bellissimo-web
+      - FORWARD_PORT=3000
+      ## escape $ with $$ in Docker yml due to variable expansion
+      ## example user/pass generated with htpasswd is foo:bar
+      - HTPASSWD=foo:$$apr1$$odHl5EJN$$KbxMfo86Qdve2FH4owePn.
 
   mongo:
     restart: always
