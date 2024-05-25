@@ -1,7 +1,8 @@
 version: "3.8"
 services:
-  nginx-basic-auth-proxy:
-    container_name: nginx-basic-auth-proxy
+  bellissimo-nginx-proxy:
+    container_name: bellissimo-nginx
+    restart: always
     ports:
       - 8080:80
     environment:
@@ -9,7 +10,7 @@ services:
       - BASIC_AUTH_PASSWORD=password
       - PROXY_PASS=bellissimo-web
       - PORT=80
-    image: quay.io/dtan4/nginx-basic-auth-proxy
+    image: quay.io/dtan4/nginx-basic-auth-proxy:latest
 
   mongo:
     restart: always
