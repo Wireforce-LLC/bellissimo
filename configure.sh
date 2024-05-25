@@ -38,6 +38,8 @@ If you want to use it also remember your password: $_TIP_PASSWORD
 """
 read -p "HTPASSWD: " HTPASSWD
 
+rm docker.env
+
 echo """
 NODE_ENV=production
 API_HOST=$API_HOST
