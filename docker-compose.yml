@@ -19,9 +19,9 @@ services:
     volumes:
       - ./containers/import_db.sh:/import_db.sh:ro
       - ./containers/mongo_default_filters.json:/mongo_default_filters.json:ro
-      
+
       - ./docker/mongodb:/data
-    command: /import.sh
+    command: /import_db.sh
 
   bellissimo-web-auth:
     image: 'beevelop/nginx-basic-auth'
