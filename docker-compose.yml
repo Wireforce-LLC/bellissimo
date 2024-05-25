@@ -62,6 +62,7 @@ services:
 
   bellissimo:
     restart: always
+    image: bellissimo-bin
     build:
       context: .
       dockerfile: Dockerfile
@@ -74,9 +75,7 @@ services:
 
   bellissimo-collector:
     restart: always
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: bellissimo-bin
     environment:
       - REDIS_URI=redis://redis/
       - MONGO_URI=mongodb://mongo:27017
