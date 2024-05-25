@@ -15,6 +15,10 @@ if [ "$(uname)" == "Linux" ]; then
     fi
 fi
 
+export _TIP_API_HOST="$(curl -s https://ipinfo.io/ip)"
+export _TIP_PASSWORD="$(password=$(tr -dc 'A-Za-z0-9!?%=' < /dev/urandom | head -c 10))"
+export _TIP_HTTPPASS="$(htpasswd -nb admin $_TIP_PASSWORD)"
+
 echo """
 ----------------------------------
 Welcome to Bellissimo API Setup!
@@ -22,12 +26,15 @@ Please answer the following questions:
 ----------------------------------
 
 What is your API host? (result of 'curl ipinfo.io/ip', without http:// or https://)
+Or use default: $_TIP_API_HOST (its your public IP by default)
 """
 
 read -p "API_HOST: " API_HOST
 
 echo """
 What is your HTPASSWD? (result of 'htpasswd -nb admin password')
+Or use default: $_TIP_HTTPPASS
+If you want to use it also remember your password: $_TIP_PASSWORD
 """
 read -p "HTPASSWD: " HTPASSWD
 
