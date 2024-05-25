@@ -9,7 +9,7 @@ services:
       - FORWARD_PORT=3000
       - FORWARD_HOST=bellissimo-web
     ports:
-      - 8080:80
+      - 1337:80
     image: beevelop/nginx-basic-auth
 
   mongo:
