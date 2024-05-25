@@ -16,7 +16,7 @@ if [ "$(uname)" == "Linux" ]; then
 fi
 
 export _TIP_API_HOST="$(curl -s https://ipinfo.io/ip)"
-export _TIP_PASSWORD="$(password=$(tr -dc 'A-Za-z0-9!?%=' < /dev/urandom | head -c 10))"
+export _TIP_PASSWORD="$(openssl rand -base64 10)"
 export _TIP_HTTPPASS="$(htpasswd -nb admin $_TIP_PASSWORD)"
 
 echo """
