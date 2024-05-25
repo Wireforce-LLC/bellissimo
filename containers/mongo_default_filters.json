@@ -1,5 +1,6 @@
 [
     {
+      "_id": "any",
       "name": "Any",
       "filter_id": "any",
       "conditions": []
