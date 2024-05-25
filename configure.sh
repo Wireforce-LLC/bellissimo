@@ -44,6 +44,8 @@ echo """
 NODE_ENV=production
 API_HOST=$API_HOST
 HTPASSWD=$HTPASSWD
+FORWARD_HOST=bellissimo-web
+FORWARD_PORT=3000
 """ >> docker.env
 
 echo "Done!"

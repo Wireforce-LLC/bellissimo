@@ -18,6 +18,9 @@ services:
       - '1337:80'
     env_file:
       - docker.env
+      ## escape $ with $$ in Docker yml due to variable expansion
+      ## example user/pass generated with htpasswd is foo:bar
+      # - HTPASSWD=foo:$$apr1$$odHl5EJN$$KbxMfo86Qdve2FH4owePn.
 
   mongo:
     restart: always
