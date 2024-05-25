@@ -7,6 +7,7 @@ export default {
     zoneName: "Zone",
     userId: "UserID",
   },
+
   meta: {
     title: {
       login: `Welcome back in ${APP_NAME}`,
@@ -24,6 +25,27 @@ export default {
       login: `Welcome back to ${APP_NAME}`,
       join: `Create account in ${APP_NAME}`,
     },
+  },
+
+  filters: {
+    create: {
+      resourcesNotFoundTitle: "Resources not found",
+      resourcesNotFoundDescription: "For create new filters please, create one or more resources. Without resources you can not create new filter conditions.",
+    }
+  },
+
+  routes: {
+    create: {
+      mistakeStart: "Please, start with /",
+      filtersNotFoundTitle: "Filters not found",
+      filtersNotFoundDescription: "Please, create new filters",
+
+      resourcesNotFoundTitle: "Resources not found",
+      resourcesNotFoundDescription: "Please, create new resources",
+    
+      anyNotFoundTitle: "Filters and resources not found",
+      anyNotFoundDescription: "Please, create new filters and resources",
+    }
   },
 
   login: {

@@ -1,9 +1,10 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import _ from "lodash";
+import _, { divide } from "lodash";
 import moment from "moment";
 import { useState, useEffect, useCallback } from "react";
 import Button from "~/components/Button";
 import Card from "~/components/Card";
+import ErrorString from "~/components/ErrorString";
 import GrayWrapper from "~/components/GrayWrapper";
 import Input from "~/components/Input";
 import Label from "~/components/Label";
@@ -66,6 +67,10 @@ export default function Routes() {
   }, [])
 
   const onCreateResource = useCallback(() => {
+    if (!modelPath?.startsWith("/")) {
+      return 
+    }
+
     let data = new FormData();
     
     data.append("name", modelName!)
@@ -84,7 +89,33 @@ export default function Routes() {
 
   }, [modelFilterId, modelPath, modelName, modelResourceId])
 
-  
+  const notFoundResources = <div className="w-full flex flex-col justify-center items-center py-8">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-10 mb-4">
+      <path fillRule="evenodd" d="M10.5 3.798v5.02a3 3 0 0 1-.879 2.121l-2.377 2.377a9.845 9.845 0 0 1 5.091 1.013 8.315 8.315 0 0 0 5.713.636l.285-.071-3.954-3.955a3 3 0 0 1-.879-2.121v-5.02a23.614 23.614 0 0 0-3 0Zm4.5.138a.75.75 0 0 0 .093-1.495A24.837 24.837 0 0 0 12 2.25a25.048 25.048 0 0 0-3.093.191A.75.75 0 0 0 9 3.936v4.882a1.5 1.5 0 0 1-.44 1.06l-6.293 6.294c-1.62 1.621-.903 4.475 1.471 4.88 2.686.46 5.447.698 8.262.698 2.816 0 5.576-.239 8.262-.697 2.373-.406 3.092-3.26 1.47-4.881L15.44 9.879A1.5 1.5 0 0 1 15 8.818V3.936Z" clipRule="evenodd" />
+    </svg>
+
+    <h1 className="text-md font-medium text-center mb-0 p-0">{string("routes.create.resourcesNotFoundTitle")}</h1>
+    <p className="text-xs text-center font-normal opacity-50">{string("routes.create.resourcesNotFoundDescription")}</p>
+  </div> 
+
+  const notFoundFilters = <div className="w-full flex flex-col justify-center items-center py-8">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-10 mb-4">
+      <path fillRule="evenodd" d="M10.5 3.798v5.02a3 3 0 0 1-.879 2.121l-2.377 2.377a9.845 9.845 0 0 1 5.091 1.013 8.315 8.315 0 0 0 5.713.636l.285-.071-3.954-3.955a3 3 0 0 1-.879-2.121v-5.02a23.614 23.614 0 0 0-3 0Zm4.5.138a.75.75 0 0 0 .093-1.495A24.837 24.837 0 0 0 12 2.25a25.048 25.048 0 0 0-3.093.191A.75.75 0 0 0 9 3.936v4.882a1.5 1.5 0 0 1-.44 1.06l-6.293 6.294c-1.62 1.621-.903 4.475 1.471 4.88 2.686.46 5.447.698 8.262.698 2.816 0 5.576-.239 8.262-.697 2.373-.406 3.092-3.26 1.47-4.881L15.44 9.879A1.5 1.5 0 0 1 15 8.818V3.936Z" clipRule="evenodd" />
+    </svg>
+
+    <h1 className="text-md font-medium text-center mb-0 p-0">{string("routes.create.filtersNotFoundTitle")}</h1>
+    <p className="text-xs text-center font-normal opacity-50">{string("routes.create.filtersNotFoundDescription")}</p>
+  </div> 
+
+  const notFoundAnything = <div className="w-full flex flex-col justify-center items-center py-8">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-10 mb-4">
+      <path fillRule="evenodd" d="M10.5 3.798v5.02a3 3 0 0 1-.879 2.121l-2.377 2.377a9.845 9.845 0 0 1 5.091 1.013 8.315 8.315 0 0 0 5.713.636l.285-.071-3.954-3.955a3 3 0 0 1-.879-2.121v-5.02a23.614 23.614 0 0 0-3 0Zm4.5.138a.75.75 0 0 0 .093-1.495A24.837 24.837 0 0 0 12 2.25a25.048 25.048 0 0 0-3.093.191A.75.75 0 0 0 9 3.936v4.882a1.5 1.5 0 0 1-.44 1.06l-6.293 6.294c-1.62 1.621-.903 4.475 1.471 4.88 2.686.46 5.447.698 8.262.698 2.816 0 5.576-.239 8.262-.697 2.373-.406 3.092-3.26 1.47-4.881L15.44 9.879A1.5 1.5 0 0 1 15 8.818V3.936Z" clipRule="evenodd" />
+    </svg>
+
+    <h1 className="text-md font-medium text-center mb-0 p-0">{string("routes.create.anyNotFoundTitle")}</h1>
+    <p className="text-xs text-center font-normal opacity-50">{string("routes.create.anyNotFoundDescription")}</p>
+  </div> 
+
 
   return (
     <DashboardLayout
@@ -94,15 +125,34 @@ export default function Routes() {
       { isModalCreateVisible && <Modal title="Create route" onClose={() => {
         setIsModalCreateVisible(false)
       }}>
-        <div className="space-y-4">
+
+        {(!filters && resources) && notFoundFilters}
+
+        {(!resources && filters) && notFoundResources}
+
+        {(!resources && !filters) && notFoundAnything}
+
+        {(resources && filters) && <div className="space-y-4">
           <Input label="Name" value={modelName} onChangeValue={setModelName}/>
-          <Input label="Path" value={modelPath} onChangeValue={setModelPath}/>
+
+          <div>
+            <Input label="Path" value={modelPath} onChangeValue={setModelPath}/>
+
+            {!modelPath?.startsWith("/") ? <div>
+              <ErrorString>
+                {string("routes.create.mistakeStart")}
+              </ErrorString>
+            </div> : <a className="text-blue-500 text-xs" href="#">
+              {window?.location?.protocol}//{window?.location?.host}{modelPath}
+            </a>}
+          </div>
 
           <Select label="Resource" value={modelResourceId} values={resources} onChangeValue={setModelResourceId}/>
           <Select label="Filter" value={modelFilterId} values={filters} onChangeValue={setModelFilterId}/>
 
           <Button onPress={onCreateResource}>Create</Button>
-        </div>
+        </div>}
+      
       </Modal> }
       
       <SubNavbar

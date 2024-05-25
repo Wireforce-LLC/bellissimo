@@ -89,10 +89,10 @@ export default function Resources() {
       subTitle={string("dashboard.subtitle.resources")}
       currentLeftActiveBarItem={LeftActiveBarItem.RESOURCES}
     >
-      { isModalCreateVisible && <Modal title="Resources" onClose={() => {
+      { isModalCreateVisible && <Modal title="Create new resource" onClose={() => {
         setIsModalCreateVisible(false)
       }}>
-        <div className="space-y-4">
+        <div className="space-y-4 pt-2">
           <Input label="Resource ID" value={modelResourceId} onChangeValue={setModelResourceId}/>
       
           <Select label="Driver" values={availableDrivers} value={modelDriver} onChangeValue={setModelDriver}/>
@@ -109,7 +109,7 @@ export default function Resources() {
             Toogle content type
           </a>  
 
-          <Button onPress={onCreateResource}>Create</Button>
+          <Button disabled={(!modelFileUri && !modelContent)} onPress={onCreateResource}>Create</Button>
         </div>
       </Modal> }
 

@@ -25,7 +25,7 @@ export default function Input({
   value,
 }: Props) {
   return (
-    <div data-role="input-group">
+    <div data-role="input-group" className="w-full">
       {label ? (
         <label className="text-xs text-gray-500 mb-[5px] block">
           {label}
