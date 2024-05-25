@@ -40,7 +40,7 @@ read -p "API_HOST: " API_HOST
 echo """
 What is your HTPASSWD? (result of 'htpasswd -nb admin password')
 Or use default: ${bold}$_TIP_HTTPPASS${normal}
-If you want to use it also remember your ${bold}$password${normal}: ${bold}$_TIP_PASSWORD${normal}
+If you want to use it also remember your ${bold}password${normal}: ${bold}$_TIP_PASSWORD${normal}
 """
 read -p "HTPASSWD: " HTPASSWD
 
