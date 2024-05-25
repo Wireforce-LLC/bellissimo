@@ -11,3 +11,4 @@ test
 node_modules
 .debug
 vite-config.ts.*
+docker.env

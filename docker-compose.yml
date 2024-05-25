@@ -16,13 +16,8 @@ services:
     image: 'beevelop/nginx-basic-auth'
     ports:
       - '1337:80'
-    environment:
-      - PORT=80
-      - FORWARD_HOST=bellissimo-web
-      - FORWARD_PORT=3000
-      ## escape $ with $$ in Docker yml due to variable expansion
-      ## example user/pass generated with htpasswd is foo:bar
-      - HTPASSWD=foo:$$apr1$$odHl5EJN$$KbxMfo86Qdve2FH4owePn.
+    env_file:
+      - docker.env
 
   mongo:
     restart: always
@@ -45,8 +40,8 @@ services:
     command: npm run start
     # ports:
     #   - 3000:3000
-    environment:
-      - NODE_ENV=production
+    env_file:
+      - docker.env
     depends_on:
       - redis
       - mongo
