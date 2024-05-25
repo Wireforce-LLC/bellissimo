@@ -48,4 +48,11 @@ FORWARD_HOST=bellissimo-web
 FORWARD_PORT=3000
 """ >> docker.env
 
+echo """
+export default {
+    API_HOST: '$API_HOST'
+}
+""" >> web/app/production.ts
+
+
 echo "Done!"

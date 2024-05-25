@@ -34,7 +34,6 @@ if [ ! -f target/release/bellissimo ]; then
     /bin/bash ./build.sh    
 fi
 
-
 if ! command -v docker compose &> /dev/null; then
     echo "docker compose is not installed." >&2
     exit 1
