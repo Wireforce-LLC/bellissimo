@@ -42,6 +42,14 @@ If you want to use it also remember your password: $_TIP_PASSWORD
 """
 read -p "HTPASSWD: " HTPASSWD
 
+
+echo """
+Your host is http://$API_HOST or https://$API_HOST?
+If http, type 'http'.
+If https, type 'https':
+"""
+read -p "HTTP/s: " HTTP
+
 rm docker.env
 
 echo """
@@ -54,7 +62,7 @@ FORWARD_PORT=3000
 
 echo """
 export default {
-    API_HOST: '$API_HOST'
+    API_HOST: '$HTTP://$API_HOST'
 }
 """ >> ./web/app/production.ts
 
