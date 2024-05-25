@@ -4,14 +4,13 @@ services:
   bellissimo-nginx-proxy:
     container_name: bellissimo-nginx
     restart: always
+    environment:
+      - HTPASSWD=foo:$apr1$odHl5EJN$KbxMfo86Qdve2FH4owePn.
+      - FORWARD_PORT=3000
+      - FORWARD_HOST=bellissimo-web
     ports:
       - 8080:80
-    environment:
-      - BASIC_AUTH_USERNAME=username
-      - BASIC_AUTH_PASSWORD=password
-      - PROXY_PASS=bellissimo-web
-      - PORT=80
-    image: quay.io/dtan4/nginx-basic-auth-proxy:latest
+    image: beevelop/nginx-basic-auth
 
   mongo:
     restart: always
