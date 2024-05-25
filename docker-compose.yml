@@ -81,6 +81,7 @@ services:
       - MONGO_URI=mongodb://mongo:27017
     command: '/usr/src/app/target/release/bellissimo --mode=collector --disable-api --disable-postbacks'
     depends_on:
+      - bellissimo
       - redis
       - mongo
 
