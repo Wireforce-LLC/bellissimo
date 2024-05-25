@@ -1,6 +1,7 @@
 #!/bin/bash
 
 echo "Starting Bellissimo..."
+git pull
 
 echo "Checking dependencies..."
 if [ "$(uname)" != "Linux" ] && [ "$(uname)" != "Darwin" ]; then
