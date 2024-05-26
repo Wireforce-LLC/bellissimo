@@ -1,6 +1,7 @@
 #[path = "dto/route.rs"] mod route;
 #[path = "dto/filter.rs"] mod filter;
 #[path = "dto/resource.rs"] mod resource;
+#[path = "dto/asn_record.rs"] mod asn_record;
 
 use std::{collections, ptr::{self, null}};
 
@@ -398,6 +399,39 @@ pub fn get_all_resources() -> (Status, (ContentType, String))  {
     .expect("Failed to find resources");
   
   let mut vector: Vec<resource::Resource> = Vec::new();
+
+  while let Some(doc) = result.next() {
+    vector.push(doc.expect("Unable to get document"));
+  }
+
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": vector,
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
+}
+
+
+#[get("/requests/asn/list")]
+pub fn get_all_requests() -> (Status, (ContentType, String))  {
+  let collection: Collection<asn_record::AsnRecord> = get_database(String::from("resources"))
+    .collection("asn_records");
+
+  let mut result = collection
+    .find(doc! {}, None)
+    .expect("Failed to find ASN requests");
+  
+  let mut vector: Vec<asn_record::AsnRecord> = Vec::new();
 
   while let Some(doc) = result.next() {
     vector.push(doc.expect("Unable to get document"));
