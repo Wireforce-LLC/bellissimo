@@ -3,7 +3,7 @@
 #[path = "dto/resource.rs"] mod resource;
 #[path = "dto/asn_record.rs"] mod asn_record;
 
-use mongodb::{bson::doc, sync::Collection};
+use mongodb::{bson::doc, options::FindOptions, sync::Collection};
 use rocket::{form::Form, http::{ContentType, Status}, FromForm};
 use crate::database::get_database;
 
@@ -422,7 +422,14 @@ pub fn get_all_requests() -> (Status, (ContentType, String))  {
     .collection("asn_records");
 
   let mut result = collection
-    .find(doc! {}, None)
+    .find(
+      doc! {},
+      FindOptions::builder()
+        .sort(doc! { "time": -1 })
+        .limit(100)
+        .skip(0)
+        .build()
+    )
     .expect("Failed to find ASN requests");
   
   let mut vector: Vec<asn_record::AsnRecord> = Vec::new();

@@ -517,7 +517,7 @@ pub async fn router(
         is_ua_bot: Some(BOT_DETECTOR.is_bot(user_agent.0)),
         headers: Some(headers)
       }, None)
-      .expect_err("Unable to insert record");
+      .unwrap();
 
   } else {
     collection
@@ -531,7 +531,7 @@ pub async fn router(
         is_ua_bot: Some(BOT_DETECTOR.is_bot(user_agent.0)),
         headers: Some(headers)
       }, None)
-      .expect_err("Unable to insert record");
+      .unwrap();
 
   }
 
