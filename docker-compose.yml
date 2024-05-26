@@ -73,6 +73,25 @@ services:
       - redis
       - mongo
 
+  varnish:
+    image: varnish:stable
+    container_name: varnish
+    volumes:
+      - "./default.vcl:/etc/varnish/default.vcl"
+    ports:
+      - "80:80"
+    tmpfs:
+      - /var/lib/varnish:exec
+    environment:
+      - VARNISH_SIZE=2G  
+    command: "-p default_keep=300"
+    depends_on:
+      - bellissimo-collector
+      - redis
+      - mongo
+      - bellissimo
+      - nginx
+
   bellissimo-collector:
     restart: always
     image: bellissimo-bin
@@ -85,15 +104,13 @@ services:
       - redis
       - mongo
 
-
   nginx:
     restart: always
     image: nginx:latest
     container_name: reverse_proxy
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
-    ports:
-      - "80:80"
-      - "443:443"
+    # ports:
+      # - "443:443"
     depends_on:
       - bellissimo
