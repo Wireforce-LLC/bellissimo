@@ -76,19 +76,16 @@ impl<'r> FromRequest<'r> for XRealIp<'r> {
   type Error = XRealError;
 
   async fn from_request(req: &'r Request<'_>) -> Outcome<Self, XRealError> {
-    fn is_valid(_key: &str) -> bool {true}
+    let ip_header = req.headers()
+      .get_one("cf-connecting-ip")
+      .or_else(|| req.headers().get_one("x-forwarded-for"));
 
-    let headers = req.headers();
-    let ip_header = headers.get_one("Remote-Addr")
-        .or_else(|| headers.get_one("x-real-ip"))
-        .or_else(|| headers.get_one("X-Real-IP"))
-        .or_else(|| headers.get_one("remote-addr"));
-
-    match ip_header {
-      None => Outcome::Success(XRealIp("")),
-      Some(key) if is_valid(key) => Outcome::Success(XRealIp(key)),
-      Some(_) => Outcome::Success(XRealIp("")),
+    if ip_header.is_none() {
+      Outcome::Success(XRealIp(""))
+    } else {
+      Outcome::Success(XRealIp(ip_header.unwrap()))
     }
+    
   }
 }
 
