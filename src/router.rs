@@ -84,7 +84,13 @@ impl<'r> FromRequest<'r> for XRealIp<'r> {
   async fn from_request(req: &'r Request<'_>) -> Outcome<Self, XRealError> {
     fn is_valid(_key: &str) -> bool {true}
 
-    match req.headers().get_one("x-real-ip") {
+    let headers = req.headers();
+    let ip_header = headers.get_one("Remote-Addr")
+        .or_else(|| headers.get_one("x-real-ip"))
+        .or_else(|| headers.get_one("X-Real-IP"))
+        .or_else(|| headers.get_one("remote-addr"));
+
+    match ip_header {
       None => Outcome::Success(XRealIp("")),
       Some(key) if is_valid(key) => Outcome::Success(XRealIp(key)),
       Some(_) => Outcome::Success(XRealIp("")),
