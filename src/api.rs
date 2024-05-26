@@ -3,12 +3,9 @@
 #[path = "dto/resource.rs"] mod resource;
 #[path = "dto/asn_record.rs"] mod asn_record;
 
-use std::{collections, ptr::{self, null}};
-
 use mongodb::{bson::doc, sync::Collection};
-use rocket::{form::Form, http::{ext::IntoCollection, ContentType, Status}, FromForm};
-
-use crate::{database::{self, get_database}, json_router::json_router};
+use rocket::{form::Form, http::{ContentType, Status}, FromForm};
+use crate::database::get_database;
 
 #[derive(FromForm)]
 pub struct CreateRoute {
@@ -41,8 +38,6 @@ pub struct CreateResource {
   pub file_path: Option<String>,
   pub raw_data: Option<String>
 }
-
-
 
 #[post("/route/create", data = "<input>")]
 pub fn create_new_route(input: Form<CreateRoute>) -> (Status, (ContentType, String)) {

@@ -1,6 +1,7 @@
+#![allow(dead_code)]
+
 #[macro_use] extern crate rocket;
 #[macro_use] extern crate lazy_static;
-#[macro_use] extern crate fake_useragent;
 
 #[path = "dto/json_router.rs"] mod json_router;
 #[path = "dto/mode.rs"] mod mode;

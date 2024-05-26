@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -9,4 +11,5 @@ pub struct AsnRecord {
     pub asn_description: Option<String>,
     pub asn_country_code: Option<String>,
     pub is_ua_bot: Option<bool>,
+    pub headers: Option<HashMap<String, String>>,
 }

@@ -508,13 +508,14 @@ pub async fn router(
   if let Some(result_record) = asn_record {
     collection
       .insert_one(asn_record::AsnRecord {
-        asn_name: Option::from(result_record.owner.clone()),
-        asn_country_code: Option::from(result_record.country.clone()),
-        asn_description: Option::from(String::new()),
+        asn_name: Some(result_record.owner.clone()),
+        asn_country_code: Some(result_record.country.clone()),
+        asn_description: Some(String::new()),
         request_id: request_id,
         time: now.timestamp_micros(),
-        asn_number: Option::from(u32::from(result_record.as_number)),
-        is_ua_bot: Option::from(BOT_DETECTOR.is_bot(user_agent.0))
+        asn_number: Some(u32::from(result_record.as_number)),
+        is_ua_bot: Some(BOT_DETECTOR.is_bot(user_agent.0)),
+        headers: Some(headers)
       }, None)
       .expect_err("Unable to insert record");
 
@@ -527,7 +528,8 @@ pub async fn router(
         request_id: request_id,
         time: now.timestamp_micros(),
         asn_number: None,
-        is_ua_bot: Option::from(BOT_DETECTOR.is_bot(user_agent.0))
+        is_ua_bot: Some(BOT_DETECTOR.is_bot(user_agent.0)),
+        headers: Some(headers)
       }, None)
       .expect_err("Unable to insert record");
 
