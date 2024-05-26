@@ -9,14 +9,17 @@ use isbot::Bots;
 use mongodb::options::{FindOneOptions};
 use nanoid::nanoid;
 use redis::{Client, Commands, Connection, FromRedisValue};
-use rocket::http::{ContentType, Header, Status};
+use rocket::http::{ContentType, Header, HeaderMap, Status};
+use rocket::outcome::Outcome as Out;
 use rocket::request::{FromRequest, Outcome};
 use rocket::response::{self, Redirect, Responder};
 use rocket::{Request};
+use serde::Serialize;
 use serde_json::json;
 use tera::{Context, Tera};
 use std::any::{self, Any};
 use std::collections::{HashMap, HashSet};
+use std::hash::Hash;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::{fs, time};
@@ -27,7 +30,6 @@ use std::fs::File;
 use asn_db::{Db};
 use chrono::prelude::*;
 use handlebars::Handlebars;
-
 
 use self::database::get_database;
 use self::resource::Resource;
@@ -68,14 +70,6 @@ enum XRealError {}
 #[derive(Debug)]
 enum UserAgentError {}
 
-lazy_static! {
-  static ref HANDLEBARS: Arc<Handlebars<'static>> = {
-      let mut handlebars = Handlebars::new();
-      // Настройки Handlebars, если необходимо
-      Arc::new(handlebars)
-  };
-}
-
 
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for XRealIp<'r> {
@@ -97,6 +91,21 @@ impl<'r> FromRequest<'r> for XRealIp<'r> {
     }
   }
 }
+
+#[derive(Debug)]
+struct MyHeaderMap<'r>(&'r HeaderMap<'r>);
+
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for MyHeaderMap<'r> {
+    type Error = XRealError;
+
+    async fn from_request(req: &'r Request<'_>) -> Outcome<Self, XRealError> {
+        let headers = req.headers();
+
+        Outcome::Success(MyHeaderMap(headers))
+    }
+}
+
 
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for UserAgent<'r> {
@@ -414,9 +423,14 @@ async fn render_resource(
 pub async fn router(
   x_real_ip: XRealIp<'_>,
   user_agent: UserAgent<'_>,  
-  router: PathBuf
+  router: PathBuf,
+  headers: MyHeaderMap<'_>
 ) -> (Status, (ContentType, String)) {  
   let bots = Bots::default();
+
+  for value in headers.0.iter() {
+    println!("{}: {}", value.name, value.value)
+  }
   // let geoip = geoip2::Reader:
 
   let request_id = nanoid!();
