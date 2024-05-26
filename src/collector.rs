@@ -23,6 +23,10 @@ pub async fn main() {
       let document_result = &document.unwrap();
       
       if &document_result.driver == "proxy::html" {
+        if document_result.raw_content.is_none() {
+          continue;
+        }
+        
         let prefetch = document_result
           .raw_content
           .clone()
