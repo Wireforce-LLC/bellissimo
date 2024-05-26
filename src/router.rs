@@ -5,6 +5,7 @@
 #[path = "database.rs"] mod database;
 #[path = "dto/json_router.rs"] mod json_router;
 
+use clap::builder::Str;
 use isbot::Bots;
 use mongodb::options::{FindOneOptions};
 use nanoid::nanoid;
@@ -36,17 +37,24 @@ use self::resource::Resource;
 use std::env;
 
 lazy_static! {
+  // Define a static reference to a thread-safe mutex containing a tuple of two strings
   pub static ref REQUEST_CACHE_STORAGE: Arc<Mutex<(String, String)>> = Arc::new(Mutex::new((String::new(), String::new())));
-  
+
+  // Define a static reference to a thread-safe Arc with a default instance of Bots struct
+  pub static ref BOT_DETECTOR: Arc<Bots> = Arc::new(Bots::default());
+   
+  // Define a static reference to a thread-safe Arc with a Db instance created from a TSV file
   pub static ref DATABASE: Arc<Db> = Arc::new(
     Db::form_tsv(BufReader::new(File::open("ip2asn-v4.tsv").unwrap())).unwrap()
   );
 
+  // Define a static reference to a mutex containing a Redis client
   pub static ref REDIS_CLIENT: Mutex<Client> = Mutex::new(
     redis::Client::open(env::var("REDIS_URI").unwrap_or("redis://127.0.0.1/".to_string()))
       .expect("Unable to create redis client")
   );
 
+  // Define a static reference to a mutex containing a Redis connection
   pub static ref REDIS: Mutex<Connection> = Mutex::new(
     redis::Client::open(env::var("REDIS_URI").unwrap_or("redis://127.0.0.1/".to_string()))
       .expect("Unable to create redis client")
@@ -421,42 +429,9 @@ pub async fn router(
   x_real_ip: XRealIp<'_>,
   user_agent: UserAgent<'_>,  
   router: PathBuf,
-  headers: MyHeaderMap<'_>
+  raw_headers: MyHeaderMap<'_>
 ) -> (Status, (ContentType, String)) {  
   let bots = Bots::default();
-
-  for value in headers.0.iter() {
-    println!("{}: {}", value.name, value.value)
-  }
-  // let geoip = geoip2::Reader:
-
-  let request_id = nanoid!();
-  let asn_record = DATABASE
-    .as_ref()
-    .lookup(x_real_ip.0.parse().unwrap_or("0.0.0.0".parse().unwrap()));
-
-  // Redirect::temporary(raw_data);
-
-  if x_real_ip.0 != "" {
-    if !asn_record.is_none() {
-      let now = Utc::now();
-
-      let collection: Collection<asn_record::AsnRecord> = get_database(String::from("requests"))
-        .collection("asn_records");
-
-      let result_record = asn_record.unwrap().clone();
-
-      collection.insert_one(asn_record::AsnRecord {
-        asn_name: String::from(result_record.owner),
-        asn_country_code: String::from(result_record.country),
-        asn_description: String::new(),
-        request_id: request_id.clone(),
-        time: now.timestamp_micros(),
-        asn_number: u32::from(result_record.as_number)
-      }, None)
-        .unwrap();
-    }
-  }
 
   let path = Path::new("/").join(router);
   let path_as_string = path.into_os_string().into_string().expect("Unable to convert path to string");
@@ -483,22 +458,12 @@ pub async fn router(
 
   let result_route = find_result.unwrap();
 
-  // if result_route.resource_id.is_none() {
-  //   return (
-  //     Status::NoContent,
-  //     (
-  //       ContentType::Plain,
-  //       "".to_string()
-  //     )
-  //   );
-  // }
-
   if result_route.filter_id.is_none() {
     return (
-      Status::NoContent,
+      Status::InternalServerError,
       (
-        ContentType::Plain,
-        "".to_string()
+        ContentType::HTML,
+        include_str!("../containers/content_error.html").to_string()
       )
     );
   }
@@ -518,6 +483,55 @@ pub async fn router(
 
   meta.insert("ip".to_string(), x_real_ip.0.to_string());
   meta.insert("user_agent".to_string(), user_agent.0.to_string());
+
+  let request_id = nanoid!();
+  let asn_record = DATABASE
+    .as_ref()
+    .lookup(x_real_ip.0.parse().unwrap_or("0.0.0.0".parse().unwrap()));
+
+  // Redirect::temporary(raw_data);
+
+  let now = Utc::now();
+
+  let collection: Collection<asn_record::AsnRecord> = get_database(String::from("requests"))
+    .collection("asn_records");
+
+  let mut headers: HashMap<String, String> = HashMap::new();
+
+  for raw_header in raw_headers.0.iter() {
+    headers.insert(
+      raw_header.name().to_string(), 
+      raw_header.value().to_string()
+    );
+  }
+  
+  if let Some(result_record) = asn_record {
+    collection
+      .insert_one(asn_record::AsnRecord {
+        asn_name: Option::from(result_record.owner.clone()),
+        asn_country_code: Option::from(result_record.country.clone()),
+        asn_description: Option::from(String::new()),
+        request_id: request_id,
+        time: now.timestamp_micros(),
+        asn_number: Option::from(u32::from(result_record.as_number)),
+        is_ua_bot: Option::from(BOT_DETECTOR.is_bot(user_agent.0))
+      }, None)
+      .expect_err("Unable to insert record");
+
+  } else {
+    collection
+      .insert_one(asn_record::AsnRecord {
+        asn_name: None,
+        asn_country_code: None,
+        asn_description: None,
+        request_id: request_id,
+        time: now.timestamp_micros(),
+        asn_number: None,
+        is_ua_bot: Option::from(BOT_DETECTOR.is_bot(user_agent.0))
+      }, None)
+      .expect_err("Unable to insert record");
+
+  }
 
   for condition in filter.conditions {
     let resource = require_resource(condition.resource_id.expect("Unable to get resource").as_str());

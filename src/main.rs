@@ -139,7 +139,21 @@ async fn launch_rocket(args: &Args) {
 async fn rocket_main(args: &Args) {
   println!("Server mode");
 
-  database::configure_database();
+  get_database(String::from("routes"))
+    .create_collection("routes", None)
+    .expect("Unable to create collection");
+
+  get_database(String::from("resources"))
+    .create_collection("resources", None)
+    .expect("Unable to create collection");
+
+  get_database(String::from("requests"))
+    .create_collection("requests", None)
+    .expect("Unable to create collection");
+
+  get_database(String::from("requests"))
+    .create_collection("asn_records", None)
+    .expect("Unable to create collection");
 
   launch_rocket(args).await;
 }
