@@ -37,7 +37,6 @@ services:
     restart: always
     container_name: mongo
     image: mongo:latest
-    command: --smallfiles 
     volumes:
       - ./docker/mongodb-data:/data/db
 
