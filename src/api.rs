@@ -416,10 +416,9 @@ pub fn get_all_resources() -> (Status, (ContentType, String))  {
   );
 }
 
-
 #[get("/requests/asn/list")]
 pub fn get_all_requests() -> (Status, (ContentType, String))  {
-  let collection: Collection<asn_record::AsnRecord> = get_database(String::from("resources"))
+  let collection: Collection<asn_record::AsnRecord> = get_database(String::from("requests"))
     .collection("asn_records");
 
   let mut result = collection
