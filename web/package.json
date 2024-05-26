@@ -22,6 +22,7 @@
     "flat": "^6.0.1",
     "flatten-anything": "^3.0.5",
     "hash-it": "^6.0.0",
+    "humanize-string": "^3.0.0",
     "install": "^0.13.0",
     "isbot": "^4.1.0",
     "jwt-decode": "^4.0.0",
@@ -36,7 +37,6 @@
     "react-syntax-highlighter": "^15.5.0",
     "zod": "^3.22.4",
     "zor": "^1.1.5"
-    
   },
   "devDependencies": {
     "@remix-run/dev": "^2.8.1",

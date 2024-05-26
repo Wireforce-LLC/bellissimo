@@ -40,6 +40,7 @@ export enum LeftActiveBarItem {
   ROUTES = "routes",
   FILTERS = "filters",
   RESOURCES = "resources",
+  ASN_RECORDS = "asn-records",
 
   // OLD
   THREADS = "threads",

@@ -267,6 +267,7 @@ export default {
       routes: "Routes",
       filters: "Filters",
       resources: "Resources",
+      asnRecords: "Requests",
 
       createThread: "Create new thread",
       events: "Events",
@@ -281,6 +282,7 @@ export default {
       routes: "Routes",
       filters: "Filters",
       resources: "Resources",
+      asnRecords: "Requests",
 
       threads: "Threads",
       events: "Events",

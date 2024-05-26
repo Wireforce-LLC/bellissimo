@@ -10,11 +10,14 @@ export enum ApiPathEnum {
   CreateRoutes = "/api/route/create",
   CreateResources = "/api/resource/create",
   CreateFilters = "/api/filter/create",
+
+  GetAllASNRecords = "/api/requests/asn/list"
 }
 
 // API endpoint host
 const API_ENDPOINT = process.env.NODE_ENV === 'development' ?
-  "http://localhost:8000" :
+  "http://94.247.42.124/" :
+  // "http://localhost:8000" :
   production.API_HOST;
 
 /* @deprecated */

@@ -6,7 +6,7 @@ import ErrorString from "./ErrorString"
 
 interface Props {
   readonly headers?: string[]
-  readonly data?: { [key: string]: ReactNode }[]
+  readonly data?: ({ [key: string]: ReactNode } | string | undefined)[] | undefined
 }
 
 export function TableActionButton({ onClick }: { onClick: () => void | any }) {
@@ -17,30 +17,31 @@ export function TableActionButton({ onClick }: { onClick: () => void | any }) {
   </button>
 }
 
-export default function Table({ headers, data }: Props) {
-  const safeValue = useCallback((value) => {
-    console.log(value)
+export default function Table({ headers, data, onSelectedItem }: Props) {
+  const safeValue = useCallback((value: any) => {
     return value
-  }, [])
+  }, []);
 
   return (
     data ? <table className="w-full bg-white">
       <thead>
         <tr className="border-b border-gray-100 sticky top-0 bg-white">
-          {(headers || Object.keys((data || [{}])[0])).map(text => (
-            <th scope="col" className="px-3 py-1.5 text-xs text-black text-left font-medium">
-              {text}
-            </th>
-          ))}
+          {
+            headers?.map(text => (
+              <th scope="col" className="px-3 py-1.5 text-xs text-black text-left font-medium">
+                {text}
+              </th>
+            ))
+          }
         </tr>
       </thead>
 
       <tbody>
         {
-          _.isArray(data) && data.map(item => (
+          _.isArray(data) && data.map((item, index) => (
             <tr className="border-b z-0 border-gray-100 cursor-pointer hover:bg-gray-100 hover:bg-opacity-25">
               {
-                Object.values(item).map(value => (
+                Object.values(item || []).map(value => (
                   value ? <td className="px-3 py-1.5 text-xs font-normal">{safeValue(value)}</td> : <td className="px-3 py-1.5 text-xs text-gray-400 text-opacity-75">
                     {string('const.nonValue')}
                   </td>
