@@ -1,0 +1,8 @@
+[
+    {
+      "_id": "local-wordpress",
+      "name": "WordPress",
+      "filter_id": "any",
+      "conditions": []
+    }
+]
