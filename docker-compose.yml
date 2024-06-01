@@ -38,7 +38,7 @@ services:
     container_name: mongo
     image: mongo:latest
     volumes:
-      - ./docker/mongodb-data:/data/db
+      - ./docker/mongo-data:/data/db
 
   redis:
     restart: always
