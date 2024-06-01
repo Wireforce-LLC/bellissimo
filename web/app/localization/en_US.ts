@@ -4,12 +4,15 @@ export default {
   const: {
     nonValue: "No value",
     loadingData: "Getting content",
+    loadingDataTime: "Actualy it takes a few seconds",
+
     zoneName: "Zone",
     userId: "UserID",
   },
 
   meta: {
     title: {
+      filters: "Filters",
       login: `Welcome back in ${APP_NAME}`,
       createThread: "Create new thread",
       selectZone: "Select zone",
@@ -268,6 +271,7 @@ export default {
       filters: "Filters",
       resources: "Resources",
       asnRecords: "Requests",
+      postbacks: "Postbacks",
 
       createThread: "Create new thread",
       events: "Events",
@@ -283,6 +287,7 @@ export default {
       filters: "Filters",
       resources: "Resources",
       asnRecords: "Requests",
+      postbacks: "Postbacks",
 
       threads: "Threads",
       events: "Events",

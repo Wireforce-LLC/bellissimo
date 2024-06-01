@@ -42,7 +42,7 @@ export default function Table({ headers, data, onSelectedItem }: Props) {
             <tr className="border-b z-0 border-gray-100 cursor-pointer hover:bg-gray-100 hover:bg-opacity-25">
               {
                 Object.values(item || []).map(value => (
-                  value ? <td className="px-3 py-1.5 text-xs font-normal">{_.isBoolean(value) ? (value ? "Yes" : "No") : safeValue(value)}</td> : <td className="px-3 py-1.5 text-xs text-gray-400 text-opacity-75">
+                  value ? <td className="px-3 py-1.5 text-xs font-normal">{_.isBoolean(value) ? (value ? "Yes" : "No") : safeValue(value)}</td> : <td className="px-3 py-1.5 text-xs text-[#adb5bd] text-opacity-75">
                     {string('const.nonValue')}
                   </td>
                 ))

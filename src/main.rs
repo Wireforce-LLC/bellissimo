@@ -3,6 +3,7 @@
 #[macro_use] extern crate rocket;
 #[macro_use] extern crate lazy_static;
 
+#[path = "dto/postback_payout_postback.rs"] mod postback_payout_postback;
 #[path = "dto/json_router.rs"] mod json_router;
 #[path = "dto/mode.rs"] mod mode;
 #[path = "args.rs"] mod args;
@@ -17,22 +18,9 @@ use asn_db::Ipv4Addr;
 use chrono::Utc;
 use mongodb::{bson::doc, sync::Collection};
 use rocket::{http::{ContentType, Status}, time::Instant, Config};
-use serde::{Deserialize, Serialize};
 
 use crate::database::get_database;
 
-#[derive(FromForm)]
-#[derive(Serialize, Deserialize, Debug)]
-struct PostbackPayoutPostback {
-  uuid: Option<String>,
-  date: Option<String>,
-  status: Option<String>,
-  ip: Option<String>,
-  amount: Option<u128>,
-  stream: Option<String>,
-  currency: Option<String>,
-  time: Option<i64>
-}
 
 #[get("/robots.txt")]
 fn robots() -> (Status, (ContentType, String)) {
@@ -81,13 +69,12 @@ async fn future_disallow() -> (Status, (ContentType, String)) {
 }
 
 #[get("/postback?<payload..>")]
-async fn postback_get(payload: PostbackPayoutPostback) -> (Status, (ContentType, String)) {
-  println!("{:?}", payload);  
-
-  let collection: Collection<PostbackPayoutPostback> = get_database(String::from("requests")).collection("postbacks");
+async fn postback_get(payload: postback_payout_postback::PostbackPayoutPostback) -> (Status, (ContentType, String)) {
+  let collection: Collection<postback_payout_postback::PostbackPayoutPostback> = get_database(String::from("requests")).collection("postbacks");
   let now = Utc::now();
 
-  let _ = collection.insert_one(PostbackPayoutPostback {
+  
+  let _ = collection.insert_one(postback_payout_postback::PostbackPayoutPostback {
     uuid: payload.uuid,
     date: payload.date,
     status: payload.status,

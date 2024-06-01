@@ -14,7 +14,7 @@ import webConfig, { ApiPathEnum } from "~/web.config";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: string("meta.title.events") }
+    { title: string("meta.title.routes") }
   ];
 };
 

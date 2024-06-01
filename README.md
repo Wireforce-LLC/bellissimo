@@ -1,15 +1,13 @@
-<!-- <img align="left" src="https://user-images.githubusercontent.com/65187002/144930161-2f783401-8d27-4fdf-a2f7-cc0ba32f1f1f.gif" width="21%" style="display:inline;">
-<img align="right" src="https://user-images.githubusercontent.com/65187002/144930161-2f783401-8d27-4fdf-a2f7-cc0ba32f1f1f.gif" width="21%" style="display:inline;"> -->
+# w/bellissimo
 
-<h1 align="center" style="border: none;">
-    Bellissimo
-</h1>
-<h3 align="center" style="margin: 0px; border: none; text-align: center;">
-    Affiliate tracker. Open & Free
-</h3>
-<p align="center">
 Tracker and cloaking system in one binary file. Can use ProxyPass (like Nginx), can render HTML files from templates, respond as JSON, pretend to be a WordPress server
-</p>
+
+![Rust](https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![JS](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)
+
 
 ## Setup Guide
 Get the app running locally in the following way:
@@ -19,7 +17,8 @@ git clone https://t.ly/ZJa4C
 
 cd bellissimo
 
-docker-compose up -d
+/bin/bash build.sh
+/bin/bash start.sh
 ```
 
 ## Usage

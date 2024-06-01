@@ -30,8 +30,8 @@ export default function Modal({ title, isBigModal,children, onClose }: Props) {
         "md:max-w-[70%] min-w-[100px] md:min-w-[300px] lg:min-w-[40%]": !isBigModal
       }
     )}>
-      <div className="p-2 w-full">
-        <div className="w-full flex flex-row justify-between items-center border-b border-b-gray-100 pb-2">
+      <div className="w-full h-[calc(100%-32px)]">
+        <div className="w-full h-[32px] bg-[#f8f9fa] p-2 flex flex-row justify-between items-center border-b border-b-[#dee2e6] pb-2">
           <span className="text-xs font-medium">
             {title}
           </span>
@@ -42,7 +42,7 @@ export default function Modal({ title, isBigModal,children, onClose }: Props) {
           </button>
         </div>
 
-        <div>{children}</div>
+        <div className="p-2 h-full w-full">{children}</div>
       </div>
     </div>
   </div>

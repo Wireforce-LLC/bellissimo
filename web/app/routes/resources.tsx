@@ -1,4 +1,5 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+import classNames from "classnames";
 import _ from "lodash";
 import moment from "moment";
 import { useState, useEffect, useCallback } from "react";
@@ -33,11 +34,11 @@ export default function Resources() {
   const [typeOfContent, setTypeOfContent] = useState<number>(0);
 
   const [availableDrivers] = useState([
-    {name: "JSON", value: "json"},
-    {name: "HTML", value: "html"},
-    {name: "JavaScipt Redirect", value: "redirect::javascript"},
-    {name: "Meta Redirect", value: "redirect::meta"},
-    {name: "HTML Proxy", value: "proxy::html"},
+    {name: "JSON", description: "Return JSON data", value: "json"},
+    {name: "HTML", description: "Render single HTML page", value: "html"},
+    {name: "JavaScipt Redirect", description: "Redirect to other path with JS", value: "redirect::javascript"},
+    {name: "Meta Redirect", description: "Redirect to other path with <meta>", value: "redirect::meta"},
+    {name: "HTML Proxy", description: "Reverse proxy, like target site hosted in this resource", value: "proxy::html"},
   ])
 
   const [modelResourceId, setModelResourceId] = useState<string|undefined>();
@@ -95,14 +96,34 @@ export default function Resources() {
         <div className="space-y-4 pt-2">
           <Input label="Resource ID" value={modelResourceId} onChangeValue={setModelResourceId}/>
       
-          <Select label="Driver" values={availableDrivers} value={modelDriver} onChangeValue={setModelDriver}/>
           
+          <div>
+            <label className="text-xs text-gray-400 mb-[5px] block">
+              Driver
+            </label>
+            
+            <div className="grid grid-cols-3 gap-2">
+              {availableDrivers.map(it => <div onClick={() => setModelDriver(it.value)} className={
+                classNames("w-full cursor-pointer px-2 py-1 border border-gray-200", {
+                  "border-blue-500 bg-blue-50": modelDriver == it.value
+                })
+              }>
+                <h4 className="text-sm font-regular">{it.name}</h4>
+                <p className="text-[10px] w-[80%] text-gray-400">{it.description}</p>
+              </div>)}
+            </div> 
+
+            <span className="text-xs w-[75%] mt-2 text-gray-400 mb-[5px] block">
+            The driver is the method by which the response will be displayed to the user when he visits the page with this resource.
+            </span>
+          </div>
+
           {
-            typeOfContent == 0 && <Input label="File URI" value={modelFileUri} onChangeValue={setModelFileUri}/>
+            typeOfContent == 0 && <Input label="Path to file in /public" value={modelFileUri} onChangeValue={setModelFileUri}/>
           }
           
           {
-            typeOfContent == 1 && <BigInput label="RAW Content" value={modelContent} onChangeValue={setModelContent}/>
+            typeOfContent == 1 && <BigInput label="Regular content" value={modelContent} onChangeValue={setModelContent}/>
           }
 
           <a className="text-blue-500 text-xs" href="#" onClick={() => setTypeOfContent(typeOfContent == 0 ? 1 : 0)}>

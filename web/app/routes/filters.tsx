@@ -31,6 +31,7 @@ export default function Filters() {
   const [data, setData] = useState<any[]|undefined>(undefined);
   const [resources, setResources] = useState<any[]|undefined>(undefined);
 
+  const [step, setStep] = useState(0);
 
   const [plugins] = useState([
     { name: "IP", value: "ip" },
@@ -116,80 +117,101 @@ export default function Filters() {
     >
 
       { isModalCreateVisible && <Modal isBigModal title="Create new filter" onClose={() => setIsModalCreateVisible(false)}>
-        <div className="w-full h-full divide-y divide-gray-100 py-2">
-          <div className="space-y-4 px-2 w-full h-full">
-            <Input label="Filter ID" value={modelFilterId} onChangeValue={setModelFilterId}/>
-            <Input label="Filter name" value={modelFilterName} onChangeValue={setModelFilterName}/>  
+        <div className="relative h-full w-full">
+          {
+            step == 0 && (
+              <div className="space-y-4 w-full h-full">
+                <Input label="Filter ID" value={modelFilterId} onChangeValue={setModelFilterId}/>
+                <Input label="Filter name" value={modelFilterName} onChangeValue={setModelFilterName}/>  
 
-            <Button onPress={() => onCreateFilter()}>Create</Button>
-          </div>
+                <Button onPress={() => {
+                  if (modelFilterId && modelFilterName) {
+                    setStep(1)
+                  }
+                }}>Next</Button>
+              </div>
+            )
+          }
 
-          <div className="divide-y divide-gray-200 px-2 w-full h-full">
-            {!resources && notFoundResources}
+          {
+            step == 1 && (
+              <>
+                <div className="w-full h-full absolute top-0 left-0 right-0 bottom-0 flex flex-col overflow-y-auto pb-32 overflow-x-auto space-y-4">
+                  {!resources && notFoundResources}
 
-            {
-              resources && modelFilters?.map((filter, index) => (
-                <div className="space-y-2 py-4 relative">
-                  <svg onClick={() => { 
-                    if (modelFilters.length > 1) {
-                      const from = _.clone(modelFilters)
-                      delete from[index]
-                      setModelFilters(from) 
-                    } else {
-                      setModelFilters([REPLACATE_FILTER])
-                    }
-                  }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 hover:text-red-800 hover:bg-red-100 cursor-pointer p-1 text-red-500 absolute top-2 right-0">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                  </svg>
+                  {
+                    resources && modelFilters?.map((filter, index) => (
+                      <div className="space-y-2 px-3 pb-3 pt-1 border-[1.2px] border-zinc-300 relative">
+                        <svg onClick={() => { 
+                          if (modelFilters.length > 1) {
+                            const from = _.clone(modelFilters)
+                            delete from[index]
+                            setModelFilters(from) 
+                          } else {
+                            setModelFilters([REPLACATE_FILTER])
+                          }
+                        }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 hover:text-red-800 hover:bg-red-100 cursor-pointer p-1 text-red-500 absolute top-2 right-0">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                        </svg>
 
-                  <Input label="Filter name" value={filter?.name} onChangeValue={(it) => {
-                    const from = _.clone(modelFilters)
-                    from[index].name = it
-                    setModelFilters(from)
-                  }}/>
-                  
-                  <div className="flex flex-row justify-between space-x-2 h-14 w-full">
-                    {/* <div className="h-full flex items-center justify-center">
-                      <h3 className="font-medium block">IF</h3>
-                    </div> */}
+                        <Input label="Filter name" value={filter?.name} onChangeValue={(it) => {
+                          const from = _.clone(modelFilters)
+                          from[index].name = it
+                          setModelFilters(from)
+                        }}/>
+                        
+                        <div className="flex flex-row justify-between space-x-2 h-14 w-full">
+                          {/* <div className="h-full flex items-center justify-center">
+                            <h3 className="font-medium block">IF</h3>
+                          </div> */}
 
-                    <Select label="Plugin" values={plugins} value={filter?.plugin} onChangeValue={(it) => {
-                      const from = _.clone(modelFilters)
-                      from[index].plugin = it
-                      setModelFilters(from)
-                    }}/>  
-                    
-                    <Select label="Operator" values={operators} value={filter?.operator} onChangeValue={(it) => {
-                      const from = _.clone(modelFilters)
-                      from[index].operator = it
-                      setModelFilters(from)
-                    }}/>  
+                          <Select label="Plugin" values={plugins} value={filter?.plugin} onChangeValue={(it) => {
+                            const from = _.clone(modelFilters)
+                            from[index].plugin = it
+                            setModelFilters(from)
+                          }}/>  
+                          
+                          <Select label="Operator" values={operators} value={filter?.operator} onChangeValue={(it) => {
+                            const from = _.clone(modelFilters)
+                            from[index].operator = it
+                            setModelFilters(from)
+                          }}/>  
 
-                    <Input label="Filter value" className="w-full"  value={filter?.value} onChangeValue={(it) => {
-                      const from = _.clone(modelFilters)
-                      from[index].value = it
-                      setModelFilters(from)
-                    }}/>
+                          <Input label="Filter value" className="w-full"  value={filter?.value} onChangeValue={(it) => {
+                            const from = _.clone(modelFilters)
+                            from[index].value = it
+                            setModelFilters(from)
+                          }}/>
 
-                    <Select label="Resource" values={resources?.map((it) => ({name: it?.resource_id, value: it?.resource_id}))}  value={filter?.resourceId} onChangeValue={(it) => {
-                      const from = _.clone(modelFilters)
-                      from[index].resourceId = it
-                      setModelFilters(from)
-                    }}/>
-                  </div>
+                          <Select label="Resource" values={resources?.map((it) => ({name: it?.resource_id, value: it?.resource_id}))}  value={filter?.resourceId} onChangeValue={(it) => {
+                            const from = _.clone(modelFilters)
+                            from[index].resourceId = it
+                            setModelFilters(from)
+                          }}/>
+                        </div>
+                      </div>
+                    ))
+                  }
+
+                  { 
+                    resources &&
+                    <button className="w-full text-[#003049] text-xs font-medium bg-[#ccd5ae] cursor-pointer py-2" onClick={() => {
+                      setModelFilters([...modelFilters!!, REPLACATE_FILTER])
+                    }}>
+                      Add filter
+                    </button> 
+                  } 
                 </div>
-              ))
-            }
-
-            { 
-              resources &&
-              <Button onPress={() => {
-                setModelFilters([...modelFilters!!, REPLACATE_FILTER])
-              }}>
-                Add filter
-              </Button> 
-            } 
-          </div>
+              </>
+            )
+          }
+          {
+            step == 1 && (
+              <div className="bottom-0 absolute left-0 right-0">
+                <Button onPress={() => onCreateFilter()}>Create</Button>
+              </div>
+            )
+          }
         </div>
       </Modal> }
 

@@ -3,6 +3,8 @@
 #[path = "dto/resource.rs"] mod resource;
 #[path = "dto/asn_record.rs"] mod asn_record;
 
+use std::{env, fs};
+
 use mongodb::{bson::doc, options::FindOptions, sync::Collection};
 use rocket::{form::Form, http::{ContentType, Status}, FromForm};
 use crate::database::get_database;
@@ -270,6 +272,22 @@ pub fn create_new_resource(input: Form<CreateResource>) -> (Status, (ContentType
     );
   }
 
+  if input.file_path.is_some() {
+    if fs::read_to_string("../public/*".replace("*", input.file_path.as_ref().unwrap().as_str())).is_err() {
+      return (
+        Status::BadRequest, 
+        (
+          ContentType::JSON,
+          serde_json::json!({
+            "isOk": false,
+            "error": "File path not found",
+            "value": null
+          }).to_string()
+        )
+      );
+    }
+  }
+
   if resource_count != 0 {
     return (
       Status::Conflict, 
@@ -418,6 +436,46 @@ pub fn get_all_resources() -> (Status, (ContentType, String))  {
 
 #[get("/requests/asn/list")]
 pub fn get_all_requests() -> (Status, (ContentType, String))  {
+  let collection: Collection<asn_record::AsnRecord> = get_database(String::from("requests"))
+    .collection("asn_records");
+
+  let mut result = collection
+    .find(
+      doc! {},
+      FindOptions::builder()
+        .sort(doc! { "time": -1 })
+        .limit(100)
+        .skip(0)
+        .build()
+    )
+    .expect("Failed to find ASN requests");
+  
+  let mut vector: Vec<asn_record::AsnRecord> = Vec::new();
+
+  while let Some(doc) = result.next() {
+    vector.push(doc.expect("Unable to get document"));
+  }
+
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": vector,
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
+}
+
+
+#[get("/postback/list")]
+pub fn get_all_postbacks() -> (Status, (ContentType, String))  {
   let collection: Collection<asn_record::AsnRecord> = get_database(String::from("requests"))
     .collection("asn_records");
 

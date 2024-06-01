@@ -7,7 +7,7 @@ import GrayWrapper from "~/components/GrayWrapper";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Paper. Dashboard" },
+    { title: "Bellissimo" },
     {
       name: "description",
       content: "Welcome to Paper Analytics! This is your dashboard",

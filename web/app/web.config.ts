@@ -11,7 +11,8 @@ export enum ApiPathEnum {
   CreateResources = "/api/resource/create",
   CreateFilters = "/api/filter/create",
 
-  GetAllASNRecords = "/api/requests/asn/list"
+  GetAllASNRecords = "/api/requests/asn/list",
+  GetAllPostbacks = "/api/postback/list",
 }
 
 // API endpoint host
