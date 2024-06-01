@@ -2,6 +2,7 @@
 #[path = "dto/filter.rs"] mod filter;
 #[path = "dto/resource.rs"] mod resource;
 #[path = "dto/asn_record.rs"] mod asn_record;
+#[path = "dto/postback_payout_postback.rs"] mod postback_payout_postback;
 
 use std::{env, fs};
 
@@ -476,8 +477,8 @@ pub fn get_all_requests() -> (Status, (ContentType, String))  {
 
 #[get("/postback/list")]
 pub fn get_all_postbacks() -> (Status, (ContentType, String))  {
-  let collection: Collection<asn_record::AsnRecord> = get_database(String::from("requests"))
-    .collection("asn_records");
+  let collection: Collection<postback_payout_postback::PostbackPayoutPostback> = get_database(String::from("requests"))
+    .collection("postbacks");
 
   let mut result = collection
     .find(
@@ -490,7 +491,7 @@ pub fn get_all_postbacks() -> (Status, (ContentType, String))  {
     )
     .expect("Failed to find ASN requests");
   
-  let mut vector: Vec<asn_record::AsnRecord> = Vec::new();
+  let mut vector: Vec<postback_payout_postback::PostbackPayoutPostback> = Vec::new();
 
   while let Some(doc) = result.next() {
     vector.push(doc.expect("Unable to get document"));
