@@ -72,28 +72,7 @@ export default function Postbacks() {
           data && (!_.isEmpty(data) ? _.keys(_.omit(_.first(data), hiddenCols)).map(i => humanizeString(i).replace("Asn", "ASN")) : [])
         } 
         data={
-          data?.map((it, index) => {
-            const row = {
-              ...it,
-    
-              request_id: <span onClick={() => {
-                setModalOverviewData(_.toPairs(flatten(data[index]) || {}))
-              }} className="text-gray-400 hover:underline">{it.request_id}</span>,
-              time: <span className="text-gray-400">{moment(it.time / 1000).format("DD.MM.YYYY HH:mm")}</span>,
-              headers: '',
-              asn_country_code:
-                <span className="flex items-center flex-row gap-2">
-                  <img
-                    className="size-3"
-                    alt="United States"
-                    src={`http://purecatamphetamine.github.io/country-flag-icons/3x2/${it?.asn_country_code?.toUpperCase()}.svg`}/>
-    
-                  <span className="font-medium">{it.asn_country_code.toUpperCase()}</span>
-                </span>
-            }
-
-            return _.omit(row, hiddenCols)
-          })
+          data
         }
       />
 

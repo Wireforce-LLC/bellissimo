@@ -115,6 +115,7 @@ async fn launch_rocket(args: &Args) {
     .mount("/api", if !args.disable_api { routes![api::get_all_resources] } else { routes![future_disallow] })
     
     .mount("/api", if !args.disable_api { routes![api::get_all_requests] } else { routes![future_disallow] })
+    .mount("/api", if !args.disable_api { routes![api::get_all_postbacks] } else { routes![future_disallow] })
     
     .mount("/service", if !args.disable_postbacks { routes![postback_get] } else { routes![future_disallow] });
       
