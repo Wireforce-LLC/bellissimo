@@ -4,11 +4,10 @@
 #[path = "dto/asn_record.rs"] mod asn_record;
 #[path = "dto/postback_payout_postback.rs"] mod postback_payout_postback;
 
-use std::{env, fs};
-
+use std::{fs, path::Path};
 use mongodb::{bson::doc, options::FindOptions, sync::Collection};
 use rocket::{form::Form, http::{ContentType, Status}, FromForm};
-use crate::database::get_database;
+use crate::{database::get_database, p_kit::{get_all_runtime_plugins, PluginRuntimeManifest, PLUGINS_RUNTIME}, resource_kit::Resource};
 
 #[derive(FromForm)]
 pub struct CreateRoute {
@@ -65,7 +64,7 @@ pub fn create_new_route(input: Form<CreateRoute>) -> (Status, (ContentType, Stri
     );
   }
 
-  let collection: Collection<resource::Resource> = get_database(String::from("resources"))
+  let collection: Collection<Resource> = get_database(String::from("resources"))
     .collection("resources");
 
   let reource_count = collection.count_documents(doc! {
@@ -173,7 +172,7 @@ pub fn create_new_filter(input: Form<CreateFilter>) -> (Status, (ContentType, St
     );
   }
 
-  let collection: Collection<resource::Resource> = get_database(String::from("resources"))
+  let collection: Collection<Resource> = get_database(String::from("resources"))
     .collection("resources");
 
   let mut conditions = Vec::new();
@@ -238,7 +237,7 @@ pub fn create_new_filter(input: Form<CreateFilter>) -> (Status, (ContentType, St
 
 #[post("/resource/create", data = "<input>")]
 pub fn create_new_resource(input: Form<CreateResource>) -> (Status, (ContentType, String)) {
-  let collection: Collection<resource::Resource> = get_database(String::from("resources"))
+  let collection: Collection<Resource> = get_database(String::from("resources"))
     .collection("resources");
 
   let resource_count = collection.count_documents(doc! {
@@ -274,7 +273,7 @@ pub fn create_new_resource(input: Form<CreateResource>) -> (Status, (ContentType
   }
 
   if input.file_path.is_some() {
-    if fs::read_to_string("../public/*".replace("*", input.file_path.as_ref().unwrap().as_str())).is_err() {
+    if !Path::new(&"./public/*".replace("*", input.file_path.as_ref().unwrap().as_str())).exists() {
       return (
         Status::BadRequest, 
         (
@@ -303,10 +302,10 @@ pub fn create_new_resource(input: Form<CreateResource>) -> (Status, (ContentType
     );
   }
 
-  // let collection: Collection<resource::Resource> = get_database(String::from("resources"))
+  // let collection: Collection<Resource> = get_database(String::from("resources"))
   // .collection("resources");
 
-  let doc: resource::Resource = resource::Resource {
+  let doc: Resource = Resource {
     driver: input.driver.clone(),
     resource_id: input.resource_id.clone(),
     raw_content: input.raw_data.clone(),
@@ -405,14 +404,14 @@ pub fn get_all_filters() -> (Status, (ContentType, String))  {
 
 #[get("/resource/list")]
 pub fn get_all_resources() -> (Status, (ContentType, String))  {
-  let collection: Collection<resource::Resource> = get_database(String::from("resources"))
+  let collection: Collection<Resource> = get_database(String::from("resources"))
     .collection("resources");
 
   let mut result = collection
     .find(doc! {}, None)
     .expect("Failed to find resources");
   
-  let mut vector: Vec<resource::Resource> = Vec::new();
+  let mut vector: Vec<Resource> = Vec::new();
 
   while let Some(doc) = result.next() {
     vector.push(doc.expect("Unable to get document"));
@@ -434,6 +433,42 @@ pub fn get_all_resources() -> (Status, (ContentType, String))  {
     )
   );
 }
+
+#[get("/resource/driver/list")]
+pub fn get_all_drivers_for_resources() -> (Status, (ContentType, String))  {
+  let mut vector = vec![
+    "html",
+    "json",
+    "proxy::html",
+    "redirect::meta",
+    "redirect::javascript",
+  ];
+
+  let plugins = get_all_runtime_plugins();
+
+  for plugin in plugins.iter() {
+    let name = &plugin.name;
+    
+    vector.push(name.as_str());
+  }
+
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": vector,
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
+}
+
 
 #[get("/requests/asn/list")]
 pub fn get_all_requests() -> (Status, (ContentType, String))  {

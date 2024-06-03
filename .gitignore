@@ -16,3 +16,5 @@ docker.env
 web/app/production.ts
 .mongod
 public/
+plugins/
+plugins.toml

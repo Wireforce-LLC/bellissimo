@@ -1,0 +1,38 @@
+# Bellissimo configurations
+
+http_server_port = 8000 # port
+http_server_address = "0.0.0.0" # host or ip
+http_workers = 0 # set to 0 to auto detect number of cpus
+http_ident = "Nginx"
+http_keep_alive = 10
+
+http_server_serve_path = "./public" # path with static files
+# path (for serve (like http://{http_server_address}/{http_server_serve_uri_path}))
+# with static files
+http_server_serve_uri_path = "/static" 
+http_base_route_uri_path = "/"
+http_api_uri_path = "/api"
+
+is_http_future_main_router = true
+is_http_future_api = true
+is_http_future_robots_txt = true
+is_http_future_postbacks = true
+is_http_future_static_serve = true
+is_http_future_ping = true
+
+not_found_message = "Page not found"
+
+driver_proxy_ua_enabled = true
+driver_proxy_referer_enabled = false
+driver_proxy_origin_enabled = false
+
+is_allow_debug_throw = true
+
+is_plugins_enabled = true
+
+dir_plugins = "./plugins"
+
+v8_init_heap_size = 1000000
+v8_max_heap_size = 5000000
+
+stdout_warning = true

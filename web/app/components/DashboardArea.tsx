@@ -22,7 +22,7 @@ export function View({ children }: { children: ReactNode }) {
 
 interface Props {
   readonly nested: (DashboardNestedComponentInterface | undefined)[];
-  readonly menuEnabled: boolean
+  readonly menuEnabled: boolean;
 }
 
 export default function DashboardArea({ menuEnabled, nested }: Props) {
@@ -31,7 +31,7 @@ export default function DashboardArea({ menuEnabled, nested }: Props) {
       <div className="md:px-0 h-full">
         <div className="flex flex-col h-full md:flex-row">
           {menuEnabled && (
-            <div className="flex-shrink-0 min-w-full md:h-full md:min-w-48 md:border-r md:border-r-gray-100 bg-white">
+            <div className="flex-shrink-0 min-w-full md:h-full md:min-w-48 md:border-r md:border-r-zinc-200 bg-white">
               {_.find(nested, (item) => item?.name == "Menu")?.component}
             </div>
           )}

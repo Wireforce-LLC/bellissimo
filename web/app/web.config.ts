@@ -13,12 +13,12 @@ export enum ApiPathEnum {
 
   GetAllASNRecords = "/api/requests/asn/list",
   GetAllPostbacks = "/api/postback/list",
+  GetAllResourceDrivers = "/api/resource/driver/list",
 }
 
 // API endpoint host
 const API_ENDPOINT = process.env.NODE_ENV === 'development' ?
-  "http://94.247.42.124/" :
-  // "http://localhost:8000" :
+  "http://localhost:8000" :
   production.API_HOST;
 
 /* @deprecated */

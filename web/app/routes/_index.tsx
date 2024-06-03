@@ -1,4 +1,8 @@
-import { redirect, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import {
+  redirect,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
 import DashboardLayout, { LeftActiveBarItem } from "~/layouts/DashboardLayout";
 import _ from "lodash";
 import SuccessActivity from "~/components/SuccessActivity";

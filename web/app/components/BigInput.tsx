@@ -22,9 +22,7 @@ export default function BigInput({
   return (
     <div data-role="input-group">
       {label ? (
-        <label className="text-xs text-gray-500 mb-[5px] block">
-          {label}
-        </label>
+        <label className="text-xs text-gray-500 mb-[5px] block">{label}</label>
       ) : undefined}
 
       <textarea
