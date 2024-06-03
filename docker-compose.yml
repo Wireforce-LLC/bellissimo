@@ -15,6 +15,7 @@ services:
   ## import db
   mongo_seed:
     image: mongo:latest
+    container_name: import-db
     depends_on:
       - mongo
     volumes:
@@ -26,6 +27,7 @@ services:
 
   ## WebAuth 
   bellissimo-web-auth:
+    container_name: bell-web-guard
     image: 'beevelop/nginx-basic-auth'
     ports:
       - '1337:80'
@@ -44,6 +46,7 @@ services:
       - ./docker/mongo-data:/data/db
 
   redis:
+    container_name: redis
     restart: always
     image: redis:latest
 
@@ -66,6 +69,13 @@ services:
   bellissimo:
     restart: always
     image: bellissimo-bin
+    container_name: bell
+    volumes:
+      - ./plugins.toml:/usr/src/app/target/release/plugins.toml:ro
+      - ./plugins:/usr/src/app/target/release/plugins
+      - ./public:/usr/src/app/target/release/public
+      
+    
     build:
       context: .
       dockerfile: Dockerfile
@@ -96,6 +106,7 @@ services:
       - nginx
 
   bellissimo-collector:
+    container_name: bell-bg
     restart: always
     image: bellissimo-bin
     environment:
