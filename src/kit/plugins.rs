@@ -1,8 +1,8 @@
-use std::{collections::HashMap, fs, ops::Deref, path::Path, sync::{Arc, Mutex, Once}, vec};
+use std::{collections::HashMap, fs, path::Path, sync::{Mutex, Once}, vec};
 use colored::Colorize;
 use v8::CreateParams;
 use crate::config::CONFIG;
-use toml::{Table, Value};
+use toml::{Table};
 
 static INIT: Once = Once::new();
 

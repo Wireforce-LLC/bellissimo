@@ -1,7 +1,7 @@
 #[path = "../database.rs"]
 mod database;
 use serde::{Deserialize, Serialize};
-use mongodb::{bson::doc, options::FindOneOptions, sync::Collection};
+use mongodb::{bson::doc, sync::Collection};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Resource {

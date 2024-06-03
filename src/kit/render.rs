@@ -1,6 +1,5 @@
 
 use crate::config::CONFIG;
-use crate::dto_factory::resource;
 use crate::p_kit::{self, get_all_runtime_plugins};
 use crate::resource_kit::Resource;
 
@@ -11,7 +10,6 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use std::sync::Mutex;
-use v8;
 
 lazy_static! {
   pub static ref RENDER_METHODS: Mutex<HashMap<String, fn(Resource, HashMap<String, String>) -> (Status, (ContentType, String))>> = Mutex::new(HashMap::new());
@@ -185,7 +183,7 @@ fn default_method_html(resource: Resource, _meta: HashMap<String, String>) -> (S
   );
 }
 
-fn default_method_proxy_html(resource: Resource, meta: HashMap<String, String>) -> (Status, (ContentType, String)) {
+fn default_method_proxy_html(_resource: Resource, _meta: HashMap<String, String>) -> (Status, (ContentType, String)) {
   return (
     Status::Ok,
     (

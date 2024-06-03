@@ -1,6 +1,6 @@
 <img src="https://i.ibb.co/KKs27vd/icon.png" align="right" width="100" height="100">
 
-<h1>w/bellissimo<br/><br/><br/></h1>
+<h1>w/bellissimo<br/><br/></h1>
 
 **Tracker** and **cloaking system** in one tool. Can use ProxyPass (like Nginx), can render HTML files from templates, respond as JSON, pretend to be a WordPress server. Have Web UI and API.
 

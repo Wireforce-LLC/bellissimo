@@ -1,5 +1,4 @@
 #![allow(dead_code)]
-#![feature(addr_parse_ascii)]
 
 #[macro_use] extern crate rocket;
 #[macro_use] extern crate lazy_static;
@@ -34,7 +33,7 @@ use rocket::{config::Ident, data::Limits, fs::{FileServer, Options}, http::{Cont
 use background_service::register_background_service;
 use crate::database::get_database;
 use args::parse_launched_mode;
-use v8;
+
 
 use dto_factory::{mode::StartupMode, postback_payout_postback::PostbackPayoutPostback};
 
@@ -107,18 +106,17 @@ async fn register_routes_and_attach_server() {
   let http_ident = CONFIG["http_ident"].as_str().unwrap();
   let http_keep_alive = CONFIG["http_keep_alive"].as_integer().unwrap() as u32;
 
-  let port = CONFIG["http_server_port"]
+  let port: u16 = CONFIG["http_server_port"]
     .as_integer()
     .unwrap() as u16;
 
-  let host = CONFIG["http_server_address"]
+  let host: &str = CONFIG["http_server_address"]
     .as_str()
-    .unwrap()
-    .as_bytes();
+    .unwrap();
   
-  let address = IpAddr::parse_ascii(host).unwrap();
+  let address: IpAddr = host.parse::<IpAddr>().unwrap();
 
-  let server_path = CONFIG["http_server_serve_path"].as_str().unwrap();
+  let server_path: &str = CONFIG["http_server_serve_path"].as_str().unwrap();
   
   // Configure Rocket
   let config = Config {
