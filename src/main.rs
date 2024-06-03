@@ -41,7 +41,7 @@ use dto_factory::{mode::StartupMode, postback_payout_postback::PostbackPayoutPos
 // Configure Rocket
 #[get("/robots.txt")]
 fn robots() -> (Status, (ContentType, String)) {
-  let robots = include_str!("../robots.txt");
+  let robots = include_str!("../containers/robots.txt");
   return (
     Status::Ok,
     (

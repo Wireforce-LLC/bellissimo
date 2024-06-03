@@ -1,19 +1,21 @@
-# w/bellissimo
+<img src="https://i.ibb.co/KKs27vd/icon.png" align="right" width="100" height="100">
 
-Tracker and cloaking system in one binary file. Can use ProxyPass (like Nginx), can render HTML files from templates, respond as JSON, pretend to be a WordPress server
+<h1>w/bellissimo<br/><br/><br/></h1>
+
+**Tracker** and **cloaking system** in one tool. Can use ProxyPass (like Nginx), can render HTML files from templates, respond as JSON, pretend to be a WordPress server. Have Web UI and API.
+
+**Bellissimo** is pronounced (`bɛllisˈsiːmo`) or Bell, which is an abbreviation
 
 ![Rust](https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![JS](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 ![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)
-
 
 ## Setup Guide
 Get the app running locally in the following way:
 
 ```bash
-git clone https://t.ly/ZJa4C
+git clone https://t.ly/ZJa4C bellissimo
 
 cd bellissimo
 
@@ -22,4 +24,15 @@ cd bellissimo
 ```
 
 ## Usage
-Bellissimo is just like Linux, you have a kernel and that's all Wireforce supplies you with in the Bellissimo solution. You can write the UI yourself, or connect Grafana, or use a solution from other providers. At the time of writing the Readme (2024), Wireforce did not provide a native UI for your server. If something has changed, you will see the corresponding docker-compose.yml. Our task is to make a very fast, universal, lightweight (in size) tracker for affiliate marketers, which will combine traffic filtering functions
+Bellissimo is just like Linux, you have a kernel and that's all Wireforce supplies you with in the Bellissimo solution. . Our task is to make a very fast, universal, lightweight (in size) tracker for affiliate marketers, which will combine traffic filtering functions
+
+
+## Basic configuration
+All _Bell_ settings are stored in the see [config.toml](./config.toml) file. Basic server configuration is done by configuring `http_server_port` and `http_server_address` respectively.
+
+```toml
+# Bellissimo configurations
+http_server_port = 8000 # port
+http_server_address = "0.0.0.0" # host or ip
+```
+

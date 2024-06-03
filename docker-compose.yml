@@ -11,7 +11,8 @@ services:
   #   ports:
   #     - 1337:80
   #   image: beevelop/nginx-basic-auth
-
+  
+  ## import db
   mongo_seed:
     image: mongo:latest
     depends_on:
@@ -23,6 +24,7 @@ services:
       - ./docker/mongodb:/data
     command: /import_db.sh
 
+  ## WebAuth 
   bellissimo-web-auth:
     image: 'beevelop/nginx-basic-auth'
     ports:
@@ -33,6 +35,7 @@ services:
       ## example user/pass generated with htpasswd is foo:bar
       # - HTPASSWD=foo:$$apr1$$odHl5EJN$$KbxMfo86Qdve2FH4owePn.
 
+  ## Mongo database
   mongo:
     restart: always
     container_name: mongo
@@ -98,7 +101,7 @@ services:
     environment:
       - REDIS_URI=redis://redis/
       - MONGO_URI=mongodb://mongo:27017
-    command: '/usr/src/app/target/release/bellissimo --mode=collector --disable-api --disable-postbacks'
+    command: '/usr/src/app/target/release/bellissimo --mode=background'
     depends_on:
       - bellissimo
       - redis
