@@ -403,10 +403,6 @@ pub fn register_default_filter_plugins() {
     }
   );
 
-      true
-    }
-  );
-
   for plugin in get_all_runtime_plugins() {
     if &plugin.attach_at == "plugin_filter" && &plugin.engine == "v8" {
       register_plugin(
