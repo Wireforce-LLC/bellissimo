@@ -23,6 +23,7 @@ use std::env;
 use serde::{Deserialize, Serialize};
 
 use crate::config::CONFIG;
+use crate::not_found;
 use crate::p_kit::{self, get_all_runtime_plugins};
 use crate::{config, rdr_kit, resource_kit, database::get_database};
 
@@ -448,13 +449,7 @@ pub async fn router(
     .or(None);
 
   if find_result.is_none() {
-    return (
-      Status::NotFound,
-      (
-        ContentType::Plain,
-        config::CONFIG["not_found_message"].to_string(),
-      ),
-    );
+    return not_found();
   }
 
   let result_route = find_result.unwrap();
@@ -601,11 +596,5 @@ pub async fn router(
       return rdr_kit::render_resource_for_http(resource, meta).await;
   }
 
-  return (
-    Status::NotFound,
-    (
-      ContentType::Plain,
-      config::CONFIG["not_found_message"].as_str().unwrap().to_string(),
-    ),
-  );
+  return not_found()
 }

@@ -53,13 +53,12 @@ fn robots() -> (Status, (ContentType, String)) {
 
 // Configure not found
 #[get("/")]
-fn not_found() -> (Status, (ContentType, String)) {
-  
+pub fn not_found() -> (Status, (ContentType, String)) {
   return (
     Status::NotFound,
     (
-      ContentType::Plain,
-      config::CONFIG["not_found_message"].as_str().unwrap().to_string()
+      ContentType::HTML,
+      include_str!("../containers/404.html").to_string()
     )
   )
 }
@@ -172,10 +171,15 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api::create_new_route])
       .mount(http_api_uri_path, routes![api::create_new_filter])
       .mount(http_api_uri_path, routes![api::create_new_resource])
+
+      .mount(http_api_uri_path, routes![api::delete_resource_by_id])
+      .mount(http_api_uri_path, routes![api::delete_filter_by_id])
       
       .mount(http_api_uri_path, routes![api::get_all_routes])
+      .mount(http_api_uri_path, routes![api::get_filter_by_id])
       .mount(http_api_uri_path, routes![api::get_all_filters])
       .mount(http_api_uri_path, routes![api::get_all_resources])
+      .mount(http_api_uri_path, routes![api::get_resource_by_id])
       .mount(http_api_uri_path, routes![api::get_all_requests])
       .mount(http_api_uri_path, routes![api::get_all_postbacks])
       .mount(http_api_uri_path, routes![api::get_all_plugins_for_filters])

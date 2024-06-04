@@ -3,7 +3,7 @@
 #[path = "dto/asn_record.rs"] mod asn_record;
 #[path = "dto/postback_payout_postback.rs"] mod postback_payout_postback;
 
-use std::{path::Path};
+use std::path::{Path, PathBuf};
 use mongodb::{bson::doc, options::FindOptions, sync::Collection};
 use rocket::{form::Form, http::{ContentType, Status}, FromForm};
 use crate::{database::get_database, p_kit::{get_all_runtime_plugins, PluginRuntimeManifest, PLUGINS_RUNTIME}, resource_kit::Resource, router::Route};
@@ -402,6 +402,103 @@ pub fn get_all_filters() -> (Status, (ContentType, String))  {
   );
 }
 
+#[get("/resource/<id..>")]
+pub fn get_resource_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
+
+  let collection: Collection<Resource> = get_database(String::from("resources"))
+    .collection("resources");
+
+  let result = collection
+    .find_one(
+      doc! {
+        "resource_id": id.display().to_string()
+      },
+      None
+    )
+    .expect("Failed to find resource");
+
+  if result.is_none() {
+    return (
+      Status::NotFound, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Resource not found",
+          "value": null
+        }).to_string()
+      )
+    )
+  } else {
+    let value = serde_json::json!({
+      "isOk": true,
+      "value": result.unwrap(),
+      "error": null
+    });
+
+    let result = value.to_string();
+
+    return (
+      Status::Ok, 
+      (
+        ContentType::JSON,
+        result
+      )
+    );
+
+  }
+}
+
+#[delete("/resource/<id..>")]
+pub fn delete_resource_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
+  let collection: Collection<Resource> = get_database(String::from("resources"))
+    .collection("resources");
+
+  if collection.count_documents(
+    doc! {
+      "resource_id": id.display().to_string()
+    },
+    None
+  ).expect("Unable to count documents") == 0 {
+    return (
+      Status::NotFound, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Resource not found",
+          "value": null
+        }).to_string()
+      )
+    )
+  }
+
+  let result = collection
+    .delete_one(
+      doc! {
+        "resource_id": id.display().to_string()
+      },
+      None
+    )
+    .expect("Failed to delete resource");
+
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": result.deleted_count,
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
+}
+
 #[get("/resource/list")]
 pub fn get_all_resources() -> (Status, (ContentType, String))  {
   let collection: Collection<Resource> = get_database(String::from("resources"))
@@ -442,6 +539,7 @@ pub fn get_all_drivers_for_resources() -> (Status, (ContentType, String))  {
     "proxy::html",
     "redirect::meta",
     "redirect::javascript",
+    "php"
   ];
 
   let plugins = get_all_runtime_plugins();
@@ -459,6 +557,101 @@ pub fn get_all_drivers_for_resources() -> (Status, (ContentType, String))  {
   let value = serde_json::json!({
     "isOk": true,
     "value": vector,
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
+}
+
+#[get("/filter/<id..>")]
+pub fn get_filter_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
+  let collection: Collection<filter::Filter> = get_database(String::from("filters"))
+    .collection("filters");
+
+  let result = collection
+    .find_one(
+      doc! {
+        "filter_id": id.display().to_string()
+      },
+      None
+    )
+    .expect("Failed to find filter");
+
+  if result.is_none() {
+    return (
+      Status::NotFound, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Filter not found",
+          "value": null
+        }).to_string()
+      )
+    )
+  } else {
+    let value = serde_json::json!({
+      "isOk": true,
+      "value": result.unwrap(),
+      "error": null
+    });
+
+    let result = value.to_string(); 
+
+    return (
+      Status::Ok, 
+      (
+        ContentType::JSON,
+        result
+      )
+    );
+  }
+}
+
+#[delete("/filter/<id..>")]
+pub fn delete_filter_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
+  let collection: Collection<filter::Filter> = get_database(String::from("filters"))
+    .collection("filters");
+
+  if collection.count_documents(
+    doc! {
+      "filter_id": id.display().to_string()
+    },
+    None
+  ).expect("Unable to count documents") == 0 {
+    return (
+      Status::NotFound, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Filter not found",
+          "value": null
+        }).to_string()
+      )
+    )
+  }
+
+  let result = collection
+    .delete_one(
+      doc! {
+        "filter_id": id.display().to_string()
+      },
+      None
+    )
+    .expect("Failed to delete filter");
+
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": result.deleted_count,
     "error": null
   });
 
@@ -516,7 +709,6 @@ pub fn get_all_plugins_for_filters() -> (Status, (ContentType, String))  {
   );
 }
 
-
 #[get("/requests/asn/list")]
 pub fn get_all_requests() -> (Status, (ContentType, String))  {
   let collection: Collection<asn_record::AsnRecord> = get_database(String::from("requests"))
@@ -555,7 +747,6 @@ pub fn get_all_requests() -> (Status, (ContentType, String))  {
     )
   );
 }
-
 
 #[get("/postback/list")]
 pub fn get_all_postbacks() -> (Status, (ContentType, String))  {

@@ -66,6 +66,9 @@ services:
       - redis
       - mongo
 
+  phpfpm:
+    image: 'bitnami/php-fpm:latest'
+  
   bellissimo:
     restart: always
     image: bellissimo-bin
@@ -74,17 +77,18 @@ services:
       - ./plugins.toml:/usr/src/app/target/release/plugins.toml:ro
       - ./plugins:/usr/src/app/target/release/plugins
       - ./public:/usr/src/app/target/release/public
-      
-    
     build:
       context: .
       dockerfile: Dockerfile
     environment:
       - REDIS_URI=redis://redis/
       - MONGO_URI=mongodb://mongo:27017
+      - PHP_FPM_HOST=phpfpm
+      - PHP_FPM_PORT=9000
     depends_on:
       - redis
       - mongo
+      - phpfpm
 
   varnish:
     image: varnish:stable
