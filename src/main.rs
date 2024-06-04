@@ -26,6 +26,8 @@ use chrono::Utc;
 use config::CONFIG;
 use p_kit::register_plugins;
 use rdr_kit::register_default_render_methods;
+use router::register_default_filter_plugins;
+use serde_json::json;
 use std::{fs, net::IpAddr, path::Path};
 use colored::Colorize;
 use mongodb::{bson::doc, sync::Collection};
@@ -33,7 +35,6 @@ use rocket::{config::Ident, data::Limits, fs::{FileServer, Options}, http::{Cont
 use background_service::register_background_service;
 use crate::database::get_database;
 use args::parse_launched_mode;
-
 
 use dto_factory::{mode::StartupMode, postback_payout_postback::PostbackPayoutPostback};
 
@@ -58,7 +59,7 @@ fn not_found() -> (Status, (ContentType, String)) {
     Status::NotFound,
     (
       ContentType::Plain,
-      config::CONFIG["not_found_message"].to_string()
+      config::CONFIG["not_found_message"].as_str().unwrap().to_string()
     )
   )
 }
@@ -177,6 +178,7 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api::get_all_resources])
       .mount(http_api_uri_path, routes![api::get_all_requests])
       .mount(http_api_uri_path, routes![api::get_all_postbacks])
+      .mount(http_api_uri_path, routes![api::get_all_plugins_for_filters])
       .mount(http_api_uri_path, routes![api::get_all_drivers_for_resources]);
   }
 
@@ -238,6 +240,8 @@ async fn bootstrap_mode_server() {
   bootstrap_fs();
 
   register_default_render_methods();
+  register_default_filter_plugins();
+  
   register_database_tables();
   register_routes_and_attach_server().await;
 }

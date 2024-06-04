@@ -11,9 +11,6 @@ Traffic affiliate tools have never been so accessible and open before.
 ----------------------------------
 """
 
-echo "Pulling latest changes..."
-git pull
-
 if [ "$(uname)" == "Darwin" ]; then
     echo "Sorry, this script is not supported on macOS"
     echo ""

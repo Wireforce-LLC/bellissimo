@@ -1,5 +1,6 @@
 import type { MetaFunction } from "@remix-run/node";
 import classNames from "classnames";
+import humanizeString from "humanize-string";
 import _ from "lodash";
 import { useState, useEffect, useCallback } from "react";
 import Button from "~/components/Button";
@@ -17,12 +18,15 @@ export const meta: MetaFunction = () => {
   return [{ title: string("meta.title.routes") }];
 };
 
+const hiddenCols = []
+
 export default function Routes() {
   const [data, setData] = useState<any[] | undefined>(undefined);
   const [isModalCreateVisible, setIsModalCreateVisible] = useState(false);
 
   const [modelName, setModelName] = useState<string | undefined>();
   const [modelPath, setModelPath] = useState<string | undefined>();
+  const [modelDomain, setModelDomain] = useState<string | undefined>();
   const [modelFilterId, setModelFilterId] = useState<string | undefined>();
   const [modelResourceId, setModelResourceId] = useState<string | undefined>();
 
@@ -88,6 +92,7 @@ export default function Routes() {
 
     data.append("name", modelName!);
     data.append("path", "/" + modelPath!);
+    data.append("domain", modelDomain!);
     data.append("filter_id", modelFilterId!);
     data.append("resource_id", modelResourceId!);
 
@@ -195,19 +200,36 @@ export default function Routes() {
 
           {!_.isEmpty(filters) && !_.isEmpty(resources) && (
             <div className="space-y-4">
+              
               <div>
-                <div className="w-full flex flex-row h-8 px-3 py-1 text-sm placeholder-gray-400 hover:border-gray-200 focus-within:border-gray-400 border-gray-200 focus:border-gray-500 transition-colors duration-75 border-[0.115em] outline-none focus:outline-none">
-                  <span>{host}/</span>
-
-                  <input
-                    value={modelPath}
-                    onChange={(e) => setModelPath(e.target.value)}
-                    type="text"
-                    placeholder="any-path"
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    label="Domain"
+                    value={modelDomain}
                     className={classNames("outline-none w-full", {
-                      "text-red-500 font-semibold": modelPath?.startsWith("/"),
+                      "text-red-500 font-semibold": modelDomain?.startsWith("http://") || modelDomain?.startsWith("https://"),
                     })}
+                    onChangeValue={setModelDomain}
                   />
+                  
+                  <div>
+                    <label className="text-xs text-gray-500 mb-[5px] block">Path</label>
+
+                    <div className="w-full flex flex-row h-8 px-3 py-1 text-sm placeholder-gray-400 hover:border-gray-200 focus-within:border-gray-400 border-gray-200 focus:border-gray-500 transition-colors duration-75 border-[0.115em] outline-none focus:outline-none">
+                      <span>{modelDomain || host}/</span>
+
+                      <input
+                        value={modelPath}
+                        onChange={(e) => setModelPath(e.target.value)}
+                        type="text"
+                        placeholder="any-path"
+                        className={classNames("outline-none w-full", {
+                          "text-red-500 font-semibold": modelPath?.startsWith("/"),
+                          "text-zinc-500": !modelPath?.startsWith("/"),
+                        })}
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <span className="text-xs w-[75%] mt-2 text-gray-400 mb-[5px] block">
@@ -215,6 +237,7 @@ export default function Routes() {
                   path can be nested, for example "/level1/level2"
                 </span>
               </div>
+
 
               <Input
                 label="Name"
@@ -248,7 +271,14 @@ export default function Routes() {
       />
 
       <Table
-        headers={["Name", "Path", "Params", "Resource", "Filter"]}
+        headers={
+          data &&
+          (!_.isEmpty(data)
+            ? _.keys(_.omit(_.first(data), hiddenCols)).map((i) =>
+                humanizeString(i).replace("Asn", "ASN")
+              )
+            : [])
+        }
         data={data?.map((it) => ({
           ...it,
           path: (
@@ -269,10 +299,10 @@ export default function Routes() {
 
               <a
                 className="hover:underline"
-                href={protocol + "://" + host + it.path}
+                href={protocol + "://" + (it.domain || host).replace(" ", "") + it.path}
                 target="_blank"
               >
-                {protocol + "://" + host + it.path}
+                {protocol + "://" + (it.domain || host).replace(" ", "") + it.path}
               </a>
             </div>
           ),

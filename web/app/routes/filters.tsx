@@ -22,6 +22,20 @@ export const meta: MetaFunction = () => {
   return [{ title: string("meta.title.filters") }];
 };
 
+const defaultPlugins = [
+  { name: "IP", value: "ip" },
+  { name: "ASN Owner", value: "asn::owner" },
+  { name: "User Agent", value: "ua" },
+  { name: "Referrer", value: "referrer" },
+  { name: "Domain", value: "domain" },
+  { name: "Country by IP", value: "ip::country_code" },
+  { name: "Country by ASN", value: "asn::country_code" },
+  { name: "Cookies", value: "cookie::string" },
+  { name: "Headers", value: "header::string" },
+  { name: "Session ID", value: "session_id" },
+  { name: "BotDetect by User Agent", value: "ua::bot" },
+]
+
 export default function Filters() {
   const REPLACATE_FILTER = {
     name: "",
@@ -36,11 +50,13 @@ export default function Filters() {
 
   const [step, setStep] = useState(0);
 
-  const [plugins] = useState([
-    { name: "IP", value: "ip" },
-    { name: "ASN Owner", value: "asn::owner" },
+  const [plugins, setPlugins] = useState([]);
+   
+  const [operators] = useState([
+    { name: "==", value: "==" },
+    { name: "!=", value: "!=" },
+    { name: "~", value: "~" },
   ]);
-  const [operators] = useState([{ name: "==", value: "==" }]);
 
   const [modelFilterName, setModelFilterName] = useState<string | undefined>();
   const [modelFilterId, setModelFilterId] = useState<string | undefined>();
@@ -65,6 +81,19 @@ export default function Filters() {
         setData(res.data.value);
       });
     });
+
+    webConfig.axiosFactory("PRIVATE").then((i) => {
+      i.get(webConfig.apiEndpointFactory(ApiPathEnum.GetAllFilterPlugins)).then((res) => {
+        if (_.isArray(res.data.value)) {
+          setPlugins(
+            res.data.value.map((it: string) => ({
+              name: defaultPlugins.find(p => p.value === it)?.name || it,
+              value: it,
+            }))
+          )
+        }
+      });
+    });
   }, []);
 
   const fetherResources = useCallback(() => {
@@ -74,6 +103,30 @@ export default function Filters() {
       });
     });
   }, []);
+
+  const filterValue = (pluginName: string, value: string|undefined, onChangeValue: (it: string|undefined) => void) => {
+    switch (pluginName) {
+      case "asn::owner":
+        return <Select
+          label="Filter value"
+          values={[
+            {value: "d", name: "d"}
+          ]}
+          value={value}
+          // value={filter?.value}
+          onChangeValue={onChangeValue}
+        />
+    
+      default:
+        return <Input
+          label="Filter value"
+          className="w-full"
+          value={value}
+          // value={filter?.value}
+          onChangeValue={onChangeValue}
+        />
+    }
+  };
 
   const onCreateFilter = useCallback(() => {
     webConfig.axiosFactory("PRIVATE").then((i) => {
@@ -142,27 +195,50 @@ export default function Filters() {
         >
           <div className="relative h-full w-full">
             {step == 0 && (
-              <div className="space-y-4 w-full h-full">
-                <Input
-                  label="Filter ID"
-                  value={modelFilterId}
-                  onChangeValue={setModelFilterId}
-                />
-                <Input
-                  label="Filter name"
-                  value={modelFilterName}
-                  onChangeValue={setModelFilterName}
-                />
+              <div className="w-full h-full flex items-center justify-center">
+                
+                <div className="flex items-center justify-center flex-col">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="size-10"
+                  >
+                    <path d="M13 20v-4.586L20.414 8c.375-.375.586-.884.586-1.415V4a1 1 0 00-1-1H4a1 1 0 00-1 1v2.585c0 .531.211 1.04.586 1.415L11 15.414V22l2-2z" />
+                  </svg>
 
-                <Button
-                  onPress={() => {
-                    if (modelFilterId && modelFilterName) {
-                      setStep(1);
-                    }
-                  }}
-                >
-                  Next
-                </Button>
+                  <h2 className="text-lg font-medium">
+                    Creation of a new filter
+                  </h2>
+
+                  <p className="text-xs text-gray-500 text-center w-[400px]">
+                    Creating a filter to distribute traffic between resources. 
+                    In the future, you will be able to reference the same filter multiple times
+                  </p>
+
+                  <div className="space-y-2 w-1/2 min-w-[400px] mt-8">
+                    <Input
+                      label="Filter ID"
+                      value={modelFilterId}
+                      onChangeValue={setModelFilterId}
+                    />
+                    
+                    <Input
+                      label="Filter name"
+                      value={modelFilterName}
+                      onChangeValue={setModelFilterName}
+                    />
+
+                    <Button
+                      onPress={() => {
+                        if (modelFilterId && modelFilterName) {
+                          setStep(1);
+                        }
+                      }}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -173,45 +249,20 @@ export default function Filters() {
 
                   {resources &&
                     modelFilters?.map((filter, index) => (
-                      <div className="space-y-2 px-3 pb-3 pt-1 border-[1.2px] border-zinc-300 relative">
-                        <svg
-                          onClick={() => {
-                            if (modelFilters.length > 1) {
-                              const from = _.clone(modelFilters);
-                              delete from[index];
-                              setModelFilters(from);
-                            } else {
-                              setModelFilters([REPLACATE_FILTER]);
-                            }
-                          }}
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="w-6 h-6 hover:text-red-800 hover:bg-red-100 cursor-pointer p-1 text-red-500 absolute top-2 right-0"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M6 18 18 6M6 6l12 12"
-                          />
-                        </svg>
-
-                        <Input
-                          label="Filter name"
-                          value={filter?.name}
-                          onChangeValue={(it) => {
-                            const from = _.clone(modelFilters);
-                            from[index].name = it;
-                            setModelFilters(from);
-                          }}
-                        />
-
-                        <div className="flex flex-row justify-between space-x-2 h-14 w-full">
+                      <div>
+                        <div className="flex flex-row justify-between items-center space-x-2 h-14 w-full">
                           {/* <div className="h-full flex items-center justify-center">
                             <h3 className="font-medium block">IF</h3>
                           </div> */}
+                          <Input
+                            label="Filter name"
+                            value={filter?.name}
+                            onChangeValue={(it) => {
+                              const from = _.clone(modelFilters);
+                              from[index].name = it;
+                              setModelFilters(from);
+                            }}
+                          />
 
                           <Select
                             label="Plugin"
@@ -235,16 +286,17 @@ export default function Filters() {
                             }}
                           />
 
-                          <Input
-                            label="Filter value"
-                            className="w-full"
-                            value={filter?.value}
-                            onChangeValue={(it) => {
-                              const from = _.clone(modelFilters);
-                              from[index].value = it;
-                              setModelFilters(from);
-                            }}
-                          />
+                          {
+                            filterValue(
+                              filter?.plugin,
+                              filter?.value,
+                              (it) => {
+                                const from = _.clone(modelFilters);
+                                from[index].value = it;
+                                setModelFilters(from);
+                              }
+                            )
+                          }
 
                           <Select
                             label="Resource"
@@ -259,13 +311,37 @@ export default function Filters() {
                               setModelFilters(from);
                             }}
                           />
+
+                          <svg
+                            onClick={() => {
+                              if (modelFilters.length > 1) {
+                                const from = _.clone(modelFilters);
+                                delete from[index];
+                                setModelFilters(_.compact(from));
+                              } else {
+                                setModelFilters([REPLACATE_FILTER]);
+                              }
+                            }}
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-6 h-6 flex-shrink-0 hover:text-red-800 hover:bg-red-100 cursor-pointer p-1 text-red-500"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M6 18 18 6M6 6l12 12"
+                            />
+                          </svg>
                         </div>
                       </div>
                     ))}
 
                   {resources && (
                     <button
-                      className="w-full text-[#003049] text-xs font-medium bg-[#ccd5ae] cursor-pointer py-2"
+                      className="w-full text-[#003049] bg-zinc-100 text-xs font-medium cursor-pointer py-2"
                       onClick={() => {
                         setModelFilters([...modelFilters!!, REPLACATE_FILTER]);
                       }}

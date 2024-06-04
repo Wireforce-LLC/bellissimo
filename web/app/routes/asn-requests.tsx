@@ -111,7 +111,7 @@ export default function ASNRequests() {
                 />
 
                 <span className="font-medium">
-                  {it.asn_country_code.toUpperCase()}
+                  {it?.asn_country_code?.toUpperCase()}
                 </span>
               </span>
             ),

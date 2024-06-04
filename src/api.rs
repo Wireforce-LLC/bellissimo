@@ -1,13 +1,12 @@
-#[path = "dto/route.rs"] mod route;
 #[path = "dto/filter.rs"] mod filter;
 #[path = "dto/resource.rs"] mod resource;
 #[path = "dto/asn_record.rs"] mod asn_record;
 #[path = "dto/postback_payout_postback.rs"] mod postback_payout_postback;
 
-use std::{fs, path::Path};
+use std::{path::Path};
 use mongodb::{bson::doc, options::FindOptions, sync::Collection};
 use rocket::{form::Form, http::{ContentType, Status}, FromForm};
-use crate::{database::get_database, p_kit::{get_all_runtime_plugins, PluginRuntimeManifest, PLUGINS_RUNTIME}, resource_kit::Resource};
+use crate::{database::get_database, p_kit::{get_all_runtime_plugins, PluginRuntimeManifest, PLUGINS_RUNTIME}, resource_kit::Resource, router::Route};
 
 #[derive(FromForm)]
 pub struct CreateRoute {
@@ -15,6 +14,7 @@ pub struct CreateRoute {
   pub path: String,
   pub filter_id: Option<String>,
   pub resource_id: Option<String>,
+  pub domain: Option<String>
 }
 
 #[derive(FromForm)]
@@ -38,7 +38,7 @@ pub struct CreateResource {
   pub resource_id: String,
   pub driver: String,
   pub file_path: Option<String>,
-  pub raw_data: Option<String>
+  pub raw_data: Option<String>,
 }
 
 #[post("/route/create", data = "<input>")]
@@ -85,15 +85,16 @@ pub fn create_new_route(input: Form<CreateRoute>) -> (Status, (ContentType, Stri
     );
   }
 
-  let collection: Collection<route::Route> = get_database(String::from("routes"))
+  let collection: Collection<Route> = get_database(String::from("routes"))
     .collection("routes");
 
-  let doc: route::Route = route::Route {
+  let doc: Route = Route {
     path: input.path.clone(),
     name: input.name.clone(),
     params: None,
     filter_id: input.filter_id.clone(),
-    resource_id: input.resource_id.clone()
+    resource_id: input.resource_id.clone(),
+    domain: input.domain.clone(),
   };
 
   if collection.count_documents(doc! {
@@ -338,15 +339,14 @@ pub fn create_new_resource(input: Form<CreateResource>) -> (Status, (ContentType
 
 #[get("/route/list")]
 pub fn get_all_routes() -> (Status, (ContentType, String))  {
-  let collection: Collection<route::Route> = get_database(String::from("routes"))
+  let collection: Collection<Route> = get_database(String::from("routes"))
     .collection("routes");
 
   let mut result = collection
     .find(doc! {}, None)
     .expect("Failed to find routes");
   
-
-  let mut vector: Vec<route::Route> = Vec::new();
+  let mut vector: Vec<Route> = Vec::new();
 
   while let Some(doc) = result.next() {
     vector.push(doc.expect("Unable to get document"));
@@ -449,6 +449,53 @@ pub fn get_all_drivers_for_resources() -> (Status, (ContentType, String))  {
   for plugin in plugins.iter() {
     let name = &plugin.name;
     
+    if &plugin.attach_at != "render_driver" {
+      continue;
+    }
+
+    vector.push(name.as_str());
+  }
+
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": vector,
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
+}
+
+#[get("/filter/plugin/list")]
+pub fn get_all_plugins_for_filters() -> (Status, (ContentType, String))  {
+  let mut vector = vec![
+    "ua",
+    "ip",
+    "ua::bot",
+    "asn::owner",
+    "cookie::string",
+    "ip::country_code",
+    "asn::country_code",
+    "referrer",
+    "session_id"
+  ];
+
+  let plugins = get_all_runtime_plugins();
+
+  for plugin in plugins.iter() {
+    let name = &plugin.name;
+    
+    if &plugin.attach_at != "plugin_filter" {
+      continue;
+    }
+
     vector.push(name.as_str());
   }
 
