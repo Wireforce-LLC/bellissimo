@@ -34,7 +34,7 @@ const defaultPlugins = [
   { name: "Headers", value: "header::string" },
   { name: "Session ID", value: "session_id" },
   { name: "BotDetect by User Agent", value: "ua::bot" },
-]
+];
 
 export default function Filters() {
   const REPLACATE_FILTER = {
@@ -51,7 +51,7 @@ export default function Filters() {
   const [step, setStep] = useState(0);
 
   const [plugins, setPlugins] = useState([]);
-   
+
   const [operators] = useState([
     { name: "==", value: "==" },
     { name: "!=", value: "!=" },
@@ -83,16 +83,18 @@ export default function Filters() {
     });
 
     webConfig.axiosFactory("PRIVATE").then((i) => {
-      i.get(webConfig.apiEndpointFactory(ApiPathEnum.GetAllFilterPlugins)).then((res) => {
-        if (_.isArray(res.data.value)) {
-          setPlugins(
-            res.data.value.map((it: string) => ({
-              name: defaultPlugins.find(p => p.value === it)?.name || it,
-              value: it,
-            }))
-          )
+      i.get(webConfig.apiEndpointFactory(ApiPathEnum.GetAllFilterPlugins)).then(
+        (res) => {
+          if (_.isArray(res.data.value)) {
+            setPlugins(
+              res.data.value.map((it: string) => ({
+                name: defaultPlugins.find((p) => p.value === it)?.name || it,
+                value: it,
+              }))
+            );
+          }
         }
-      });
+      );
     });
   }, []);
 
@@ -104,27 +106,33 @@ export default function Filters() {
     });
   }, []);
 
-  const filterValue = (pluginName: string, value: string|undefined, onChangeValue: (it: string|undefined) => void) => {
+  const filterValue = (
+    pluginName: string,
+    value: string | undefined,
+    onChangeValue: (it: string | undefined) => void
+  ) => {
     switch (pluginName) {
       case "asn::owner":
-        return <Select
-          label="Filter value"
-          values={[
-            {value: "d", name: "d"}
-          ]}
-          value={value}
-          // value={filter?.value}
-          onChangeValue={onChangeValue}
-        />
-    
+        return (
+          <Select
+            label="Filter value"
+            values={[{ value: "d", name: "d" }]}
+            value={value}
+            // value={filter?.value}
+            onChangeValue={onChangeValue}
+          />
+        );
+
       default:
-        return <Input
-          label="Filter value"
-          className="w-full"
-          value={value}
-          // value={filter?.value}
-          onChangeValue={onChangeValue}
-        />
+        return (
+          <Input
+            label="Filter value"
+            className="w-full"
+            value={value}
+            // value={filter?.value}
+            onChangeValue={onChangeValue}
+          />
+        );
     }
   };
 
@@ -196,7 +204,6 @@ export default function Filters() {
           <div className="relative h-full w-full">
             {step == 0 && (
               <div className="w-full h-full flex items-center justify-center">
-                
                 <div className="flex items-center justify-center flex-col">
                   <svg
                     viewBox="0 0 24 24"
@@ -211,8 +218,9 @@ export default function Filters() {
                   </h2>
 
                   <p className="text-xs text-gray-500 text-center w-[400px]">
-                    Creating a filter to distribute traffic between resources. 
-                    In the future, you will be able to reference the same filter multiple times
+                    Creating a filter to distribute traffic between resources.
+                    In the future, you will be able to reference the same filter
+                    multiple times
                   </p>
 
                   <div className="space-y-2 w-1/2 min-w-[400px] mt-8">
@@ -221,7 +229,7 @@ export default function Filters() {
                       value={modelFilterId}
                       onChangeValue={setModelFilterId}
                     />
-                    
+
                     <Input
                       label="Filter name"
                       value={modelFilterName}
@@ -286,17 +294,11 @@ export default function Filters() {
                             }}
                           />
 
-                          {
-                            filterValue(
-                              filter?.plugin,
-                              filter?.value,
-                              (it) => {
-                                const from = _.clone(modelFilters);
-                                from[index].value = it;
-                                setModelFilters(from);
-                              }
-                            )
-                          }
+                          {filterValue(filter?.plugin, filter?.value, (it) => {
+                            const from = _.clone(modelFilters);
+                            from[index].value = it;
+                            setModelFilters(from);
+                          })}
 
                           <Select
                             label="Resource"

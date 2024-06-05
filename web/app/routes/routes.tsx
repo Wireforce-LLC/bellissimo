@@ -18,7 +18,7 @@ export const meta: MetaFunction = () => {
   return [{ title: string("meta.title.routes") }];
 };
 
-const hiddenCols = []
+const hiddenCols = [];
 
 export default function Routes() {
   const [data, setData] = useState<any[] | undefined>(undefined);
@@ -71,7 +71,7 @@ export default function Routes() {
             value: it["resource_id"],
             name: `[${it["driver"] || "Without Driver"}] ` + it["resource_id"],
           }))
-        )
+        );
       });
     });
   }, []);
@@ -200,20 +200,23 @@ export default function Routes() {
 
           {!_.isEmpty(filters) && !_.isEmpty(resources) && (
             <div className="space-y-4">
-              
               <div>
                 <div className="grid grid-cols-2 gap-2">
                   <Input
                     label="Domain"
                     value={modelDomain}
                     className={classNames("outline-none w-full", {
-                      "text-red-500 font-semibold": modelDomain?.startsWith("http://") || modelDomain?.startsWith("https://"),
+                      "text-red-500 font-semibold":
+                        modelDomain?.startsWith("http://") ||
+                        modelDomain?.startsWith("https://"),
                     })}
                     onChangeValue={setModelDomain}
                   />
-                  
+
                   <div>
-                    <label className="text-xs text-gray-500 mb-[5px] block">Path</label>
+                    <label className="text-xs text-gray-500 mb-[5px] block">
+                      Path
+                    </label>
 
                     <div className="w-full flex flex-row h-8 px-3 py-1 text-sm placeholder-gray-400 hover:border-gray-200 focus-within:border-gray-400 border-gray-200 focus:border-gray-500 transition-colors duration-75 border-[0.115em] outline-none focus:outline-none">
                       <span>{modelDomain || host}/</span>
@@ -224,7 +227,8 @@ export default function Routes() {
                         type="text"
                         placeholder="any-path"
                         className={classNames("outline-none w-full", {
-                          "text-red-500 font-semibold": modelPath?.startsWith("/"),
+                          "text-red-500 font-semibold":
+                            modelPath?.startsWith("/"),
                           "text-zinc-500": !modelPath?.startsWith("/"),
                         })}
                       />
@@ -237,7 +241,6 @@ export default function Routes() {
                   path can be nested, for example "/level1/level2"
                 </span>
               </div>
-
 
               <Input
                 label="Name"
@@ -299,10 +302,18 @@ export default function Routes() {
 
               <a
                 className="hover:underline"
-                href={protocol + "://" + (it.domain || host).replace(" ", "") + it.path}
+                href={
+                  protocol +
+                  "://" +
+                  (it.domain || host).replace(" ", "") +
+                  it.path
+                }
                 target="_blank"
               >
-                {protocol + "://" + (it.domain || host).replace(" ", "") + it.path}
+                {protocol +
+                  "://" +
+                  (it.domain || host).replace(" ", "") +
+                  it.path}
               </a>
             </div>
           ),
