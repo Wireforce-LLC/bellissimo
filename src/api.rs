@@ -3,10 +3,17 @@
 #[path = "dto/asn_record.rs"] mod asn_record;
 #[path = "dto/postback_payout_postback.rs"] mod postback_payout_postback;
 
-use std::path::{Path, PathBuf};
+use std::{fs, path::{Path, PathBuf}};
 use mongodb::{bson::doc, options::FindOptions, sync::Collection};
 use rocket::{form::Form, http::{ContentType, Status}, FromForm};
-use crate::{database::get_database, p_kit::{get_all_runtime_plugins, PluginRuntimeManifest, PLUGINS_RUNTIME}, resource_kit::Resource, router::Route};
+use serde::{Serialize, Deserialize};
+use crate::{config::CONFIG, database::get_database, p_kit::{get_all_runtime_plugins, PluginRuntimeManifest, PLUGINS_RUNTIME}, resource_kit::Resource, router::Route};
+
+#[derive(FromForm)]
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FileOverviewPath {
+  pub path: Option<String>,
+}
 
 #[derive(FromForm)]
 pub struct CreateRoute {
@@ -531,6 +538,142 @@ pub fn get_all_resources() -> (Status, (ContentType, String))  {
   );
 }
 
+#[get("/file/read?<path..>")]
+pub fn get_file(path: FileOverviewPath) -> (Status, (ContentType, String))  {
+  let uri = path.path.unwrap_or("/".to_string());
+
+  if uri.contains("..") {
+    return (
+      Status::NotFound, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Server can't handle .. for navigation",
+          "value": null
+        }).to_string()
+      )
+    )
+  }
+
+  let path = fs::canonicalize(
+    &format!(
+      "{}/{}",
+      CONFIG["http_server_serve_path"].as_str().unwrap(),
+      &uri
+    )
+  )
+    .unwrap()
+    .display()
+    .to_string();
+
+  let content = fs::read_to_string(path);
+
+  if content.is_err() {
+    return (
+      Status::NotFound, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "File can't be read",
+          "value": null
+        }).to_string()
+      )
+    )
+  }
+
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": content.unwrap(),
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
+}
+
+#[get("/file/list/all?<path..>")]
+pub fn get_all_files(
+  path: FileOverviewPath
+) -> (Status, (ContentType, String))  {
+  let uri = path.path.unwrap_or("/".to_string());
+
+  if uri.contains("..") {
+    return (
+      Status::NotFound, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Server can't handle .. for navigation",
+          "value": null
+        }).to_string()
+      )
+    )
+  }
+
+  let path = fs::canonicalize(
+    &format!(
+      "{}/{}",
+      CONFIG["http_server_serve_path"].as_str().unwrap(),
+      &uri
+    )
+  )
+    .unwrap()
+    .display()
+    .to_string();
+
+  println!("Path: {}", path);
+
+  let files_in_public_folder = fs::read_dir(path);
+
+  if files_in_public_folder.is_err() {
+    return (
+      Status::NotFound, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "File structure are currently not supported",
+          "value": null
+        }).to_string()
+      )
+    )
+  }
+
+  let files_in_public_folder = files_in_public_folder.unwrap();
+
+  let mut vector = Vec::new();
+
+  for file in files_in_public_folder {
+    vector.push(file.unwrap().path().display().to_string());
+  }
+
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": vector,
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
+}
+
 #[get("/resource/driver/list")]
 pub fn get_all_drivers_for_resources() -> (Status, (ContentType, String))  {
   let mut vector = vec![
@@ -539,7 +682,8 @@ pub fn get_all_drivers_for_resources() -> (Status, (ContentType, String))  {
     "proxy::html",
     "redirect::meta",
     "redirect::javascript",
-    "php"
+    "php",
+    "http_status_page"
   ];
 
   let plugins = get_all_runtime_plugins();

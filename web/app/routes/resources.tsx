@@ -74,6 +74,14 @@ const defaultDrivers = [
       valueType: "file",
     },
   },
+  {
+    name: "HTTP Status Page",
+    description: "Render HTTP status page with message",
+    value: "http_status_page",
+    rules: {
+      valueType: "raw",
+    },
+  },
 ];
 
 export default function Resources() {

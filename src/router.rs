@@ -414,12 +414,13 @@ pub fn register_default_filter_plugins() {
   }
 }
 
-#[get("/<router..>")]
+#[get("/<router..>?<query..>")]
 pub async fn router(
   x_real_ip: XRealIp<'_>,
   user_agent: UserAgent<'_>,
   router: PathBuf,
   raw_headers: HeadersMap<'_>,
+  query: HashMap<String, String>,
 ) -> (Status, (ContentType, String)) {
   let path = if router == PathBuf::new() {
     Path::new("/").join("index")

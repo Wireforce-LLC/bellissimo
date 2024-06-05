@@ -101,6 +101,51 @@ fn default_method_json_write(_resource: Resource, _meta: HashMap<String, String>
   Box::pin(closure)
 }
 
+fn default_method_http_status_page(resource: Resource, _meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
+  if resource.file_path.is_some() {
+    if CONFIG["is_allow_debug_throw"].as_bool().unwrap() {
+      return Box::pin(async move {
+        (
+          Status::InternalServerError,
+          (
+            ContentType::HTML,
+            vec![
+              "Debugger:",
+              "HTTP status page does not support files, please use another render method",
+            ]
+            .join("\n")
+          ),
+        )
+      });
+    } else {
+      return Box::pin(async move {
+        (
+          Status::InternalServerError,
+          (
+            ContentType::Plain,
+            String::new()
+          ),
+        )
+      });
+    }
+  }
+
+  let content = include_str!("../../containers/http_status_page.html")
+    .replace("*", &resource.raw_content.unwrap());
+
+  let closure = async move { 
+    (
+      Status::InternalServerError,
+      (
+        ContentType::HTML,
+        content
+      )
+    )
+  };
+
+  Box::pin(closure)
+}
+
 fn default_method_php(resource: Resource, meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
   let php_fpm_host = env::var("PHP_FPM_HOST").unwrap_or("localhost".to_string());
   let php_fpm_port = env::var("PHP_FPM_PORT").unwrap_or("9000".to_string()).parse::<u16>().unwrap();
@@ -414,6 +459,7 @@ pub fn register_default_render_methods() {
   register_render_method("json", default_method_json_write);
   register_render_method("html", default_method_html);
   register_render_method("php", default_method_php);
+  register_render_method("http_status_page", default_method_http_status_page);
   
   for plugin in get_all_runtime_plugins() {
     if &plugin.attach_at == "render_driver" && &plugin.engine == "v8" {
