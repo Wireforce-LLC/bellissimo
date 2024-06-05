@@ -2,6 +2,7 @@ import type { MetaFunction } from "@remix-run/node";
 import classNames from "classnames";
 import humanizeString from "humanize-string";
 import _ from "lodash";
+import moment from "moment";
 import { useState, useEffect, useCallback } from "react";
 import Button from "~/components/Button";
 import ErrorString from "~/components/ErrorString";
@@ -18,7 +19,7 @@ export const meta: MetaFunction = () => {
   return [{ title: string("meta.title.routes") }];
 };
 
-const hiddenCols = [];
+const hiddenCols = [""];
 
 export default function Routes() {
   const [data, setData] = useState<any[] | undefined>(undefined);
@@ -34,6 +35,22 @@ export default function Routes() {
   const [resources, setResources] = useState<any[] | undefined>(undefined);
   const [host, setHost] = useState<string | undefined>();
   const [protocol, setProtocol] = useState<string | undefined>("http");
+
+  const [isModalOverviewData, setModalOverviewData] = useState<any>();
+
+  const [lastOpenOverviewData, setLastOpenOverviewData] = useState<number>(
+    0
+  );
+
+  const [time, setTime] = useState<number>(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(moment().unix());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     setHost(window.location.hostname);
@@ -63,6 +80,7 @@ export default function Routes() {
             };
           })
         );
+        
       });
 
       i.get(webConfig.apiEndpointFactory(ApiPathEnum.Resources)).then((res) => {
@@ -185,6 +203,37 @@ export default function Routes() {
       subTitle={string("dashboard.subtitle.routes")}
       currentLeftActiveBarItem={LeftActiveBarItem.ROUTES}
     >
+      {isModalOverviewData && (
+        <Modal
+          onClose={() => setModalOverviewData(undefined)}
+          title="Overview route"
+        >
+          <div className="w-full overflow-hidden">
+            {JSON.stringify(isModalOverviewData)}
+            {/* <Table data={isModalOverviewData} headers={["Key", "Value"]} /> */}
+          </div>
+
+          <Button
+            variant="delete"
+            disabled={
+              !(time - lastOpenOverviewData > 3)
+            }
+            onPress={() => {
+              console.log(isModalOverviewData)
+              webConfig.axiosFactory("PRIVATE").then((axios) => {
+                axios
+                  .delete(webConfig.apiEndpointFactory(ApiPathEnum.Route) + isModalOverviewData.name)
+                  .then(() => {
+                    setModalOverviewData(undefined);
+                  })
+              })
+            }}
+          >
+            Delete
+          </Button>
+        </Modal>
+      )}
+
       {isModalCreateVisible && (
         <Modal
           title="Create route"
@@ -284,6 +333,21 @@ export default function Routes() {
         }
         data={data?.map((it) => ({
           ...it,
+          name: (
+            <span
+                onClick={() => {
+                  webConfig.axiosFactory("PRIVATE").then(i => {
+                    i.get(webConfig.apiEndpointFactory(ApiPathEnum.Route) + it.name).then(i => {
+                      setModalOverviewData(i.data.value);
+                      setLastOpenOverviewData(moment().unix());
+                    })
+                  })
+                }}
+                className="text-gray-400 hover:underline"
+              >
+                {it.name}
+              </span>
+          ),
           path: (
             <div className="flex flex-row gap-1.5 items-center">
               <svg

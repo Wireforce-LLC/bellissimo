@@ -571,6 +571,101 @@ pub fn get_all_drivers_for_resources() -> (Status, (ContentType, String))  {
   );
 }
 
+#[get("/route/<name..>")]
+pub fn get_route_by_name(name: PathBuf) -> (Status, (ContentType, String)) {
+  let collection: Collection<Route> = get_database(String::from("routes"))
+    .collection("routes");
+
+  let result = collection
+    .find_one(
+      doc! {
+        "name": name.display().to_string()
+      },
+      None
+    )
+    .expect("Failed to find route");
+
+  if result.is_none() {
+    return (
+      Status::NotFound, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Route not found",
+          "value": null
+        }).to_string()
+      )
+    )
+  } else {
+    let value = serde_json::json!({
+      "isOk": true,
+      "value": result.unwrap(),
+      "error": null
+    });
+
+    let result = value.to_string();
+
+    return (
+      Status::Ok, 
+      (
+        ContentType::JSON,
+        result
+      )
+    );
+  }
+}
+
+#[delete("/route/<name..>")]
+pub fn delete_route_by_name(name: PathBuf) -> (Status, (ContentType, String)) {
+  let collection: Collection<Route> = get_database(String::from("routes"))
+    .collection("routes");
+
+  if collection.count_documents(
+    doc! {
+      "name": name.display().to_string()
+    },
+    None
+  ).expect("Unable to count documents") == 0 {
+    return (
+      Status::NotFound, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Route not found",
+          "value": null
+        }).to_string()
+      )
+    )
+  }
+
+  let result = collection
+    .delete_one(
+      doc! {
+        "name": name.display().to_string()
+      },
+      None
+    )
+    .expect("Failed to delete route");
+
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": result.deleted_count,
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
+}
+
 #[get("/filter/<id..>")]
 pub fn get_filter_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
   let collection: Collection<filter::Filter> = get_database(String::from("filters"))

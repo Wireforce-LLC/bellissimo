@@ -6,6 +6,8 @@ export enum ApiPathEnum {
   Routes = "/api/route/list",
   Filters = "/api/filter/list",
   Resources = "/api/resource/list",
+  Resource = "/api/resource/",
+  Route = "/api/route/",
 
   CreateRoutes = "/api/route/create",
   CreateResources = "/api/resource/create",

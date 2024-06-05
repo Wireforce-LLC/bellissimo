@@ -104,8 +104,32 @@ fn default_method_json_write(_resource: Resource, _meta: HashMap<String, String>
 fn default_method_php(resource: Resource, meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
   let php_fpm_host = env::var("PHP_FPM_HOST").unwrap_or("localhost".to_string());
   let php_fpm_port = env::var("PHP_FPM_PORT").unwrap_or("9000".to_string()).parse::<u16>().unwrap();
-  
+
   let closure = async move {
+    if resource.raw_content.is_some() {
+      if CONFIG["is_allow_debug_throw"].as_bool().unwrap() {
+        return (
+          Status::InternalServerError,
+          (
+            ContentType::HTML,
+            vec![
+              "Debugger:",
+              "PHP render method did not support raw content, please use another render method",
+            ]
+            .join("\n")
+          ),
+        ); 
+      } else {
+        return (
+          Status::InternalServerError,
+          (
+            ContentType::Plain,
+            String::new()
+          ),
+        ); 
+      }
+    }
+
     let template_name = resource
         .file_path
         .as_ref()
@@ -118,7 +142,7 @@ fn default_method_php(resource: Resource, meta: HashMap<String, String>) -> Pin<
     let template_uri_raw = env::current_dir()
       .unwrap()
       .join("public")
-      .join(template_name)
+      .join(&template_name)
       .into_os_string()
       .into_string()
       .unwrap();
@@ -131,15 +155,12 @@ fn default_method_php(resource: Resource, meta: HashMap<String, String>) -> Pin<
         php_fpm_port
       )).await.unwrap();
 
-      println!("{template_uri_raw}");
-      println!("{template_uri_raw}");
-
       let client = Client::new(stream);
 
       // Fastcgi params, please reference to nginx-php-fpm config.
       let params = Params::default()
         .request_method("GET")
-        .script_name(script_name)
+        .script_name(template_name)
         .script_filename(template_uri_raw)
         .request_uri(script_name)
         .document_uri(script_name)
@@ -147,9 +168,7 @@ fn default_method_php(resource: Resource, meta: HashMap<String, String>) -> Pin<
         .remote_port(12345)
         .server_addr("127.0.0.1")
         .server_port(80)
-        .server_name("jmjoy-pc")
-        .content_type("")
-        .content_length(0);
+        .server_name("bellissimo");
 
       // Fetch fastcgi server(php-fpm) response.
       let output = client.execute_once(Request::new(params, &mut io::empty())).await.unwrap();

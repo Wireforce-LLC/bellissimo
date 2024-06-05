@@ -174,9 +174,11 @@ async fn register_routes_and_attach_server() {
 
       .mount(http_api_uri_path, routes![api::delete_resource_by_id])
       .mount(http_api_uri_path, routes![api::delete_filter_by_id])
+      .mount(http_api_uri_path, routes![api::delete_route_by_name])
       
       .mount(http_api_uri_path, routes![api::get_all_routes])
       .mount(http_api_uri_path, routes![api::get_filter_by_id])
+      .mount(http_api_uri_path, routes![api::get_route_by_name])
       .mount(http_api_uri_path, routes![api::get_all_filters])
       .mount(http_api_uri_path, routes![api::get_all_resources])
       .mount(http_api_uri_path, routes![api::get_resource_by_id])
