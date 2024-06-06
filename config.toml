@@ -38,3 +38,6 @@ v8_max_heap_size = 5000000
 stdout_warning = true
 
 use_cloudflare_data_priority = true
+
+is_save_requests_in_mongodb = true
+is_save_requests_in_elastic = true

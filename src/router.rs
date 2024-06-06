@@ -561,44 +561,46 @@ pub async fn router(
     );
   }
 
-  if let Some(result_record) = asn_record {
-    let cuntry_code = if raw_headers.0.get_one("cf-ipcountry").is_some() && CONFIG["use_cloudflare_data_priority"].as_bool().unwrap() {
-      Some(raw_headers.0.get_one("cf-ipcountry").unwrap().to_string().to_uppercase())
-    } else { 
-      Some(result_record.country.clone().to_uppercase())
-    };
-
-    collection
-      .insert_one(
-        asn_record::AsnRecord {
-          asn_name: Some(result_record.owner.clone()),
-          asn_country_code: cuntry_code,
-          asn_description: Some(String::new()),
-          request_id: request_id,
-          time: now.timestamp_micros(),
-          asn_number: Some(u32::from(result_record.as_number)),
-          is_ua_bot: Some(BOT_DETECTOR.is_bot(user_agent.0)),
-          headers: Some(headers),
-        },
-        None,
-      )
-      .unwrap();
-  } else {
-    collection
-      .insert_one(
-        asn_record::AsnRecord {
-          asn_name: None,
-          asn_country_code: None,
-          asn_description: None,
-          request_id: request_id,
-          time: now.timestamp_micros(),
-          asn_number: None,
-          is_ua_bot: Some(BOT_DETECTOR.is_bot(user_agent.0)),
-          headers: Some(headers),
-        },
-        None,
-      )
-      .unwrap();
+  if CONFIG["is_save_requests_in_mongodb"].as_bool().unwrap() {
+    if let Some(result_record) = asn_record {
+      let cuntry_code = if raw_headers.0.get_one("cf-ipcountry").is_some() && CONFIG["use_cloudflare_data_priority"].as_bool().unwrap() {
+        Some(raw_headers.0.get_one("cf-ipcountry").unwrap().to_string().to_uppercase())
+      } else { 
+        Some(result_record.country.clone().to_uppercase())
+      };
+  
+      collection
+        .insert_one(
+          asn_record::AsnRecord {
+            asn_name: Some(result_record.owner.clone()),
+            asn_country_code: cuntry_code,
+            asn_description: Some(String::new()),
+            request_id: request_id,
+            time: now.timestamp_micros(),
+            asn_number: Some(u32::from(result_record.as_number)),
+            is_ua_bot: Some(BOT_DETECTOR.is_bot(user_agent.0)),
+            headers: Some(headers),
+          },
+          None,
+        )
+        .unwrap();
+    } else {
+      collection
+        .insert_one(
+          asn_record::AsnRecord {
+            asn_name: None,
+            asn_country_code: None,
+            asn_description: None,
+            request_id: request_id,
+            time: now.timestamp_micros(),
+            asn_number: None,
+            is_ua_bot: Some(BOT_DETECTOR.is_bot(user_agent.0)),
+            headers: Some(headers),
+          },
+          None,
+        )
+        .unwrap();
+    } 
   }
 
   for condition in filter.conditions {
