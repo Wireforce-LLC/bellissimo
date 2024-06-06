@@ -1,0 +1,97 @@
+{
+    "facebook": [
+        "facebook",
+        "fb",
+        "facebookexternalhit",
+        "facebookexternalhit/1.1",
+        "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
+    ],
+    "bing": [
+        "bingbot",
+        "bingpreview",
+        "bingbot/2.0",
+        "bing"
+    ],
+    "baidu": [
+        "baidu"
+    ],
+    "yandex": [
+        "yandex"
+    ],
+    "amazon": [
+        "amazon",
+        "amazon-adsystem",
+        "amazon-adsystem.com",
+        "amazon-adsystem.com/3.0"
+    ],
+    "google": [
+        "google",
+        "googlebot",
+        "googlebot-news",
+        "googlebot-image",
+        "googlebot-video",
+        "googlebot-mobile",
+        "googlebot-sitemaps",
+        "googlebot-mobile-sitemaps",
+        "googlebot-ads",
+        "googlebot-ads-sitemaps",
+        "googleusercontent",
+        "google-sitemap-generator",
+        "google-sitemap",
+        "google-sitemaps",
+        "google-sitemap-xml",
+        "google-sitemap-generator",
+        "google-sitemap-generator-xml"
+    ],
+    "instagram": [
+        "instagram"
+    ],
+    "pinterest": [
+        "pinterest"
+    ],
+    "twitter": [
+        "twitter"
+    ],
+    "vk": [
+        "vk"
+    ],
+    "msn": [
+        "msn"
+    ],
+    "w3c": [
+        "w3c",
+        "w3c-validator"
+    ],
+    "microsoft": [
+        "bingpreview",
+        "bingbot/2.0",
+        "bingbot",
+        "bingbot-news",
+        "bingbot-image",
+        "bingbot-video",
+        "bingbot-mobile",
+        "bingbot-sitemaps",
+        "bingbot-mobile-sitemaps",
+        "bingbot-ads",
+        "bingbot-ads-sitemaps",
+        "bing"
+    ],
+    "yahoo": [
+        "yahoo"
+    ],
+    "mozilla": [
+        "mozilla"
+    ],
+    "duckduckgo": [
+        "duckduckbot"
+    ],
+    "coccoc": [
+        "coccoc"
+    ],
+    "reddit": [
+        "reddit",
+        "redditbot",
+        "redditbot/1.0",
+        "redditbot/1.0 (http://www.reddit.com/bots)"
+    ]
+}
