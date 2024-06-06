@@ -74,9 +74,9 @@ services:
     image: bellissimo-bin
     container_name: bell
     volumes:
-      - ./plugins.toml:/usr/src/app/target/release/plugins.toml:ro
-      - ./plugins:/usr/src/app/target/release/plugins
-      - ./public:/usr/src/app/target/release/public
+      - ./plugins.toml:/usr/src/app/plugins.toml:ro
+      - ./plugins:/usr/src/app/plugins
+      - ./public:/usr/src/app/public
     build:
       context: .
       dockerfile: Dockerfile
