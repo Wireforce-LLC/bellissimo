@@ -16,6 +16,17 @@ pub struct FileOverviewPath {
 }
 
 #[derive(FromForm)]
+pub struct WriteFileValue {
+  pub content: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FSEntity {
+  pub path: Option<String>,
+  pub is_file: bool
+}
+
+#[derive(FromForm)]
 pub struct CreateRoute {
   pub name: String,
   pub path: String,
@@ -538,6 +549,98 @@ pub fn get_all_resources() -> (Status, (ContentType, String))  {
   );
 }
 
+#[post("/file/write?<path..>", data = "<file>")]
+pub fn write_file(path: FileOverviewPath, file: Form<WriteFileValue>) -> (Status, (ContentType, String)) {
+  let uri = path.path.unwrap_or("/".to_string());
+
+  if uri.contains("..") {
+    return (
+      Status::BadRequest, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Server can't handle .. for navigation",
+          "value": null
+        }).to_string()
+      )
+    )
+  }
+
+  let path = fs::canonicalize(
+    &format!(
+      "{}/{}",
+      CONFIG["http_server_serve_path"].as_str().unwrap(),
+      &uri
+    )
+  )
+    .unwrap()
+    .display()
+    .to_string();
+
+  if !Path::new(&path).exists() {
+    return (
+      Status::NotFound, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "File not found",
+          "value": null
+        }).to_string()
+      )
+    )
+  }
+
+  let content = file.content.clone().unwrap();
+
+  fs::write(path, content).expect("Unable to write file");
+
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": null,
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
+}
+
+#[get("/file/list/short")]
+pub fn get_files_as_placeholder() -> (Status, (ContentType, String)) {
+  let files = fs::read_dir(CONFIG["http_server_serve_path"].as_str().unwrap())
+    .expect("Unable to read directory");
+
+  let files = files
+    .map(|file| file.unwrap().path())
+    .filter(|file| file.is_file())
+    .map(|file| file.display().to_string().replace(CONFIG["http_server_serve_path"].as_str().unwrap(), ""))
+    .collect::<Vec<String>>();
+
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": files,
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
+}
+
 #[get("/file/read?<path..>")]
 pub fn get_file(path: FileOverviewPath) -> (Status, (ContentType, String))  {
   let uri = path.path.unwrap_or("/".to_string());
@@ -631,8 +734,6 @@ pub fn get_all_files(
     .display()
     .to_string();
 
-  println!("Path: {}", path);
-
   let files_in_public_folder = fs::read_dir(path);
 
   if files_in_public_folder.is_err() {
@@ -654,7 +755,27 @@ pub fn get_all_files(
   let mut vector = Vec::new();
 
   for file in files_in_public_folder {
-    vector.push(file.unwrap().path().display().to_string());
+    let file_result = file
+      .unwrap()
+      .path()
+      .display()
+      .to_string();
+
+    let file_canonical = &file_result.replace(
+      fs::canonicalize(CONFIG["http_server_serve_path"].as_str().unwrap()).unwrap().display().to_string().as_str(),
+      ""
+    );
+
+    let file_raw_path = file_result.to_string();
+
+    let is_file = Path::new(file_raw_path.as_str()).is_file();
+    
+    vector.push(
+      FSEntity {
+        path: Some(file_canonical.to_owned()),
+        is_file: is_file
+      }
+    );
   }
 
   let value = serde_json::json!({
@@ -915,6 +1036,7 @@ pub fn get_all_plugins_for_filters() -> (Status, (ContentType, String))  {
     "cookie::string",
     "ip::country_code",
     "asn::country_code",
+    "asn::groups",
     "referrer",
     "session_id"
   ];

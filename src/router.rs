@@ -190,6 +190,40 @@ fn filter_v8(this: &str, x_real_ip: &str, user_agent: &str, raw_headers: HeaderM
 
 pub fn register_default_filter_plugins() {
   register_plugin(
+    "asn::groups",
+    |this: &str, x_real_ip: &str, user_agent: &str, raw_headers: HeaderMap, asn_record: Option<&Record>, filter_value: &str, operator: &str|  {
+      if asn_record.is_none() {
+        return false;
+      }
+
+      if operator != "in" {
+        return false;
+      }
+
+      let record = asn_record.unwrap();
+      let owner = record.owner.to_lowercase();
+      let constains = filter_value.to_lowercase();
+      let constains = constains.split(",").collect::<Vec<&str>>();
+
+      let asn_raw = include_str!("../containers/asn_owners_group.json");
+      let asn_owners_groups: HashMap<&str, Vec<&str>> = serde_json::from_str(asn_raw).unwrap();
+      
+      for value in constains {
+        let default_value = Vec::new();
+        let known_asn = &asn_owners_groups.get(&value).unwrap_or(&default_value);
+
+        for asn in known_asn.iter() {
+          if owner.to_lowercase().contains(&asn.to_lowercase()) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    }
+  );
+
+  register_plugin(
     "ua",
     |this: &str, x_real_ip: &str, user_agent: &str, raw_headers: HeaderMap, asn_record: Option<&Record>, filter_value: &str, operator: &str|  {
       return match operator {
@@ -493,6 +527,9 @@ pub async fn router(
   meta.insert("ip".to_string(), x_real_ip.0.to_string());
   meta.insert("user-agent".to_string(), user_agent.0.to_string());
   meta.insert("utc-time".to_string(), Utc::now().to_string());
+  meta.insert("nanoid".to_string(), nanoid!(16));
+  meta.insert("client-ip".to_string(), x_real_ip.0.to_string());
+  meta.insert("domain".to_string(), domain.unwrap_or("localhost").to_string());
   
   for h in raw_headers.0.clone().iter() {
     meta.insert("http-header-".to_string() + h.name().to_string().to_lowercase().as_str(), h.value().to_string());

@@ -3,11 +3,15 @@ import production from "./production";
 
 export enum ApiPathEnum {
   Ping = "/ping",
+  GetAllFiles = "/api/file/list/all",
+  GetFile = "/api/file/read",
+  WriteFile = "/api/file/write",
   Routes = "/api/route/list",
   Filters = "/api/filter/list",
   Resources = "/api/resource/list",
   Resource = "/api/resource/",
   Route = "/api/route/",
+  GetAllFilesShort = "/api/file/list/short",
 
   CreateRoutes = "/api/route/create",
   CreateResources = "/api/resource/create",

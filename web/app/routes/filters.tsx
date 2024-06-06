@@ -17,6 +17,7 @@ import Table from "~/components/Table";
 import DashboardLayout, { LeftActiveBarItem } from "~/layouts/DashboardLayout";
 import string from "~/localization/polyglot";
 import webConfig, { ApiPathEnum } from "~/web.config";
+import asnGroups from "../../../containers/asn_owners_group.json";
 
 export const meta: MetaFunction = () => {
   return [{ title: string("meta.title.filters") }];
@@ -56,6 +57,7 @@ export default function Filters() {
     { name: "==", value: "==" },
     { name: "!=", value: "!=" },
     { name: "~", value: "~" },
+    { name: 'in', value: "in" },
   ]);
 
   const [modelFilterName, setModelFilterName] = useState<string | undefined>();
@@ -106,30 +108,66 @@ export default function Filters() {
     });
   }, []);
 
+
+  /**
+   * Returns a JSX element based on the pluginName and value.
+   * If the pluginName is "asn::owner", a Select component is returned.
+   * Otherwise, an Input component is returned.
+   *
+   * @param {string} pluginName - The name of the plugin.
+   * @param {string | undefined} value - The value of the filter.
+   * @param {(it: string | undefined) => void} onChangeValue - The callback function to handle the change of the value.
+   * @return {JSX.Element} The JSX element based on the pluginName and value.
+   */
   const filterValue = (
     pluginName: string,
     value: string | undefined,
     onChangeValue: (it: string | undefined) => void
   ) => {
+    // Determine the JSX element based on the pluginName
     switch (pluginName) {
-      case "asn::owner":
+      case "asn::groups":
+        // If the pluginName is "asn::groups", return a Select component
         return (
           <Select
             label="Filter value"
-            values={[{ value: "d", name: "d" }]}
+            values={
+              Object.keys(asnGroups).map((key) => ({
+                name: key,
+                value: key,
+              }))
+            }
             value={value}
-            // value={filter?.value}
+            onChangeValue={onChangeValue}
+          />
+        );
+
+      case "asn::owner":
+        // If the pluginName is "asn::owner", return a Select component
+        return (
+          <Select
+            // Label for the Select component
+            label="Filter value"
+            // Array of values for the Select component
+            values={[{ value: "d", name: "d" }]}
+            // Value of the Select component
+            value={value}
+            // Callback function to handle the change of the value
             onChangeValue={onChangeValue}
           />
         );
 
       default:
+        // If the pluginName is not "asn::owner", return an Input component
         return (
           <Input
+            // Label for the Input component
             label="Filter value"
+            // Class name for the Input component
             className="w-full"
+            // Value of the Input component
             value={value}
-            // value={filter?.value}
+            // Callback function to handle the change of the value
             onChangeValue={onChangeValue}
           />
         );

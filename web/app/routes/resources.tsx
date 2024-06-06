@@ -43,7 +43,7 @@ const defaultDrivers = [
     },
   },
   {
-    name: "JavaScipt Redirect",
+    name: "JavaScript Redirect",
     description: "Redirect to other path with JS",
     value: "redirect::javascript",
     rules: {
@@ -86,6 +86,9 @@ const defaultDrivers = [
 
 export default function Resources() {
   const [data, setData] = useState<any[] | undefined>(undefined);
+  const [filesPlaceholder, setFilesPlaceholder] = useState<string[] | undefined>(
+    undefined
+  )
 
   const [typeOfContent, setTypeOfContent] = useState<number>(0);
 
@@ -102,6 +105,12 @@ export default function Resources() {
 
   useEffect(() => {
     fether();
+
+    webConfig.axiosFactory("PRIVATE").then((i) => {
+      i.get(webConfig.apiEndpointFactory(ApiPathEnum.GetAllFilesShort)).then((res) => {
+        setFilesPlaceholder(res.data.value);
+      });
+    });
 
     webConfig.axiosFactory("PRIVATE").then((i) => {
       i.get(
@@ -209,11 +218,11 @@ export default function Resources() {
             </div>
 
             {typeOfContent == 0 && (
-              <Input
-                label="Path to file in /public"
+              <Select
+                label="Content type"
+                values={filesPlaceholder?.map((i: string) => ({name: i, value: i})) || []}
                 value={modelFileUri}
-                onChangeValue={setModelFileUri}
-              />
+                onChangeValue={setModelFileUri}/>
             )}
 
             {typeOfContent == 1 && (

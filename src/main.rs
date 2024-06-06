@@ -170,7 +170,9 @@ async fn register_routes_and_attach_server() {
     rocket_server = rocket_server
       .mount(http_api_uri_path, routes![api::get_all_files])
       .mount(http_api_uri_path, routes![api::get_file])
-
+      .mount(http_api_uri_path, routes![api::write_file])
+      .mount(http_api_uri_path, routes![api::get_files_as_placeholder])
+      
       .mount(http_api_uri_path, routes![api::create_new_route])
       .mount(http_api_uri_path, routes![api::create_new_filter])
       .mount(http_api_uri_path, routes![api::create_new_resource])

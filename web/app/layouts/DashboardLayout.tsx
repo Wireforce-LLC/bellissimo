@@ -40,6 +40,7 @@ function MenuElement(
 }
 
 export enum LeftActiveBarItem {
+  FILES = "files",
   ROUTES = "routes",
   FILTERS = "filters",
   RESOURCES = "resources",
