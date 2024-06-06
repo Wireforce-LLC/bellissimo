@@ -108,6 +108,9 @@ services:
     restart: always
     image: bellissimo-bin
     container_name: bell
+    ports:
+      - 80:80
+      - 443:443
     volumes:
       - ./plugins.toml:/usr/src/app/plugins.toml:ro
       - ./plugins:/usr/src/app/plugins
@@ -130,8 +133,8 @@ services:
     container_name: varnish
     volumes:
       - "./default.vcl:/etc/varnish/default.vcl"
-    ports:
-      - "80:80"
+    # ports:
+    #   - "80:80"
     tmpfs:
       - /var/lib/varnish:exec
     environment:
