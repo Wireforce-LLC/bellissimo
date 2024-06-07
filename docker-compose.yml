@@ -91,7 +91,7 @@ services:
       - PHP_FPM_PORT=9000
       - ELASTIC_URI=http://bell-elasticsearch:9200
     depends_on:
-      redis
+      redis:
         condition: service_healthy
       mongo:
         condition: service_healthy
