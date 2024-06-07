@@ -68,7 +68,7 @@ services:
  
   bell-elasticsearch:
     image: 'bitnami/elasticsearch:latest'
-    container_name: elasticsearch
+    container_name: bell-elasticsearch
     volumes:
       - ./docker/elasticsearch-data-persistence:/bitnami/elasticsearch/data
 
