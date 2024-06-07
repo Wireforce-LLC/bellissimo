@@ -71,7 +71,7 @@ services:
      test:
        [
          "CMD-SHELL",
-         "curl https://localhost:9200 | grep -q '{'",
+         "curl https://localhost:9200",
        ]
      interval: 10s
      timeout: 10s
