@@ -73,11 +73,11 @@ export default function getDatasetDashboardLeftBar(
     },
 
     {
-      id: "asn-records",
+      id: "ecords",
       classname: LeftActiveBarItem.ASN_RECORDS,
       priority: 1,
       name: string("dashboard.menu.asnRecords"),
-      href: "/asn-requests",
+      href: "/requests",
       isActive: currentActivePageId == LeftActiveBarItem.ASN_RECORDS,
       icon: (
         <svg

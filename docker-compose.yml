@@ -102,6 +102,7 @@ services:
       - mongo
 
   phpfpm:
+    container_name: phpfpm
     image: 'bitnami/php-fpm:latest'
   
   bellissimo:

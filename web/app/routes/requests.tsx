@@ -27,7 +27,7 @@ export const meta: MetaFunction = () => {
 
 const hiddenCols = ["asn_description"];
 
-export default function ASNRequests() {
+export default function Requests() {
   const [data, setData] = useState<any[] | undefined>(undefined);
   const [modalOverviewData, setModalOverviewData] = useState<any | undefined>();
 
@@ -66,7 +66,28 @@ export default function ASNRequests() {
           title="Overview request"
         >
           <div className="w-full overflow-hidden">
-            <Table data={modalOverviewData} headers={["Key", "Value"]} />
+            <Table data={
+              modalOverviewData.map(([key, value]: string[]) => {
+                if (key == "route_way") {
+                  return {
+                    key,
+                    value: "Data is corrupted"
+                  }
+                }
+                
+                if (key == "query") {
+                  return {
+                    key,
+                    value: "Data is corrupted"
+                  }
+                }
+
+                return {
+                  key,
+                  value
+                }
+              })
+            } headers={["Key", "Value"]} />
           </div>
         </Modal>
       )}
@@ -102,7 +123,9 @@ export default function ASNRequests() {
               </span>
             ),
             headers: "",
-            asn_country_code: (
+            route_way: it.route_way ? "Existing" : "Unknown",
+            query: it.query ? "Yes" : "No",
+            asn_country_code: it?.asn_country_code && (
               <span className="flex items-center flex-row gap-2">
                 <img
                   className="size-3"

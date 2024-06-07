@@ -6,18 +6,16 @@ use crate::resource_kit::Resource;
 
 use chrono::Utc;
 use fastcgi_client::{Client, Params, Request};
-use rocket::futures::FutureExt;
 use rocket::http::{ContentType, Status};
 use serde_json::Value;
 use tokio::io;
 use std::collections::HashMap;
 use std::future::Future;
-use std::io::Stdout;
 use std::pin::Pin;
 use std::{env, fs};
 use std::path::Path;
 use std::sync::Mutex;
-use tokio::{net::TcpStream};
+use tokio::net::TcpStream;
 
 lazy_static! {
   pub static ref RENDER_METHODS: Mutex<
@@ -146,7 +144,7 @@ fn default_method_http_status_page(resource: Resource, _meta: HashMap<String, St
   Box::pin(closure)
 }
 
-fn default_method_php(resource: Resource, meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
+fn default_method_php(resource: Resource, _meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
   let php_fpm_host = env::var("PHP_FPM_HOST").unwrap_or("localhost".to_string());
   let php_fpm_port = env::var("PHP_FPM_PORT").unwrap_or("9000".to_string()).parse::<u16>().unwrap();
 
@@ -221,7 +219,7 @@ fn default_method_php(resource: Resource, meta: HashMap<String, String>) -> Pin<
       // "Content-type: text/html; charset=UTF-8\r\n\r\nhello"
       let stdout = String::from_utf8(output.stdout.unwrap()).unwrap();
 
-      let (headers, stdout) = stdout
+      let (_, stdout) = stdout
         .trim_start()
         .split_once("\r\n\r\n")
         .unwrap();
