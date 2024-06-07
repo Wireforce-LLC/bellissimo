@@ -30,11 +30,15 @@ services:
     image: mongo:latest
     volumes:
       - ./docker/mongo-data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
 
   redis:
     container_name: redis
     restart: always
     image: redis:latest
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
 
   bellissimo-web:
     restart: always
@@ -95,8 +99,8 @@ services:
         condition: service_healthy
       mongo:
         condition: service_healthy
-      phpfpm:
-        condition: service_healthy
+      # phpfpm:
+      #   condition: service_healthy
       bell-elasticsearch:
        condition: service_healthy
 
