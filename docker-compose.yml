@@ -1,16 +1,6 @@
 version: "3.8"
 
 services:  
-  kibana:
-    image: bitnami/kibana:latest
-    container_name: kibana
-    environment:
-      - KIBANA_ELASTICSEARCH_URL=bell-elasticsearch
-    ports:
-      - 5601:5601
-    volumes:
-      - ./docker/kibana-persistence:/bitnami/kibana bitnami/kibana:latest
-
   mongo_seed:
     image: mongo:latest
     container_name: import-db
@@ -67,6 +57,8 @@ services:
     image: 'bitnami/php-fpm:latest'
  
   bell-elasticsearch:
+    restart: always
+    user: root
     image: 'bitnami/elasticsearch:latest'
     container_name: bell-elasticsearch
     volumes:
@@ -93,6 +85,7 @@ services:
       - redis
       - mongo
       - phpfpm
+      - bell-elasticsearch
 
   varnish:
     image: varnish:stable
