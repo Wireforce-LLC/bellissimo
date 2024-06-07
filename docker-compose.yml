@@ -1,53 +1,16 @@
 version: "3.8"
 
-services:
-  # bellissimo-nginx-proxy:
-  #   container_name: bellissimo-nginx
-  #   restart: always
-  #   environment:
-  #     - HTPASSWD=admin:$apr1$xu5g0csj$GKyGduMtMXBAt1HaQ7Rpk/
-  #     - FORWARD_PORT=3000
-  #     - FORWARD_HOST=bellissimo-web
-  #   ports:
-  #     - 1337:80
-  #   image: beevelop/nginx-basic-auth
-  
+services:  
   kibana:
-    image: docker.elastic.co/kibana/kibana:8.7.1
+    image: bitnami/kibana:latest
     container_name: kibana
     environment:
-      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: d1a66dfd-c4d3-4a0a-8290-2abcb83ab3aa
+      KIBANA_ELASTICSEARCH_URL=elasticsearch
     ports:
       - 5601:5601
-    deploy:    
-      resources:
-          limits:
-            cpus: '2.0'
-          reservations:
-            cpus: '1.0'
+    volumes:
+      - ./docker/kibana-persistence:/bitnami/kibana bitnami/kibana:latest
 
-
-  ## For save requests and analytic it
-  elasticsearch:
-    container_name: elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
-    # 8.x
-    environment: ['CLI_JAVA_OPTS=-Xms2g -Xmx2g','bootstrap.memory_lock=true','discovery.type=single-node','xpack.security.enabled=false', 'xpack.security.enrollment.enabled=false']
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
-    deploy:    
-      resources:
-          limits:
-            cpus: '2.0'
-          reservations:
-            cpus: '1.0'
-
-  ## import db
   mongo_seed:
     image: mongo:latest
     container_name: import-db
@@ -60,7 +23,6 @@ services:
       - ./docker/mongodb:/data
     command: /import_db.sh
 
-  ## WebAuth 
   bellissimo-web-auth:
     container_name: bell-web-guard
     image: 'beevelop/nginx-basic-auth'
@@ -72,7 +34,6 @@ services:
       ## example user/pass generated with htpasswd is foo:bar
       # - HTPASSWD=foo:$$apr1$$odHl5EJN$$KbxMfo86Qdve2FH4owePn.
 
-  ## Mongo database
   mongo:
     restart: always
     container_name: mongo
@@ -104,7 +65,13 @@ services:
   phpfpm:
     container_name: phpfpm
     image: 'bitnami/php-fpm:latest'
-  
+ 
+  elasticsearch:
+    image: 'bitnami/elasticsearch:latest'
+    container_name: elasticsearch
+    volumes:
+      - ./docker/elasticsearch-data-persistence:/bitnami/elasticsearch/data
+
   bellissimo:
     restart: always
     image: bellissimo-bin
@@ -121,6 +88,7 @@ services:
       - MONGO_URI=mongodb://mongo:27017
       - PHP_FPM_HOST=phpfpm
       - PHP_FPM_PORT=9000
+      - ELASTIC_URI=http://elasticsearch:9200
     depends_on:
       - redis
       - mongo
