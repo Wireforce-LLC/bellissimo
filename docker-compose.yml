@@ -63,6 +63,15 @@ services:
     container_name: bell-elasticsearch
     volumes:
       - ./docker/elasticsearch-data-persistence:/bitnami/elasticsearch/data
+    healthcheck:
+     test:
+       [
+         "CMD-SHELL",
+         "curl https://localhost:9200 | grep -q '{'",
+       ]
+     interval: 10s
+     timeout: 10s
+     retries: 120
 
   bellissimo:
     restart: always
@@ -82,10 +91,14 @@ services:
       - PHP_FPM_PORT=9000
       - ELASTIC_URI=http://bell-elasticsearch:9200
     depends_on:
-      - redis
-      - mongo
-      - phpfpm
-      - bell-elasticsearch
+      redis
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      phpfpm:
+        condition: service_healthy
+      bell-elasticsearch:
+       condition: service_healthy
 
   varnish:
     image: varnish:stable
