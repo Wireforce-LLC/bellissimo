@@ -243,16 +243,10 @@ export default function Filters() {
             {step == 0 && (
               <div className="w-full h-full flex items-center justify-center">
                 <div className="flex items-center justify-center flex-col">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="size-10"
-                  >
-                    <path d="M13 20v-4.586L20.414 8c.375-.375.586-.884.586-1.415V4a1 1 0 00-1-1H4a1 1 0 00-1 1v2.585c0 .531.211 1.04.586 1.415L11 15.414V22l2-2z" />
-                  </svg>
+                  <img src="/filter.png" alt="" className="h-40" />
 
                   <h2 className="text-lg font-medium">
-                    Creation of a new filter
+                    <b>FilterEngine.</b> Factory of new filters.
                   </h2>
 
                   <p className="text-xs text-gray-500 text-center w-[400px]">

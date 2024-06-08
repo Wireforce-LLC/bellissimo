@@ -1,20 +1,12 @@
-import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+import type { MetaFunction } from "@remix-run/node";
 import classNames from "classnames";
 import _ from "lodash";
-import moment from "moment";
 import { useState, useEffect, useCallback } from "react";
 import BigInput from "~/components/BigInput";
 import Button from "~/components/Button";
-import Card from "~/components/Card";
-import GrayWrapper from "~/components/GrayWrapper";
 import Input from "~/components/Input";
-import Label from "~/components/Label";
-import Link from "~/components/Link";
-import LoadingActivity from "~/components/LoadingActivity";
 import Modal from "~/components/Modal";
-import ProgressMini from "~/components/ProgressMini";
 import Select from "~/components/Select";
-import SharedCardEventsGroup from "~/components/SharedCardEventsGroup";
 import SubNavbar from "~/components/SubNavbar";
 import Table from "~/components/Table";
 import DashboardLayout, { LeftActiveBarItem } from "~/layouts/DashboardLayout";
@@ -83,6 +75,7 @@ const defaultDrivers = [
     },
   },
 ];
+
 
 export default function Resources() {
   const [data, setData] = useState<any[] | undefined>(undefined);

@@ -527,14 +527,16 @@ fn async_register_request_info(
             .unwrap();
         }
 
-        ELASTIC
-          .lock()
-          .unwrap()
-          .index(IndexParts::IndexId("requests", &request_id))
-          .body(insert_json_raw.to_owned())
-          .send()
-          .await
-          .unwrap();
+        if CONFIG["is_save_requests_in_elastic"].as_bool().unwrap() {
+          ELASTIC
+            .lock()
+            .unwrap()
+            .index(IndexParts::IndexId("requests", &request_id))
+            .body(insert_json_raw.to_owned())
+            .send()
+            .await
+            .unwrap();
+        }
       })
     });
   } else {
@@ -564,14 +566,16 @@ fn async_register_request_info(
             .unwrap();
         }
 
-        ELASTIC
-          .lock()
-          .unwrap()
-          .index(IndexParts::IndexId("requests", &request_id))
-          .body(insert_json_raw.to_owned())
-          .send()
-          .await
-          .unwrap();
+        if CONFIG["is_save_requests_in_elastic"].as_bool().unwrap() {
+          ELASTIC
+            .lock()
+            .unwrap()
+            .index(IndexParts::IndexId("requests", &request_id))
+            .body(insert_json_raw.to_owned())
+            .send()
+            .await
+            .unwrap();
+        }
       })
     });
   } 

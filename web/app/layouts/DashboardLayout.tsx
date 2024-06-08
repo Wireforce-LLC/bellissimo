@@ -63,21 +63,37 @@ interface Props {
 
 export default function DashboardLayout({
   children,
-  subTitle,
   isHideMenu,
   currentLeftActiveBarItem,
 }: Props) {
   const [isInternetError, setInternetError] = useState(false);
+  const [isSafari, setSafari] = useState(false);
+  const [moneyVolume, setMoneyVolume] = useState(0);
+
+  useEffect(() => {
+    webConfig.axiosFactory("PRIVATE").then((data) => {
+      data
+        .get(webConfig.apiEndpointFactory(ApiPathEnum.GetMoneyVolumeByPostbacks))
+        .then((response) => {
+          setMoneyVolume(response.data.value);
+        });
+    })
+  }, []);
+
+  useEffect(() => {  
+    // @ts-ignore
+    const isSafari = /constructor/i.test(String(window.HTMLElement)) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || (typeof window['safari'] !== 'undefined' && safari?.pushNotification));
+
+    setSafari(isSafari);
+  }, [])
 
   const pingRequest = useCallback(() => {
     webConfig.axiosFactory("PRIVATE").then((data) => {
       data
         .get(webConfig.apiEndpointFactory(ApiPathEnum.Ping))
         .catch((error) => {
-          if (error && error.response && error.response.status === 401) {
-            location.href = "/login";
-          } else {
-            setInternetError(error.code === "ERR_NETWORK");
+          if (error.code === "ERR_NETWORK") {
+            setInternetError(true);
           }
         });
     });
@@ -94,10 +110,20 @@ export default function DashboardLayout({
   }, []);
 
   return (
-    <div style={{ height: "calc(100vh - 45px)" }}>
+    <div style={{ height: "calc(100vh - 45px - 32px)" }}>
+      {isSafari && <div className="h-[1px] w-full bg-[#060931]"></div>}
+
+      <div className="w-full bg-[#060931] h-[32px] px-4 flex flex-row items-center justify-between">
+        <div className="container w-full flex flex-row items-center justify-between">
+          <img src="/wireforce-logo.png" className="h-[28px]" alt="" />
+          <img src="/top-right-01.png" className="h-[32px]" alt="" />
+        </div>
+      </div>
+
       <Navbar
         mode={NavbarModeEnum.IN_DASHBOARD}
         currentActivePageId={PageIdEnum.DASHBOARD}
+        moneyVolume={moneyVolume}
       />
 
       {isInternetError && (

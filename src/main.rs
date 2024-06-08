@@ -24,10 +24,12 @@
 
 use chrono::Utc;
 use config::CONFIG;
+use elasticsearch::IndexParts;
 use p_kit::register_plugins;
 use rdr_kit::register_default_render_methods;
-use router::register_default_filter_plugins;
+use router::{register_default_filter_plugins, ELASTIC};
 use serde_json::json;
+use tokio::{runtime::Handle, task};
 use std::{fs, net::IpAddr, path::Path};
 use colored::Colorize;
 use mongodb::{bson::doc, sync::Collection};
@@ -67,7 +69,7 @@ pub fn not_found() -> (Status, (ContentType, String)) {
 #[get("/ping")]
 fn ping() -> (Status, (ContentType, String)) {
   return (
-    Status::ImATeapot,
+    Status::Ok,
     (
       ContentType::Plain,
       "Yes! I am a teapot".to_string()
@@ -77,25 +79,40 @@ fn ping() -> (Status, (ContentType, String)) {
 
 #[get("/postback?<payload..>")]
 async fn postback_get(payload: PostbackPayoutPostback) -> (Status, (ContentType, String)) {
+  let utc_time = Utc::now().timestamp();
   let collection: Collection<PostbackPayoutPostback> = get_database(String::from("requests")).collection("postbacks");
-  let now = Utc::now();
+  let payload_with_time = PostbackPayoutPostback {
+    time: Some(utc_time.clone()),
+    currency: if payload.currency.is_some() { Some(payload.currency.unwrap().to_uppercase()) } else { None },
+    ..payload
+  };
 
-  let _ = collection.insert_one(PostbackPayoutPostback {
-    uuid: payload.uuid,
-    date: payload.date,
-    status: payload.status,
-    ip: payload.ip,
-    amount: payload.amount,
-    stream: payload.stream,
-    currency: payload.currency,
-    time: Option::Some(now.timestamp_micros())
-  }, None);
+  let raw_json_as_string: String = serde_json::to_string(&payload_with_time).unwrap();
+
+  let _ = collection.insert_one(payload_with_time, None)
+    .expect("Failed to insert document");
+
+  task::block_in_place(move || {
+    Handle::current().block_on(async move {
+      let insert_json_raw = json!(raw_json_as_string);
+
+      ELASTIC
+        .lock()
+        .unwrap()
+        .index(IndexParts::IndexId("postbacks", &utc_time.to_string()))
+        .body(insert_json_raw.to_owned())
+        .send()
+        .await
+        .unwrap();
+    })
+  });
+
 
   return (
-    Status::NoContent,
+    Status::Created,
     (
       ContentType::Plain,
-      String::from("")
+      String::from("OK")
     )
   )
 }
@@ -168,6 +185,8 @@ async fn register_routes_and_attach_server() {
 
   if is_http_future_api {
     rocket_server = rocket_server
+      .mount(http_api_uri_path, routes![api::get_postback_amount])
+
       .mount(http_api_uri_path, routes![api::get_all_files])
       .mount(http_api_uri_path, routes![api::get_file])
       .mount(http_api_uri_path, routes![api::write_file])

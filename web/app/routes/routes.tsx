@@ -208,9 +208,28 @@ export default function Routes() {
           onClose={() => setModalOverviewData(undefined)}
           title="Overview route"
         >
-          <div className="w-full overflow-hidden">
-            {JSON.stringify(isModalOverviewData)}
-            {/* <Table data={isModalOverviewData} headers={["Key", "Value"]} /> */}
+          <div className="w-full overflow-hidden mb-4">
+            <h2 className="text-xl font-medium text-left mb-0 p-0">{isModalOverviewData?.name}</h2>
+            <p className="flex flex-row items-center mb-4">
+              <span className="text-xs text-left font-normal text-blue-500">{isModalOverviewData?.domain}</span>
+              <span className="text-xs text-left font-normal text-blue-500">{isModalOverviewData?.path}</span>
+            </p>
+
+            <div className="w-full flex flex-row justify-start items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-3">
+                <path fillRule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 0 1 .628.74v2.288a2.25 2.25 0 0 1-.659 1.59l-4.682 4.683a2.25 2.25 0 0 0-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 0 1 8 18.25v-5.757a2.25 2.25 0 0 0-.659-1.591L2.659 6.22A2.25 2.25 0 0 1 2 4.629V2.34a.75.75 0 0 1 .628-.74Z" clipRule="evenodd" />
+              </svg>
+
+              <span className="text-xs text-left font-normal text-black">{isModalOverviewData?.filter_id}</span>
+            </div>
+
+            <div className="w-full flex flex-row justify-start items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-3">
+                <path fillRule="evenodd" d="M4.25 2A2.25 2.25 0 0 0 2 4.25v2.5A2.25 2.25 0 0 0 4.25 9h2.5A2.25 2.25 0 0 0 9 6.75v-2.5A2.25 2.25 0 0 0 6.75 2h-2.5Zm0 9A2.25 2.25 0 0 0 2 13.25v2.5A2.25 2.25 0 0 0 4.25 18h2.5A2.25 2.25 0 0 0 9 15.75v-2.5A2.25 2.25 0 0 0 6.75 11h-2.5Zm9-9A2.25 2.25 0 0 0 11 4.25v2.5A2.25 2.25 0 0 0 13.25 9h2.5A2.25 2.25 0 0 0 18 6.75v-2.5A2.25 2.25 0 0 0 15.75 2h-2.5Zm0 9A2.25 2.25 0 0 0 11 13.25v2.5A2.25 2.25 0 0 0 13.25 18h2.5A2.25 2.25 0 0 0 18 15.75v-2.5A2.25 2.25 0 0 0 15.75 11h-2.5Z" clipRule="evenodd" />
+              </svg>
+
+              <span className="text-xs text-left font-normal text-black">{isModalOverviewData?.resource_id}</span>
+            </div>
           </div>
 
           <Button

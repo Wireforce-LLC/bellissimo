@@ -12,6 +12,7 @@ export enum ApiPathEnum {
   Resource = "/api/resource/",
   Route = "/api/route/",
   GetAllFilesShort = "/api/file/list/short",
+  GetMoneyVolumeByPostbacks = "/api/postback/24h-amount",
 
   CreateRoutes = "/api/route/create",
   CreateResources = "/api/resource/create",

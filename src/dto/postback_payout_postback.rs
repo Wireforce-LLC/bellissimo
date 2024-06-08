@@ -7,7 +7,7 @@ pub struct PostbackPayoutPostback {
   pub date: Option<String>,
   pub status: Option<String>,
   pub ip: Option<String>,
-  pub amount: Option<u128>,
+  pub amount: Option<i32>,
   pub stream: Option<String>,
   pub currency: Option<String>,
   pub time: Option<i64>

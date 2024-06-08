@@ -279,10 +279,13 @@ export default {
       thread: "Thread",
       visitors: "Visitors",
       traffic: "Traffic",
-      zone: "Database Zone"
+      zone: "Database Zone",
+      files: "Files",
+
     },
 
     menu: {
+      files: "Files",
       routes: "Routes",
       filters: "Filters",
       resources: "Resources",

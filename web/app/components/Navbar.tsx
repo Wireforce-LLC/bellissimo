@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import classNames from "classnames";
 import getDatasetNavbar from "~/dataset/Navbar";
 import { Link as HLink } from "@remix-run/react";
+import _ from "lodash";
 
 interface ItemDto {
   readonly name: string;
@@ -13,6 +14,7 @@ interface Props {
   readonly currentActivePageId: PageIdEnum | null;
   readonly mode: NavbarModeEnum | null;
   readonly className?: string;
+  readonly moneyVolume?: number;
 }
 
 export enum NavbarModeEnum {
@@ -31,6 +33,7 @@ export default function Navbar({
   currentActivePageId,
   className,
   mode,
+  moneyVolume,
 }: Props) {
   const [items, setItems] = useState<ItemDto[]>(getDatasetNavbar(null));
 
@@ -48,7 +51,7 @@ export default function Navbar({
           className
         )}
       >
-        <ul className="h-full md:px-3 hidden md:flex flex-row items-center">
+        <ul className="h-full md:px-3 hidden md:flex flex-row items-center justify-between">
           <li className="py-2 px-2 pt-2.5 flex flex-row space-x-2 select-none mr-4">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -58,8 +61,27 @@ export default function Navbar({
             >
               <path d="M12.378 1.602a.75.75 0 0 0-.756 0L3 6.632l9 5.25 9-5.25-8.622-5.03ZM21.75 7.93l-9 5.25v9l8.628-5.032a.75.75 0 0 0 .372-.648V7.93ZM11.25 22.18v-9l-9-5.25v8.57a.75.75 0 0 0 .372.648l8.628 5.033Z" />
             </svg>
-            <span className="-mt-0.5 text-sm font-extrabold">Bellissimo</span>
+            <span className="-mt-0.5 text-sm font-extrabold">Bell</span>
           </li>
+          
+          <li>
+            <div className="">
+              <span className="block text-sm">
+                <span className="text-xs font-medium text-gray-600">Earned today</span> <span className="text-sm text-black font-semibold text-lime-600">
+                  {
+                    _.isNumber(moneyVolume) && new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
+                      moneyVolume,
+                    )
+                  }
+                </span>
+              </span>
+
+              <span className="block text-[8px] text-gray-600 font-light">
+                Based by postbacks
+              </span>
+            </div>
+          </li>
+
 
           {mode == NavbarModeEnum.IN_DASHBOARD
             ? items?.flatMap((item) => (
@@ -94,7 +116,7 @@ export default function Navbar({
             >
               <path d="M12.378 1.602a.75.75 0 0 0-.756 0L3 6.632l9 5.25 9-5.25-8.622-5.03ZM21.75 7.93l-9 5.25v9l8.628-5.032a.75.75 0 0 0 .372-.648V7.93ZM11.25 22.18v-9l-9-5.25v8.57a.75.75 0 0 0 .372.648l8.628 5.033Z" />
             </svg>
-            <span className="-mt-0.5 text-sm font-semibold">Bellissimo</span>
+            <span className="-mt-0.5 text-sm font-semibold">Bell</span>
           </div>
 
           <button

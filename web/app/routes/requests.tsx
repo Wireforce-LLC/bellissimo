@@ -1,31 +1,21 @@
-import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+import type { MetaFunction } from "@remix-run/node";
 import _ from "lodash";
 import moment from "moment";
 import { useState, useEffect, useCallback } from "react";
-import Button from "~/components/Button";
-import Card from "~/components/Card";
-import GrayWrapper from "~/components/GrayWrapper";
-import Input from "~/components/Input";
-import Label from "~/components/Label";
-import LoadingActivity from "~/components/LoadingActivity";
 import Modal from "~/components/Modal";
-import ProgressMini from "~/components/ProgressMini";
-import Select from "~/components/Select";
-import SharedCardEventsGroup from "~/components/SharedCardEventsGroup";
 import SubNavbar from "~/components/SubNavbar";
 import Table from "~/components/Table";
 import DashboardLayout, { LeftActiveBarItem } from "~/layouts/DashboardLayout";
 import string from "~/localization/polyglot";
 import webConfig, { ApiPathEnum } from "~/web.config";
 import humanizeString from "humanize-string";
-import List, { ListItem } from "~/components/List";
 import { flatten } from "flat";
 
 export const meta: MetaFunction = () => {
   return [{ title: string("meta.title.filters") }];
 };
 
-const hiddenCols = ["asn_description"];
+const hiddenCols = ["asn_description", "asn_number", "route_way"];
 
 export default function Requests() {
   const [data, setData] = useState<any[] | undefined>(undefined);
@@ -122,7 +112,10 @@ export default function Requests() {
                 {moment(it.time / 1000).format("DD.MM.YYYY HH:mm")}
               </span>
             ),
-            headers: "",
+            headers: <span>
+              <span>{_.size(it.headers)}</span>{" "}
+              <span className="text-gray-400">times</span>
+            </span>,
             route_way: it.route_way ? "Existing" : "Unknown",
             query: it.query ? "Yes" : "No",
             asn_country_code: it?.asn_country_code && (

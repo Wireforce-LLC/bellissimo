@@ -4,6 +4,7 @@
 #[path = "dto/postback_payout_postback.rs"] mod postback_payout_postback;
 
 use std::{fs, path::{Path, PathBuf}};
+use chrono::{Duration, Utc};
 use mongodb::{bson::doc, options::FindOptions, sync::Collection};
 use rocket::{form::Form, http::{ContentType, Status}, FromForm};
 use serde::{Serialize, Deserialize};
@@ -1056,6 +1057,55 @@ pub fn get_all_plugins_for_filters() -> (Status, (ContentType, String))  {
   let value = serde_json::json!({
     "isOk": true,
     "value": vector,
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
+}
+
+#[get("/postback/24h-amount")]
+pub fn get_postback_amount() -> (Status, (ContentType, String))  {
+  let collection: Collection<postback_payout_postback::PostbackPayoutPostback> = get_database(String::from("requests"))
+    .collection("postbacks");
+
+  let result = collection
+    .find(
+      doc! {
+        "time": {
+          "$gte": (Utc::now() - Duration::days(1)).timestamp(),
+          "$lte": Utc::now().timestamp()
+        },
+        "currency": "USD"
+      },
+      None
+    )
+    .unwrap();
+  
+  let mut amount: i32 = 0;
+
+  for doc in result {
+    if amount < 2147483647 {
+      if doc.is_ok() {
+        let amount_result = doc.unwrap().amount;
+
+        if amount_result.is_some() {
+          amount += amount_result.unwrap();  
+        }
+      }
+    }
+  }
+  
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": amount,
     "error": null
   });
 
