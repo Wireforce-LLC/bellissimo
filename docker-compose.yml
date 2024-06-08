@@ -68,9 +68,10 @@ services:
     volumes:
       - ./docker/elasticsearch-data-persistence:/bitnami/elasticsearch/data
     healthcheck:
-      interval: 10s
-      retries: 80
-      test: curl --write-out 'HTTP %{http_code}' --fail --silent --output /dev/null http://localhost:8200/
+      test: curl -s http://elastic:9200 >/dev/null || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   bellissimo:
     restart: always
