@@ -9,8 +9,8 @@ import getDatasetDashboardLeftBar from "~/dataset/DashboardLeftBar";
 import webConfig, { ApiPathEnum } from "~/web.config";
 import { Link } from "@remix-run/react";
 
-import wireforceLogo from "/wireforce-logo.png";
-import rightTopImage from "/top-right-01.png";
+import wireforceLogo from "../../public/wireforce-logo.png";
+import rightTopImage from "../../public/top-right-01.png";
 
 function MenuElement(
   currentLeftActiveBarItem: LeftActiveBarItem | null | undefined
