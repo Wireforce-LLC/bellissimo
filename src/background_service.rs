@@ -1,11 +1,9 @@
-#[path = "kit/http_proxy.rs"] mod hp_kit;
+use crate::{database::get_database, dto_factory::resource::Resource, dynamic_router::{REDIS, REDIS_CLIENT}, hp_kit};
 
 use std::{fs, path::Path, thread, time::Duration};
-
 use mongodb::{bson::doc, sync::Collection};
 use redis::Commands;
 
-use crate::{database::get_database, dto_factory::resource::Resource, router::{REDIS, REDIS_CLIENT}};
 
 // Register resources from public
 // ./public

@@ -9,6 +9,9 @@ import getDatasetDashboardLeftBar from "~/dataset/DashboardLeftBar";
 import webConfig, { ApiPathEnum } from "~/web.config";
 import { Link } from "@remix-run/react";
 
+import wireforceLogo from "/wireforce-logo.png";
+import rightTopImage from "/top-right-01.png";
+
 function MenuElement(
   currentLeftActiveBarItem: LeftActiveBarItem | null | undefined
 ) {
@@ -115,8 +118,8 @@ export default function DashboardLayout({
 
       <div className="w-full bg-[#060931] h-[32px] px-4 flex flex-row items-center justify-between">
         <div className="container w-full flex flex-row items-center justify-between">
-          <img src="/wireforce-logo.png" className="h-[28px]" alt="" />
-          <img src="/top-right-01.png" className="h-[32px]" alt="" />
+          <img src={wireforceLogo} className="h-[28px]" alt="" />
+          <img src={rightTopImage} className="h-[32px]" alt="" />
         </div>
       </div>
 

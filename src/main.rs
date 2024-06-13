@@ -4,7 +4,6 @@
 #[macro_use] extern crate lazy_static;
 
 #[path = "args.rs"] mod args;
-#[path = "router.rs"] mod router;
 #[path = "database.rs"] mod database;
 #[path = "dto_factory.rs"] mod dto_factory;
 
@@ -20,102 +19,31 @@
 // Kits
 #[path = "kit/render.rs"] mod rdr_kit;
 #[path = "kit/resource_kit.rs"] mod resource_kit;
-#[path = "kit/plugins.rs"] mod p_kit;
+#[path = "kit/plugin.rs"] mod plugin;
+#[path = "kit/filter.rs"] mod filter_kit;
+#[path = "kit/http_proxy.rs"] mod hp_kit;
 
-use chrono::Utc;
+#[path = "boot/register_main_routes.rs"] mod main_routes;
+#[path = "boot/register_router.rs"] mod dynamic_router;
+#[path = "boot/register_filters.rs"] mod register_filters;
+#[path = "boot/bootstrap_fs.rs"] mod bfs;
+#[path = "boot/register_postback_listener.rs"] mod register_postback_listener;
+#[path = "boot/bootstrap_db.rs"] mod bootstrap_db;
+
 use config::CONFIG;
-use elasticsearch::IndexParts;
-use p_kit::register_plugins;
-use rdr_kit::register_default_render_methods;
-use router::{register_default_filter_plugins, ELASTIC};
-use serde_json::json;
-use tokio::{runtime::Handle, task};
-use std::{fs, net::IpAddr, path::Path};
+use std::{net::IpAddr, time::Instant};
 use colored::Colorize;
-use mongodb::{bson::doc, sync::Collection};
-use rocket::{config::Ident, data::Limits, fs::{FileServer, Options}, http::{ContentType, Status}, Config};
+use rocket::{config::Ident, data::Limits, fairing::AdHoc, fs::{FileServer, Options}, Config};
 use background_service::register_background_service;
-use crate::database::get_database;
 use args::parse_launched_mode;
+use dto_factory::mode::StartupMode;
 
-use dto_factory::{mode::StartupMode, postback_payout_postback::PostbackPayoutPostback};
-
-// Configure Rocket
-#[get("/robots.txt")]
-fn robots() -> (Status, (ContentType, String)) {
-  let robots = include_str!("../containers/robots.txt");
-  return (
-    Status::Ok,
-    (
-      ContentType::Plain,
-      String::from(robots)
-    )
-  )
-}
-
-// Configure not found
-#[get("/")]
-pub fn not_found() -> (Status, (ContentType, String)) {
-  return (
-    Status::NotFound,
-    (
-      ContentType::HTML,
-      include_str!("../containers/404.html").to_string()
-    )
-  )
-}
-
-// Ping the server
-#[get("/ping")]
-fn ping() -> (Status, (ContentType, String)) {
-  return (
-    Status::Ok,
-    (
-      ContentType::Plain,
-      "Yes! I am a teapot".to_string()
-    )
-  )
-}
-
-#[get("/postback?<payload..>")]
-async fn postback_get(payload: PostbackPayoutPostback) -> (Status, (ContentType, String)) {
-  let utc_time = Utc::now().timestamp();
-  let collection: Collection<PostbackPayoutPostback> = get_database(String::from("requests")).collection("postbacks");
-  let payload_with_time = PostbackPayoutPostback {
-    time: Some(utc_time.clone()),
-    currency: if payload.currency.is_some() { Some(payload.currency.unwrap().to_uppercase()) } else { None },
-    ..payload
-  };
-
-  let raw_json_as_string: String = serde_json::to_string(&payload_with_time).unwrap();
-
-  let _ = collection.insert_one(payload_with_time, None)
-    .expect("Failed to insert document");
-
-  task::block_in_place(move || {
-    Handle::current().block_on(async move {
-      let insert_json_raw = json!(raw_json_as_string);
-
-      ELASTIC
-        .lock()
-        .unwrap()
-        .index(IndexParts::IndexId("postbacks", &utc_time.to_string()))
-        .body(insert_json_raw.to_owned())
-        .send()
-        .await
-        .unwrap();
-    })
-  });
-
-
-  return (
-    Status::Created,
-    (
-      ContentType::Plain,
-      String::from("OK")
-    )
-  )
-}
+/**
+ * Now the main.rs is responsible for launching the server
+ * and bootstrapping the filesystem
+ * 
+ * Now Bellissimo will be create own Architecture, called A1
+ */
 
 // Launch the server
 async fn register_routes_and_attach_server() {
@@ -150,41 +78,41 @@ async fn register_routes_and_attach_server() {
   // Serve static files
   let static_server = FileServer::new(
     server_path, 
-    Options::Index
-  ).rank(-15);
+    Options::Index | Options::NormalizeDirs
+  ).rank(3);
 
-  let http_server_serve_uri_path = CONFIG["http_server_serve_uri_path"].as_str().unwrap();
-  let http_base_route_uri_path = CONFIG["http_base_route_uri_path"].as_str().unwrap();
-  let http_api_uri_path = CONFIG["http_api_uri_path"].as_str().unwrap();
+  let http_server_serve_uri_path: &str = CONFIG["http_server_serve_uri_path"].as_str().unwrap();
+  let http_base_route_uri_path: &str = CONFIG["http_base_route_uri_path"].as_str().unwrap();
+  let http_api_uri_path: &str = CONFIG["http_api_uri_path"].as_str().unwrap();
 
-  let is_http_future_api = CONFIG["is_http_future_api"].as_bool().unwrap();
-  let is_http_future_robots_txt = CONFIG["is_http_future_robots_txt"].as_bool().unwrap();
-  let is_http_future_postbacks = CONFIG["is_http_future_postbacks"].as_bool().unwrap();
-  let is_http_future_static_serve = CONFIG["is_http_future_static_serve"].as_bool().unwrap();
-  let is_http_future_ping = CONFIG["is_http_future_ping"].as_bool().unwrap();
-  let is_http_future_main_router = CONFIG["is_http_future_main_router"].as_bool().unwrap();
+  let is_http_future_api: bool = CONFIG["is_http_future_api"].as_bool().unwrap();
+  let is_http_future_robots_txt: bool = CONFIG["is_http_future_robots_txt"].as_bool().unwrap();
+  let is_http_future_postbacks: bool = CONFIG["is_http_future_postbacks"].as_bool().unwrap();
+  let is_http_future_static_serve: bool = CONFIG["is_http_future_static_serve"].as_bool().unwrap();
+  let is_http_future_ping: bool = CONFIG["is_http_future_ping"].as_bool().unwrap();
+  let is_http_future_main_router: bool = CONFIG["is_http_future_main_router"].as_bool().unwrap();
 
   // Launch Rocket
   let mut rocket_server = rocket::custom(&config);
 
   if is_http_future_static_serve {
-    rocket_server = rocket_server.mount(http_server_serve_uri_path, static_server);
+    // rocket_server = rocket_server.mount(http_server_serve_uri_path, static_server);
+    rocket_server = rocket_server.mount(http_server_serve_uri_path, routes![main_routes::static_protector]);
   }
 
   if is_http_future_ping {
-    rocket_server = rocket_server.mount("/", routes![ping]);
+    rocket_server = rocket_server.mount("/", routes![main_routes::ping]);
   }
 
   if is_http_future_robots_txt {
-    rocket_server = rocket_server.mount("/", routes![robots]);
-  }
-
-  if is_http_future_postbacks {
-    rocket_server = rocket_server.mount("/service", routes![postback_get]);
+    rocket_server = rocket_server.mount("/", routes![main_routes::robots_txt]);
   }
 
   if is_http_future_api {
     rocket_server = rocket_server
+      .mount(http_api_uri_path, routes![api::get_config])
+      .mount(http_api_uri_path, routes![api::get_all_plugins])
+
       .mount(http_api_uri_path, routes![api::get_postback_amount])
 
       .mount(http_api_uri_path, routes![api::get_all_files])
@@ -212,77 +140,34 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api::get_all_drivers_for_resources]);
   }
 
+  if is_http_future_postbacks {
+    rocket_server = rocket_server.mount("/service", routes![register_postback_listener::postback_get]);
+    rocket_server = rocket_server.mount("/service", routes![register_postback_listener::postback_post]);
+  }
+
+
   if is_http_future_main_router {
-    rocket_server = rocket_server.mount(http_base_route_uri_path, routes![router::router]);
+    rocket_server = rocket_server.mount(http_base_route_uri_path, routes![dynamic_router::router]);
   }
 
   rocket_server
+    .attach(AdHoc::on_liftoff("Liftoff Message", |_| Box::pin(async {
+      
+    })))
+    // .ignite()
+    // .await
+    // .unwrap()
     .launch()
     .await
     .unwrap();
 }
 
-fn register_database_tables() {
-  get_database(String::from("routes"))
-    .create_collection("routes", None)
-    .expect("Unable to create collection");
-
-  get_database(String::from("resources"))
-    .create_collection("resources", None)
-    .expect("Unable to create collection");
-
-  get_database(String::from("requests"))
-    .create_collection("requests", None)
-    .expect("Unable to create collection");
-
-  get_database(String::from("requests"))
-    .create_collection("asn_records", None)
-    .expect("Unable to create collection");
-}
-
-
-fn bootstrap_fs() {
-  let example_plugins_toml = vec![
-    "[example]",
-    "name = \"bellissimo\"",
-    "version = \"0.1.0\"",
-    "description = \"Bellissimo plugin for marketing\"",
-    "attach_at = \"...\"",
-    "engine = \"v8\"",
-    "src = \"./test.js\"",
-  ];
-
-  if !Path::new("./plugins.toml").exists() {
-    fs::write("./plugins.toml", example_plugins_toml.join("\n")).expect("Unable to create plugins.toml");
-  }
-
-  if !Path::new("./public").is_dir() && !Path::new("./public").exists() {
-    fs::create_dir("./public").expect("Unable to create public directory");
-  }
-
-  if !Path::new(CONFIG["dir_plugins"].as_str().unwrap()).is_dir() && !Path::new(CONFIG["dir_plugins"].as_str().unwrap()).exists() {
-    fs::create_dir(CONFIG["dir_plugins"].as_str().unwrap()).expect("Unable to create plugins directory");
-  }
-}
-
-// Server
-async fn bootstrap_mode_server() {
-  bootstrap_fs();
-
-  register_default_render_methods();
-  register_default_filter_plugins();
-  
-  register_database_tables();
-  register_routes_and_attach_server().await;
-}
-
-// Background service
-async fn bootstrap_mode_background() {  
-  register_background_service().await;
-}
 
 #[rocket::main]
 async fn main() { 
+  let boot_start_instant: Instant = Instant::now();
+
+  // Banner
   println!("{}", include_str!("../containers/banner.txt"));
   println!("");
   println!("Welcome to the tool that will make your marketing and traffic referral life easier and better!");
@@ -292,19 +177,58 @@ async fn main() {
   let mode = parse_launched_mode();
 
   println!("Mode of service: {}", mode.to_string().yellow());
-  println!("");
 
-  register_plugins();
+  // Register Plugins
+  plugin::register_plugins();
+
+  // Register default filters
+  register_filters::register_default_filters();
+
+  let elapsed = boot_start_instant.elapsed();
+
+  let filters_len = filter_kit::get_all_filters().len();
+  let plugins_len = plugin::get_all_runtime_plugins().len();
+
+  // Get runtime plugins
+  let plugins: String = plugin::get_all_runtime_plugins()
+    .iter()
+    .map(|plugin: &plugin::PluginRuntimeManifest| plugin.name.clone())
+    .collect::<Vec<String>>()
+    .join(", ");
+
+  // Get runtime filters
+  let filters = filter_kit::get_all_filters()
+    .keys()
+    .map(|filter| filter.clone())
+    .collect::<Vec<String>>()
+    .join(", ");
 
   match mode {
     // Server
     StartupMode::Server => {
-      bootstrap_mode_server().await;
+      // Bootstrap FS (file system)
+      bfs::bootstrap_fs();
+
+      // Register default render methods
+      rdr_kit::register_default_render_methods();
+      
+      // Bootstrap DB
+      bootstrap_db::register_database_tables();
+
+      println!("Bootstrap time: {:.4?}", elapsed);
+      println!("Runtime plugins ({}): {}", plugins_len.to_string().blue(), plugins);
+      println!("Runtime filtes ({}): {}", filters_len.to_string().blue(), filters);
+      println!("");
+
+      register_routes_and_attach_server().await;
     }
 
     // Background
     StartupMode::Background => {
-      bootstrap_mode_background().await;
+      println!("Bootstrap time: {:.2?}", elapsed);
+      println!("");
+
+      register_background_service().await;
     }
   }
 }

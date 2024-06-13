@@ -7,7 +7,7 @@ interface Props {
 
 export default function DashboardMenuHolder({ children }: Props) {
   return (
-    <div role="menu" className="divide-y divide-gray-100 md:min-w-52">
+    <div role="menu" className="divide-y divide-gray-100">
       {_.isArray(children)
         ? _.orderBy(children, (i) => _.get(i, "props.priority", 0))
         : children}

@@ -31,12 +31,12 @@ export default function DashboardArea({ menuEnabled, nested }: Props) {
       <div className="md:px-0 h-full">
         <div className="flex flex-col h-full md:flex-row">
           {menuEnabled && (
-            <div className="flex-shrink-0 min-w-full md:h-full md:min-w-48 md:border-r md:border-r-zinc-200 bg-white">
+            <div className="flex-shrink-0 min-w-full md:h-full md:min-w-[150px] md:border-r md:border-r-zinc-200 bg-white">
               {_.find(nested, (item) => item?.name == "Menu")?.component}
             </div>
           )}
 
-          <div className="flex-shrink w-full">
+          <div className="flex-shrink w-full overflow-y-auto overflow-x-hidden">
             {_.find(nested, (item) => item?.name == "View")?.component}
           </div>
         </div>

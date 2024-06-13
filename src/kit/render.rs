@@ -1,7 +1,7 @@
 
 use crate::config::CONFIG;
-use crate::not_found;
-use crate::p_kit::{self, get_all_runtime_plugins};
+use crate::main_routes::not_found;
+use crate::plugin;
 use crate::resource_kit::Resource;
 
 use chrono::Utc;
@@ -144,7 +144,7 @@ fn default_method_http_status_page(resource: Resource, _meta: HashMap<String, St
   Box::pin(closure)
 }
 
-fn default_method_php(resource: Resource, _meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
+fn default_method_php(resource: Resource, meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
   let php_fpm_host = env::var("PHP_FPM_HOST").unwrap_or("localhost".to_string());
   let php_fpm_port = env::var("PHP_FPM_PORT").unwrap_or("9000".to_string()).parse::<u16>().unwrap();
 
@@ -172,25 +172,15 @@ fn default_method_php(resource: Resource, _meta: HashMap<String, String>) -> Pin
         ); 
       }
     }
-
-    let template_name = resource
-        .file_path
-        .as_ref()
-        .unwrap()
-        .replace("./public/", "")
-        .replace("/public/", "")
-        .replace("public/", "")
-        .replace("/public", "");
-
-    let template_uri_raw = env::current_dir()
-      .unwrap()
-      .join("public")
-      .join(&template_name)
-      .into_os_string()
-      .into_string()
-      .unwrap();
     
-    if Path::new(&template_uri_raw).exists() {
+    let template_uri_raw = resource
+      .file_path
+      .unwrap()
+      .clone();
+
+    let path = Path::new(&template_uri_raw);
+    
+    if path.exists() {
       let script_name = "index.php";
 
       let stream = TcpStream::connect((
@@ -200,17 +190,23 @@ fn default_method_php(resource: Resource, _meta: HashMap<String, String>) -> Pin
 
       let client = Client::new(stream);
 
+      let query_string_from_meta = meta
+        .iter()
+        .map(|(k, v)| format!("{}={}", k, v))
+        .collect::<Vec<String>>()
+        .join("&");
+
       // Fastcgi params, please reference to nginx-php-fpm config.
       let params = Params::default()
         .request_method("GET")
-        .script_name(template_name)
+        // .script_name(path.file_name().unwrap().to_str().unwrap())
         .script_filename(template_uri_raw)
         .request_uri(script_name)
         .document_uri(script_name)
         .remote_addr("127.0.0.1")
-        .remote_port(12345)
         .server_addr("127.0.0.1")
         .server_port(80)
+        .query_string(query_string_from_meta)
         .server_name("bellissimo");
 
       // Fetch fastcgi server(php-fpm) response.
@@ -304,18 +300,12 @@ fn default_method_html(resource: Resource, _meta: HashMap<String, String>) -> Pi
     params.insert("static", CONFIG["http_server_serve_uri_path"].as_str().unwrap().to_string());
 
     if &resource.file_path.is_some() == &true {
-      let template_name = resource
-          .file_path
-          .as_ref()
-          .unwrap()
-          .replace("./public/", "")
-          .replace("/public/", "")
-          .replace("public/", "")
-          .replace("/public", "");
+      let template_uri_raw = resource
+        .file_path
+        .as_ref()
+        .unwrap();
 
-      let template_uri_raw = "./public/*".replace("*", &template_name);
-
-      let pwd = CONFIG["http_server_serve_uri_path"].as_str().unwrap().to_string() + "/" + Path::new(&template_name).parent().unwrap().to_str().unwrap();
+      let pwd: String = CONFIG["http_server_serve_uri_path"].as_str().unwrap().to_string();
       let pwd_static = Path::new(&pwd).to_str().unwrap();
 
       params.insert("pwd", String::from(pwd_static));
@@ -330,7 +320,7 @@ fn default_method_html(resource: Resource, _meta: HashMap<String, String>) -> Pi
                 "Debugger:",
                 "",
                 "You are seeing this message because you have the 'is_allow_debug_throw' parameter enabled and an error occurred while rendering the page.",
-                format!("You are trying to access file '{raw}', but we couldn't find it. We searched along the way '{path}'", raw=template_name, path=template_uri_raw).as_str()
+                format!("You are trying to access file '{raw}', but we couldn't find it. We searched along the way '{path}'", raw=template_uri_raw, path=template_uri_raw).as_str()
               ].join("\n"),
             ),
           ); 
@@ -355,7 +345,7 @@ fn default_method_html(resource: Resource, _meta: HashMap<String, String>) -> Pi
                 "Debugger:",
                 "",
                 "You are seeing this message because you have the 'is_allow_debug_throw' parameter enabled and an error occurred while rendering the page.",
-                format!("You are trying to reference file '{file}', but there is no entity with type 'file' in the path you specified, there is something else there. Perhaps this is a directory, or a link (they sometimes work incorrectly), or a binary file with execution rights", file=template_name).as_str()
+                format!("You are trying to reference file '{file}', but there is no entity with type 'file' in the path you specified, there is something else there. Perhaps this is a directory, or a link (they sometimes work incorrectly), or a binary file with execution rights", file=template_uri_raw).as_str()
               ].join("\n"),
             ),
           ); 
@@ -422,7 +412,7 @@ fn default_method_proxy_html(_resource: Resource, _meta: HashMap<String, String>
 
 fn plugin_v8(resource: Resource, meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
   let closure = async move { 
-    let output = p_kit::call_plugin(resource.driver.as_str(), meta);
+    let output = plugin::call_plugin(resource.driver.as_str(), meta);
   
     let mut lookup: HashMap<String, Value> = serde_json::from_str(output.as_str()).unwrap();
     let mut map = HashMap::new();
@@ -459,7 +449,7 @@ pub fn register_default_render_methods() {
   register_render_method("php", default_method_php);
   register_render_method("http_status_page", default_method_http_status_page);
   
-  for plugin in get_all_runtime_plugins() {
+  for plugin in plugin::get_all_runtime_plugins() {
     if &plugin.attach_at == "render_driver" && &plugin.engine == "v8" {
       register_render_method(
         &plugin.name, 

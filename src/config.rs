@@ -1,8 +1,13 @@
 use toml::Table;
-use std::fs;
+use std::{fs, sync::Arc};
 
 lazy_static! {
-  pub static ref CONFIG: Table = toml::from_str(
-    fs::read_to_string("./config.toml").unwrap().as_str()
-  ).unwrap();
+  // Define static variables
+  // Define config
+  pub static ref CONFIG: Arc<Table> = Arc::new(
+    fs::read_to_string("./config.toml")
+      .expect("Unable to read config.toml")
+      .parse::<Table>()
+      .expect("Unable to parse config.toml")
+  );
 }

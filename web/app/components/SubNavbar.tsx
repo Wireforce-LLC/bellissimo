@@ -3,9 +3,10 @@ import string from "~/localization/polyglot";
 interface Props {
   readonly title?: string;
   readonly onCreateAction?: () => void;
+  readonly createActionLabel?: string;
 }
 
-export default function SubNavbar({ title, onCreateAction }: Props) {
+export default function SubNavbar({ title, createActionLabel, onCreateAction }: Props) {
   return (
     <div className="w-full bg-white">
       <div className="w-full h-[38px] bg-white font-medium flex items-center border-b border-b-zinc-200">
@@ -28,7 +29,7 @@ export default function SubNavbar({ title, onCreateAction }: Props) {
                 <path d="M8.75 3.75a.75.75 0 0 0-1.5 0v3.5h-3.5a.75.75 0 0 0 0 1.5h3.5v3.5a.75.75 0 0 0 1.5 0v-3.5h3.5a.75.75 0 0 0 0-1.5h-3.5v-3.5Z" />
               </svg>
 
-              {string("dashboard.actions.create")}
+              {createActionLabel || string("dashboard.actions.create")}
             </button>
           )}
         </div>

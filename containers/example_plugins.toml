@@ -1,0 +1,7 @@
+[example]
+name = "bellissimo"
+version = "0.1.0"
+description = "Bellissimo plugin"
+engine="v8"
+attach_at="render_driver"
+src="example.js"

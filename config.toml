@@ -6,7 +6,7 @@ http_workers = 0 # set to 0 to auto detect number of cpus
 http_ident = "Nginx"
 http_keep_alive = 10
 
-http_server_serve_path = "./public" # path with static files
+http_server_serve_path = "public" # path with static files
 # path (for serve (like http://{http_server_address}/{http_server_serve_uri_path}))
 # with static files
 http_server_serve_uri_path = "/static" 
@@ -39,5 +39,13 @@ stdout_warning = true
 
 use_cloudflare_data_priority = true
 
-is_save_requests_in_mongodb = true
-is_save_requests_in_elastic = true
+is_save_requests_in_mongodb = false
+is_save_requests_in_elastic = false
+
+# Ext configs
+ext_apply_http_headers = true
+ext_apply_http_query = true
+
+# Protection static files
+is_static_file_protection = true
+static_file_protection_exts = ["php", "html", "htm"]

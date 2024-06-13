@@ -2,6 +2,7 @@ import type { MetaFunction } from "@remix-run/node";
 import classNames from "classnames";
 import _ from "lodash";
 import { useState, useEffect, useCallback } from "react";
+import toast from "react-hot-toast";
 import BigInput from "~/components/BigInput";
 import Button from "~/components/Button";
 import Input from "~/components/Input";
@@ -102,6 +103,10 @@ export default function Resources() {
     webConfig.axiosFactory("PRIVATE").then((i) => {
       i.get(webConfig.apiEndpointFactory(ApiPathEnum.GetAllFilesShort)).then((res) => {
         setFilesPlaceholder(res.data.value);
+
+        if (res.data.value) {
+          setModelFileUri(_.first(res.data.value));
+        }
       });
     });
 
@@ -137,6 +142,10 @@ export default function Resources() {
   const onCreateResource = useCallback(() => {
     let data = new FormData();
 
+    if (!modelResourceId) {
+      return;
+    }
+
     data.append("resource_id", modelResourceId || "");
     data.append("driver", modelDriver || "");
 
@@ -156,7 +165,13 @@ export default function Resources() {
         if (res.status == 201) {
           setIsModalCreateVisible(false);
           fether();
+
+          toast.success("Resource created");
+        } else {
+          toast.error("Resource not created");
         }
+      }).catch(() => {
+        toast.error("Resource not created");
       });
     });
   }, [modelContent, modelDriver, modelFileUri, modelResourceId, typeOfContent]);

@@ -281,7 +281,6 @@ export default {
       traffic: "Traffic",
       zone: "Database Zone",
       files: "Files",
-
     },
 
     menu: {

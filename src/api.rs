@@ -1,14 +1,11 @@
-#[path = "dto/filter.rs"] mod filter;
-#[path = "dto/resource.rs"] mod resource;
-#[path = "dto/asn_record.rs"] mod asn_record;
-#[path = "dto/postback_payout_postback.rs"] mod postback_payout_postback;
-
-use std::{fs, path::{Path, PathBuf}};
+use std::{collections::HashMap, fs, path::{Path, PathBuf}};
 use chrono::{Duration, Utc};
 use mongodb::{bson::doc, options::FindOptions, sync::Collection};
 use rocket::{form::Form, http::{ContentType, Status}, FromForm};
 use serde::{Serialize, Deserialize};
-use crate::{config::CONFIG, database::get_database, p_kit::{get_all_runtime_plugins, PluginRuntimeManifest, PLUGINS_RUNTIME}, resource_kit::Resource, router::Route};
+use crate::{config::CONFIG, database::get_database, dto_factory::{asn_record, postback_payout_postback::{self, PostbackPayoutPostback}}, dynamic_router::Route, plugin::{get_all_runtime_plugins, PluginRuntimeManifest}, resource_kit::Resource};
+use glob::glob;
+use crate::dto_factory::filter;
 
 #[derive(FromForm)]
 #[derive(Serialize, Deserialize, Debug)]
@@ -58,6 +55,48 @@ pub struct CreateResource {
   pub driver: String,
   pub file_path: Option<String>,
   pub raw_data: Option<String>,
+}
+
+#[get("/config")]
+pub fn get_config() -> (Status, (ContentType, String)) {
+  let mut config: HashMap<String, String> = HashMap::new();
+
+  for (key, value) in CONFIG.iter() {
+    config.insert(key.to_string(), value.to_string());
+  }
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      serde_json::json!({
+        "isOk": true,
+        "error": null,
+        "value": config
+      }).to_string()
+    )
+  )
+}
+
+#[get("/plugins/list")]
+pub fn get_all_plugins() -> (Status, (ContentType, String)) {
+  let mut plugins: Vec<PluginRuntimeManifest> = Vec::new();
+
+  for plugin in get_all_runtime_plugins() {
+    plugins.push(plugin);
+  }
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      serde_json::json!({
+        "isOk": true,
+        "error": null,
+        "value": plugins
+      }).to_string()
+    )
+  )
 }
 
 #[post("/route/create", data = "<input>")]
@@ -293,7 +332,9 @@ pub fn create_new_resource(input: Form<CreateResource>) -> (Status, (ContentType
   }
 
   if input.file_path.is_some() {
-    if !Path::new(&"./public/*".replace("*", input.file_path.as_ref().unwrap().as_str())).exists() {
+    let path = input.file_path.clone().unwrap().to_string();
+    
+    if !Path::new(path.as_str()).exists() {
       return (
         Status::BadRequest, 
         (
@@ -329,7 +370,14 @@ pub fn create_new_resource(input: Form<CreateResource>) -> (Status, (ContentType
     driver: input.driver.clone(),
     resource_id: input.resource_id.clone(),
     raw_content: input.raw_data.clone(),
-    file_path: input.file_path.clone(),
+    file_path: if input.file_path.is_some() {
+      let path = input.file_path.clone().unwrap().to_string();
+      let some = fs::canonicalize(path).unwrap().display().to_string();
+
+      Some(some)
+    } else {
+      None
+    }
   };
 
   // let collection: Collection<filter::Filter> = get_database(String::from("filters"))
@@ -616,13 +664,21 @@ pub fn write_file(path: FileOverviewPath, file: Form<WriteFileValue>) -> (Status
 
 #[get("/file/list/short")]
 pub fn get_files_as_placeholder() -> (Status, (ContentType, String)) {
-  let files = fs::read_dir(CONFIG["http_server_serve_path"].as_str().unwrap())
-    .expect("Unable to read directory");
+  let base = CONFIG["http_server_serve_path"].as_str().unwrap();
+
+  let files = glob(&"@/**/index.*".replace("@", &base)).expect("Failed to read glob pattern");
 
   let files = files
-    .map(|file| file.unwrap().path())
+    .map(|file| file.unwrap())
     .filter(|file| file.is_file())
-    .map(|file| file.display().to_string().replace(CONFIG["http_server_serve_path"].as_str().unwrap(), ""))
+    .map(|file| file
+      .canonicalize()
+      .unwrap()
+      .into_os_string()
+      .into_string()
+      .unwrap()
+      .to_string()
+    )
     .collect::<Vec<String>>();
 
   let value = serde_json::json!({
@@ -1161,7 +1217,7 @@ pub fn get_all_requests() -> (Status, (ContentType, String))  {
 
 #[get("/postback/list")]
 pub fn get_all_postbacks() -> (Status, (ContentType, String))  {
-  let collection: Collection<postback_payout_postback::PostbackPayoutPostback> = get_database(String::from("requests"))
+  let collection: Collection<PostbackPayoutPostback> = get_database(String::from("requests"))
     .collection("postbacks");
 
   let mut result = collection
@@ -1175,7 +1231,7 @@ pub fn get_all_postbacks() -> (Status, (ContentType, String))  {
     )
     .expect("Failed to find ASN requests");
   
-  let mut vector: Vec<postback_payout_postback::PostbackPayoutPostback> = Vec::new();
+  let mut vector: Vec<PostbackPayoutPostback> = Vec::new();
 
   while let Some(doc) = result.next() {
     vector.push(doc.expect("Unable to get document"));

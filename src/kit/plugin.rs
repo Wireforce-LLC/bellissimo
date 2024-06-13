@@ -1,8 +1,9 @@
 use std::{collections::HashMap, fs, path::Path, sync::{Mutex, Once}, vec};
 use colored::Colorize;
+use serde::Serialize;
 use v8::CreateParams;
 use crate::config::CONFIG;
-use toml::{Table};
+use toml::Table;
 
 static INIT: Once = Once::new();
 
@@ -11,7 +12,7 @@ pub struct PluginManifest {
   pub absolute_path: String,
 }
 
-// #[derive(Clone)]
+#[derive(Serialize, Debug)]
 pub struct PluginRuntimeManifest {
   pub name: String,
   pub absolute_path: String,
@@ -42,7 +43,6 @@ struct Context {
 
 lazy_static! {
   pub static ref PLUGINS: Mutex<HashMap<String, PluginManifest>> = Mutex::new(HashMap::new());
-
   pub static ref PLUGINS_RUNTIME: Mutex<Vec<PluginRuntimeManifest>> = Mutex::new(Vec::new());
   pub static ref PLUGINS_MANIFESTS: Table = toml::from_str(fs::read_to_string("./plugins.toml").unwrap().as_str()).unwrap();
 }
