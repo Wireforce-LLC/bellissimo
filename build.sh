@@ -1,20 +1,39 @@
 #!/bin/bash
 
-## Prebuild
-mkdir -p plugins
-mkdir -p public
-
-touch plugins.toml
-
 if [ "$(uname)" != "Linux" -a "$(uname)" != "Darwin" ]; then
     echo "Only Linux and macOS are supported" >&2
     exit 0
 fi
 
-docker compose build
+echo """
+----------------------------------
+Bellissimo Build Tools
+----------------------------------
+"""
 
-cd web || exit
+## Prebuild
+echo "Prebuilding..."
+echo "Creating folders..."
+mkdir -p plugins
+mkdir -p public
 
-npm install
-npm run build
+echo "Creating plugins.toml..."
+touch plugins.toml
 
+## Build
+echo "Building core..."
+echo "Do you want to build binaries of bellissimo-core? (y/n)"\
+&& read -r answer
+if [ "$answer" != "${answer#[Yy]}" ] ;then
+    docker compose build
+fi
+
+echo "Building Web..."
+echo "Do you want to build web of bellissimo? (y/n)"\
+&& read -r answer
+if [ "$answer" != "${answer#[Yy]}" ] ;then
+    cd web || exit
+
+    npm install
+    npm run build
+fi
