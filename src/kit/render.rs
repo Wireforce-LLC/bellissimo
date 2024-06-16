@@ -104,9 +104,9 @@ fn default_method_webmanifest(resource: Resource, _meta: HashMap<String, String>
 }
 
 fn default_method_json_write(_resource: Resource, _meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
-  let json_raw_string = "{\"value\": *}".replace("*", _resource.raw_content.unwrap().as_str());
+  let json_raw_string = _resource.raw_content.unwrap();
 
-  let _: serde::de::IgnoredAny = serde_json::from_str(json_raw_string.clone().as_str())
+  let _: serde::de::IgnoredAny = serde_json::from_str(json_raw_string.as_str())
     .expect("Unable to deserialize json");
 
   let json_raw = json_raw_string.clone().to_string();
