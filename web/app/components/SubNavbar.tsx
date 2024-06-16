@@ -6,7 +6,11 @@ interface Props {
   readonly createActionLabel?: string;
 }
 
-export default function SubNavbar({ title, createActionLabel, onCreateAction }: Props) {
+export default function SubNavbar({
+  title,
+  createActionLabel,
+  onCreateAction,
+}: Props) {
   return (
     <div className="w-full bg-white">
       <div className="w-full h-[38px] bg-white font-medium flex items-center border-b border-b-zinc-200">

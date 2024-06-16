@@ -45,7 +45,7 @@ export default function Input({
         // className="w-full px-3 py-1 border border-black outline-none focus:outline-none"
         // className="w-full rounded-lg px-3 py-1 font-medium text-sm placeholder-gray-400 hover:border-gray-400 focus-within:border-gray-400 border-gray-300 focus:border-black transition-colors duration-75 border-2 outline-none focus:outline-none"
         className={classNames(
-          "w-full h-8 px-3 py-1 text-sm placeholder-gray-400 hover:border-gray-200 focus-within:border-gray-400 border-gray-200 focus:border-gray-500 transition-colors duration-75 border-[0.115em] outline-none focus:outline-none",
+          "w-full h-8 px-3 py-1 disabled:text-gray-400 text-sm placeholder-gray-400 hover:border-gray-200 focus-within:border-gray-400 border-gray-200 focus:border-gray-500 transition-colors duration-75 border-[0.115em] outline-none focus:outline-none",
           className
         )}
       />

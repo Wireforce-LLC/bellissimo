@@ -350,16 +350,36 @@ pub async fn router(
   let collection: Collection<Route> =
     get_database(String::from("routes")).collection("routes");
 
-  let find_result = collection
+  let mut find_result = collection
     .find_one(
       doc! {
         "path": &path_as_string,
-        // "domain": domain
+        "domain": domain
       },
       FindOneOptions::builder().build(),
     )
-    .expect("Unable to find result")
+    .unwrap()
     .or(None);
+
+  if find_result.is_none() {
+    find_result = collection
+      .find_one(
+        doc! {
+          "path": &path_as_string,
+          "$or": [
+            {"domain": "any"},
+            {"domain": "*"},
+            {"domain": ""},
+            {"domain": null},
+            {"domain": "ANY"},
+            {"domain": "everyone"},
+          ]
+        },
+        FindOneOptions::builder().build(),
+      )
+      .unwrap()
+      .or(None);
+  }
 
   if find_result.is_none() {
     return Some(not_found());

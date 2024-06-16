@@ -1,0 +1,15 @@
+{
+  "background_color": "white",
+  "description": "PWA",
+  "display": "fullscreen",
+  "icons": [
+    {
+      "src": "icon/example.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "name": "Application",
+  "short_name": "Application",
+  "start_url": "/"
+}

@@ -57,7 +57,7 @@ export default function Filters() {
     { name: "==", value: "==" },
     { name: "!=", value: "!=" },
     { name: "~", value: "~" },
-    { name: 'in', value: "in" },
+    { name: "in", value: "in" },
   ]);
 
   const [modelFilterName, setModelFilterName] = useState<string | undefined>();
@@ -108,7 +108,6 @@ export default function Filters() {
     });
   }, []);
 
-
   /**
    * Returns a JSX element based on the pluginName and value.
    * If the pluginName is "asn::owner", a Select component is returned.
@@ -131,12 +130,10 @@ export default function Filters() {
         return (
           <Select
             label="Filter value"
-            values={
-              Object.keys(asnGroups).map((key) => ({
-                name: key,
-                value: key,
-              }))
-            }
+            values={Object.keys(asnGroups).map((key) => ({
+              name: key,
+              value: key,
+            }))}
             value={value}
             onChangeValue={onChangeValue}
           />
@@ -403,7 +400,29 @@ export default function Filters() {
       <Table
         headers={["Name", "Filter ID", "Conditions count"]}
         data={data?.map((it) => {
-          return { ...it, conditions: it.conditions.length };
+          return {
+            ...it,
+            name: (
+              <div className="flex flex-row items-center w-full justify-start gap-2">
+                <span className="cursor-pointer" onClick={() => {}}>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    fill="currentColor"
+                    className="size-4 text-gray-400 hover:text-gray-700 hover:bg-gray-200 p-0.5 rounded"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M11.013 2.513a1.75 1.75 0 0 1 2.475 2.474L6.226 12.25a2.751 2.751 0 0 1-.892.596l-2.047.848a.75.75 0 0 1-.98-.98l.848-2.047a2.75 2.75 0 0 1 .596-.892l7.262-7.261Z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </span>
+                <span>{it.name || "-"}</span>
+              </div>
+            ),
+            conditions: it.conditions.length,
+          };
         })}
       />
     </DashboardLayout>

@@ -3,6 +3,7 @@ import production from "./production";
 
 export enum ApiPathEnum {
   Ping = "/ping",
+  GetResource = "/api/resource",
   GetAllFiles = "/api/file/list/all",
   GetFile = "/api/file/read",
   WriteFile = "/api/file/write",
@@ -11,6 +12,7 @@ export enum ApiPathEnum {
   Resources = "/api/resource/list",
   Resource = "/api/resource/",
   Route = "/api/route/",
+  CreateFile = "/api/file/create",
   GetAllFilesShort = "/api/file/list/short",
   GetMoneyVolumeByPostbacks = "/api/postback/24h-amount",
 
@@ -25,26 +27,92 @@ export enum ApiPathEnum {
 }
 
 // API endpoint host
-const API_ENDPOINT = process.env.NODE_ENV === 'development' ?
-  "http://localhost:8000" :
-  production.API_HOST;
+const API_ENDPOINT =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:8000"
+    : production.API_HOST;
 
 /* @deprecated */
 const AXIOS_INSTANCE_PUBLIC = axios.create({
   baseURL: "/",
   headers: {
-    'X-Database-Zone': ""
-  }
+    "X-Database-Zone": "",
+  },
 });
 
 async function getPrivateAxiosInstance() {
   return axios.create({
     baseURL: "/",
-    headers: {
-      
-    }
+    headers: {},
   });
 }
+
+export const DRIVERS = [
+  {
+    name: "JSON",
+    description: "Return JSON data",
+    value: "json",
+    rules: {
+      valueType: "any",
+    },
+  },
+  {
+    name: "HTML",
+    description: "Render single HTML page",
+    value: "html",
+    rules: {
+      valueType: "file",
+    },
+  },
+  {
+    name: "JavaScript Redirect",
+    description: "Redirect to other path with JS",
+    value: "redirect::javascript",
+    rules: {
+      valueType: "raw",
+    },
+  },
+  {
+    name: "WebManifest",
+    description: "For Progressive Web App (PWA)",
+    value: "webmanifest",
+    rules: {
+      valueType: "raw",
+    },
+  },
+  {
+    name: "Meta Redirect",
+    description: "Redirect to other path with <meta>",
+    value: "redirect::meta",
+    rules: {
+      valueType: "raw",
+    },
+  },
+  {
+    name: "HTML Proxy",
+    description: "Reverse proxy, like target site hosted in this resource",
+    value: "proxy::html",
+    rules: {
+      valueType: "raw",
+    },
+  },
+  {
+    name: "PHP",
+    description: "Render PHP page",
+    value: "php",
+    rules: {
+      valueType: "file",
+    },
+  },
+  {
+    name: "HTTP Status Page",
+    description: "Render HTTP status page with message",
+    value: "http_status_page",
+    rules: {
+      valueType: "raw",
+    },
+  },
+];
 
 export default {
   apiEndpoint: API_ENDPOINT,
@@ -60,7 +128,7 @@ export default {
       case "PUBLIC":
         return axios.create({
           baseURL: "/",
-          headers: {}   
+          headers: {},
         });
     }
   },

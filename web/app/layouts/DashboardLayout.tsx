@@ -7,10 +7,9 @@ import DashboardBasicWrapper from "~/components/DashboardBasicWrapper";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import getDatasetDashboardLeftBar from "~/dataset/DashboardLeftBar";
 import webConfig, { ApiPathEnum } from "~/web.config";
-import { Link } from "@remix-run/react";
 
-import wireforceLogo from "../../public/wireforce-logo.png";
-import rightTopImage from "../../public/top-right-01.png";
+import wireforceLogo from "/wireforce-logo.png";
+import rightTopImage from "/top-right-01.png";
 
 function MenuElement(
   currentLeftActiveBarItem: LeftActiveBarItem | null | undefined
@@ -76,19 +75,28 @@ export default function DashboardLayout({
   useEffect(() => {
     webConfig.axiosFactory("PRIVATE").then((data) => {
       data
-        .get(webConfig.apiEndpointFactory(ApiPathEnum.GetMoneyVolumeByPostbacks))
+        .get(
+          webConfig.apiEndpointFactory(ApiPathEnum.GetMoneyVolumeByPostbacks)
+        )
         .then((response) => {
           setMoneyVolume(response.data.value);
         });
-    })
+    });
   }, []);
 
-  useEffect(() => {  
+  useEffect(() => {
     // @ts-ignore
-    const isSafari = /constructor/i.test(String(window.HTMLElement)) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || (typeof window['safari'] !== 'undefined' && safari?.pushNotification));
+    const isSafari =
+      /constructor/i.test(String(window.HTMLElement)) ||
+      (function (p) {
+        return p.toString() === "[object SafariRemoteNotification]";
+      })(
+        !window["safari"] ||
+          (typeof window["safari"] !== "undefined" && safari?.pushNotification)
+      );
 
     setSafari(isSafari);
-  }, [])
+  }, []);
 
   const pingRequest = useCallback(() => {
     webConfig.axiosFactory("PRIVATE").then((data) => {
@@ -155,7 +163,7 @@ export default function DashboardLayout({
             View({
               children: (
                 <div className="h-full w-full overflow-y-auto bg-[#edf2f4] bg-opacity-50">
-                  <section className="">{children}</section>
+                  <section className="h-full w-full">{children}</section>
                 </div>
               ),
             }),

@@ -31,8 +31,7 @@ export default function DashboardMenuItem({
         "flex px-2 pl-4 h-[37px] justify-between flex-row items-center gap-2.5 cursor-pointer",
         {
           "text-[#060931] bg-[#ebecfd] font-medium": isActive,
-          "text-gray-400 hover:bg-[#f3f4fe] hover:text-gray-500":
-            !isActive,
+          "text-gray-400 hover:bg-[#f3f4fe] hover:text-gray-500": !isActive,
         }
       )}
     >

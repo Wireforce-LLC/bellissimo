@@ -6,7 +6,7 @@ http_workers = 0 # set to 0 to auto detect number of cpus
 http_ident = "Nginx"
 http_keep_alive = 10
 
-http_server_serve_path = "public" # path with static files
+http_server_serve_path = "./public" # path with static files
 # path (for serve (like http://{http_server_address}/{http_server_serve_uri_path}))
 # with static files
 http_server_serve_uri_path = "/static" 
@@ -19,6 +19,7 @@ is_http_future_robots_txt = true
 is_http_future_postbacks = true
 is_http_future_static_serve = true
 is_http_future_ping = true
+is_http_future_kit = true
 
 not_found_message = "Page not found"
 

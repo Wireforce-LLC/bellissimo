@@ -10,6 +10,8 @@ import string from "~/localization/polyglot";
 import webConfig, { ApiPathEnum } from "~/web.config";
 import humanizeString from "humanize-string";
 import { flatten } from "flat";
+import FirstRecordPlease from "~/components/FirstRecordPlease";
+import serverImage from "/server.png";
 
 export const meta: MetaFunction = () => {
   return [{ title: string("meta.title.filters") }];
@@ -56,33 +58,40 @@ export default function Requests() {
           title="Overview request"
         >
           <div className="w-full overflow-hidden">
-            <Table data={
-              modalOverviewData.map(([key, value]: string[]) => {
+            <Table
+              data={modalOverviewData.map(([key, value]: string[]) => {
                 if (key == "route_way") {
                   return {
                     key,
-                    value: "Data is corrupted"
-                  }
+                    value: "Data is corrupted",
+                  };
                 }
-                
+
                 if (key == "query") {
                   return {
                     key,
-                    value: "Data is corrupted"
-                  }
+                    value: "Data is corrupted",
+                  };
                 }
 
                 return {
                   key,
-                  value
-                }
-              })
-            } headers={["Key", "Value"]} />
+                  value,
+                };
+              })}
+              headers={["Key", "Value"]}
+            />
           </div>
         </Modal>
       )}
 
       <SubNavbar title={string("dashboard.subtitle.asnRecords")} />
+
+      <FirstRecordPlease 
+       title="Received requests"
+       text="When any router receives any request, you will see it here"
+       isVisible={_.isEmpty(data) && _.isArray(data)}
+       icon={<img className="h-20" src={serverImage} alt="Server image"/>}/>
 
       <Table
         headers={
@@ -112,10 +121,12 @@ export default function Requests() {
                 {moment(it.time / 1000).format("DD.MM.YYYY HH:mm")}
               </span>
             ),
-            headers: <span>
-              <span>{_.size(it.headers)}</span>{" "}
-              <span className="text-gray-400">times</span>
-            </span>,
+            headers: (
+              <span>
+                <span>{_.size(it.headers)}</span>{" "}
+                <span className="text-gray-400">times</span>
+              </span>
+            ),
             route_way: it.route_way ? "Existing" : "Unknown",
             query: it.query ? "Yes" : "No",
             asn_country_code: it?.asn_country_code && (

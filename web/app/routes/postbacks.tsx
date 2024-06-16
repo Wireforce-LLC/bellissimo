@@ -73,20 +73,21 @@ export default function Postbacks() {
 
       <div className="w-full flex flex-col justify-center items-start px-4 pt-2 pb-2.5 bg-white border-b border-b-gray-200">
         <h2 className="text-sm font-bold">
-          How to send postbacks <span className="text-gray-400">(webhooks)</span>?
+          How to send postbacks{" "}
+          <span className="text-gray-400">(webhooks)</span>?
         </h2>
         <p className="text-xs font-normal text-gray-500">
-          Sending postbacks is very easy. Set up a posbek link in your affiliate program as follows:
+          Sending postbacks is very easy. Set up a posbek link in your affiliate
+          program as follows:
         </p>
 
-        {
-          typeof window !== "undefined" && (
-            <p className="text-xs font-normal text-blue-500 block mt-2">
-              {window.location.protocol}//{window.location.hostname}/service/postback?{`uuid={uuid}&date={date}&status={status}&ip={ip}&amount={amount}&stream={stream}&currency={currency}&time={time}`}
-            </p>
-          )
-        }
-        
+        {typeof window !== "undefined" && (
+          <p className="text-xs font-normal text-blue-500 block mt-2">
+            {window.location.protocol}//{window.location.hostname}
+            /service/postback?
+            {`uuid={uuid}&date={date}&status={status}&ip={ip}&amount={amount}&stream={stream}&currency={currency}&time={time}`}
+          </p>
+        )}
       </div>
 
       <Table

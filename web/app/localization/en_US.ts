@@ -1,6 +1,8 @@
-const APP_NAME = "Bellissimo";
+const APP_NAME = "Bell";
 
 export default {
+  productName: APP_NAME,
+
   const: {
     nonValue: "No value",
     loadingData: "Getting content",
@@ -33,8 +35,9 @@ export default {
   filters: {
     create: {
       resourcesNotFoundTitle: "Resources not found",
-      resourcesNotFoundDescription: "For create new filters please, create one or more resources. Without resources you can not create new filter conditions.",
-    }
+      resourcesNotFoundDescription:
+        "For create new filters please, create one or more resources. Without resources you can not create new filter conditions.",
+    },
   },
 
   routes: {
@@ -45,10 +48,10 @@ export default {
 
       resourcesNotFoundTitle: "Resources not found",
       resourcesNotFoundDescription: "Please, create new resources",
-    
+
       anyNotFoundTitle: "Filters and resources not found",
       anyNotFoundDescription: "Please, create new filters and resources",
-    }
+    },
   },
 
   login: {
@@ -93,55 +96,58 @@ export default {
   thread: {
     title: "Integration methods",
     h1: "Events registration options",
-    subtitle: "You can collect data from wherever it is convenient for you. Even from a satellite on Mars",
+    subtitle:
+      "You can collect data from wherever it is convenient for you. Even from a satellite on Mars",
     topTabs: ["Overview", "Analytic", "Intergrations", "Export Data"],
     visitor: {
       h1: "Visitor registration methods",
-      subtitle: "You can specify information about each user that you were able to identify in order to assign a series of events to him"
+      subtitle:
+        "You can specify information about each user that you were able to identify in order to assign a series of events to him",
     },
 
     export: {
       google: {
-        title: "Export events to Google ADs via HTTPs"
-      }
+        title: "Export events to Google ADs via HTTPs",
+      },
     },
 
     cards: {
       countEvents: {
-        title: "Volume of registered events"
+        title: "Volume of registered events",
       },
       countVisitors: {
-        title: "Volume of visitors"
-      }
+        title: "Volume of visitors",
+      },
     },
 
     tabs: {
       c: {
-        tip: "To successfully compile the code, use the following command: g++ FILE.cpp -lcurl -o FILE This command compiles the source file FILE.cpp into an executable file named FILE using the GNU C++ (g++) compiler.The - lcurl flag tells the compiler to include the libcurl library when compiling, which is necessary to use the functionality from this library."
-      }
-    }
+        tip: "To successfully compile the code, use the following command: g++ FILE.cpp -lcurl -o FILE This command compiles the source file FILE.cpp into an executable file named FILE using the GNU C++ (g++) compiler.The - lcurl flag tells the compiler to include the libcurl library when compiling, which is necessary to use the functionality from this library.",
+      },
+    },
   },
 
   visitor: {
     title: "Visitor overview",
-    topTabs: ['Overview', "Events", "User-As-Object"]
+    topTabs: ["Overview", "Events", "User-As-Object"],
   },
 
   zone: {
     title: "Choose the optimal data storage area",
-    subtitle: "If it is important to your business or your personal needs that data be stored on specific servers in specific countries, please select the appropriate zone.",
+    subtitle:
+      "If it is important to your business or your personal needs that data be stored on specific servers in specific countries, please select the appropriate zone.",
     details: {
       SHARED: {
         text: "Common zone. Small amount of data, but at the same time it is fast enough",
         location: "Switzerland",
-        provider: "Internal"
+        provider: "Internal",
       },
       DEVELOPMENT: {
         text: "Data zone for debugging your scripts and mechanisms. You can only store so much data in this zone, but you will have virtually no cache latency. Great for debugging",
         location: "Switzerland",
-        provider: "Internal"
-      }
-    }
+        provider: "Internal",
+      },
+    },
   },
 
   navbar: {
@@ -154,12 +160,12 @@ export default {
   traffic: {
     cards: {
       mainStat: {
-        title: "Main Stat"
+        title: "Main Stat",
       },
       sourcesStat: {
-        title: "Sources"
-      }
-    }
+        title: "Sources",
+      },
+    },
   },
 
   trafficLink: {
@@ -167,19 +173,19 @@ export default {
       username: "Username",
       password: "Password",
       host: "Hostname",
-      submit: 'Create integration',
+      submit: "Create integration",
       connected: {
         title: "Yes",
-        text: 'Yes1'
-      }
-    }
+        text: "Yes1",
+      },
+    },
   },
 
   createThread: {
     hint: {
       events: "Events",
       title: "FAQ: Creating a new thread",
-      text: "With threads, you separate the events that come to your panel. Each event comes in its own flow. You can work with streams from any system that has access to the Internet: from a website or application to an IoT device"
+      text: "With threads, you separate the events that come to your panel. Each event comes in its own flow. You can work with streams from any system that has access to the Internet: from a website or application to an IoT device",
     },
     form: {
       threadName: "Thread name",
@@ -188,51 +194,51 @@ export default {
       threadType: "Thread type",
 
       threadTypes: {
-        "REACT_NATIVE_APPLICATION": "React Native Application",
-        "FLUTTER_APPLICATION": "Flutter Application",
-        "EXPO_APPLICATION": "Expo Application",
-        "IOT_DEVICE": "IoT device",
-        "IOS_APPLICAION": "iOS Application",
-        "ANDROID_APPLICATION": "Android Application",
-        "WINDOWS_APPLICATION": "Windows Application",
-        "LINUX_APPLICATION": "Linux Application",
-        "MACOS_APPLICATION": "MacOS Application",
-        "WEBSITE": "Website",
-        "REACT_WEBSITE": "React Website",
-        "VUE_WEBSITE": "Vue Website",
-        "NATIVE_HTTP_API": "HTTP",
-        "S2S_POSTBACK": "S2S postback",
-        "TRAFFIC_LIGHT_TUNNEL": "TrafficLight Tunnel"
+        REACT_NATIVE_APPLICATION: "React Native Application",
+        FLUTTER_APPLICATION: "Flutter Application",
+        EXPO_APPLICATION: "Expo Application",
+        IOT_DEVICE: "IoT device",
+        IOS_APPLICAION: "iOS Application",
+        ANDROID_APPLICATION: "Android Application",
+        WINDOWS_APPLICATION: "Windows Application",
+        LINUX_APPLICATION: "Linux Application",
+        MACOS_APPLICATION: "MacOS Application",
+        WEBSITE: "Website",
+        REACT_WEBSITE: "React Website",
+        VUE_WEBSITE: "Vue Website",
+        NATIVE_HTTP_API: "HTTP",
+        S2S_POSTBACK: "S2S postback",
+        TRAFFIC_LIGHT_TUNNEL: "TrafficLight Tunnel",
       },
 
       submit: "Create thread",
 
       created: {
         title: "New thread created",
-        text: "You have successfully created a new data stream. You can get instructions for installing ThreadPixel or setting up the integration on the thread page, accessible from the Threads page."
+        text: "You have successfully created a new data stream. You can get instructions for installing ThreadPixel or setting up the integration on the thread page, accessible from the Threads page.",
       },
 
       notCreated: {
         title: "New thread created",
-        text: "Couldn't create a new thread for you"
-      }
-    }
+        text: "Couldn't create a new thread for you",
+      },
+    },
   },
 
   events: {
     grid: {
       grouped: {
-        title: "Events by name"
+        title: "Events by name",
       },
       latest: {
-        title: "Latest events"
-      }
-    }
+        title: "Latest events",
+      },
+    },
   },
 
   dashboard: {
     actions: {
-      create: "Create"
+      create: "Create",
     },
     visitors: {
       table: {
@@ -242,8 +248,8 @@ export default {
           sex: "Sex",
           age: "Age",
           country: "Country",
-        }
-      }
+        },
+      },
     },
 
     threads: {
@@ -252,8 +258,8 @@ export default {
           name: "Name",
           slug: "Slug",
           group: "Group",
-        }
-      }
+        },
+      },
     },
 
     events: {
@@ -261,9 +267,9 @@ export default {
         header: {
           name: "Name",
           time: "Time",
-          value: "Value"
-        }
-      }
+          value: "Value",
+        },
+      },
     },
 
     subtitle: {

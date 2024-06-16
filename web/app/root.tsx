@@ -11,7 +11,7 @@ import _ from "lodash";
 import { ReactNode } from "react";
 import Navbar, { PageIdEnum } from "~/components/Navbar";
 import stylesheet from "~/tailwind.css?url";
-import {Toaster} from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
@@ -30,9 +30,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <body>
         <main>{children}</main>
         <div>
-          <Toaster 
-            position="bottom-right"
-            reverseOrder={false}/>
+          <Toaster position="bottom-right" reverseOrder={false} />
         </div>
 
         <ScrollRestoration />

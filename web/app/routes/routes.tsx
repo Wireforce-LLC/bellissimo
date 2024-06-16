@@ -4,16 +4,20 @@ import humanizeString from "humanize-string";
 import _ from "lodash";
 import moment from "moment";
 import { useState, useEffect, useCallback } from "react";
+import toast from "react-hot-toast";
 import Button from "~/components/Button";
 import ErrorString from "~/components/ErrorString";
+import FirstRecordPlease from "~/components/FirstRecordPlease";
 import Input from "~/components/Input";
 import Modal from "~/components/Modal";
 import Select from "~/components/Select";
 import SubNavbar from "~/components/SubNavbar";
 import Table from "~/components/Table";
+import ViewRouteEmbed from "~/embed/ViewRoute";
 import DashboardLayout, { LeftActiveBarItem } from "~/layouts/DashboardLayout";
 import string from "~/localization/polyglot";
 import webConfig, { ApiPathEnum } from "~/web.config";
+import routerImage from "/router.png";
 
 export const meta: MetaFunction = () => {
   return [{ title: string("meta.title.routes") }];
@@ -37,20 +41,6 @@ export default function Routes() {
   const [protocol, setProtocol] = useState<string | undefined>("http");
 
   const [isModalOverviewData, setModalOverviewData] = useState<any>();
-
-  const [lastOpenOverviewData, setLastOpenOverviewData] = useState<number>(
-    0
-  );
-
-  const [time, setTime] = useState<number>(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTime(moment().unix());
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     setHost(window.location.hostname);
@@ -80,7 +70,6 @@ export default function Routes() {
             };
           })
         );
-        
       });
 
       i.get(webConfig.apiEndpointFactory(ApiPathEnum.Resources)).then((res) => {
@@ -208,48 +197,30 @@ export default function Routes() {
           onClose={() => setModalOverviewData(undefined)}
           title="Overview route"
         >
-          <div className="w-full overflow-hidden mb-4">
-            <h2 className="text-xl font-medium text-left mb-0 p-0">{isModalOverviewData?.name}</h2>
-            <p className="flex flex-row items-center mb-4">
-              <span className="text-xs text-left font-normal text-blue-500">{isModalOverviewData?.domain}</span>
-              <span className="text-xs text-left font-normal text-blue-500">{isModalOverviewData?.path}</span>
-            </p>
-
-            <div className="w-full flex flex-row justify-start items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-3">
-                <path fillRule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 0 1 .628.74v2.288a2.25 2.25 0 0 1-.659 1.59l-4.682 4.683a2.25 2.25 0 0 0-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 0 1 8 18.25v-5.757a2.25 2.25 0 0 0-.659-1.591L2.659 6.22A2.25 2.25 0 0 1 2 4.629V2.34a.75.75 0 0 1 .628-.74Z" clipRule="evenodd" />
-              </svg>
-
-              <span className="text-xs text-left font-normal text-black">{isModalOverviewData?.filter_id}</span>
-            </div>
-
-            <div className="w-full flex flex-row justify-start items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-3">
-                <path fillRule="evenodd" d="M4.25 2A2.25 2.25 0 0 0 2 4.25v2.5A2.25 2.25 0 0 0 4.25 9h2.5A2.25 2.25 0 0 0 9 6.75v-2.5A2.25 2.25 0 0 0 6.75 2h-2.5Zm0 9A2.25 2.25 0 0 0 2 13.25v2.5A2.25 2.25 0 0 0 4.25 18h2.5A2.25 2.25 0 0 0 9 15.75v-2.5A2.25 2.25 0 0 0 6.75 11h-2.5Zm9-9A2.25 2.25 0 0 0 11 4.25v2.5A2.25 2.25 0 0 0 13.25 9h2.5A2.25 2.25 0 0 0 18 6.75v-2.5A2.25 2.25 0 0 0 15.75 2h-2.5Zm0 9A2.25 2.25 0 0 0 11 13.25v2.5A2.25 2.25 0 0 0 13.25 18h2.5A2.25 2.25 0 0 0 18 15.75v-2.5A2.25 2.25 0 0 0 15.75 11h-2.5Z" clipRule="evenodd" />
-              </svg>
-
-              <span className="text-xs text-left font-normal text-black">{isModalOverviewData?.resource_id}</span>
-            </div>
-          </div>
-
-          <Button
-            variant="delete"
-            disabled={
-              !(time - lastOpenOverviewData > 3)
-            }
-            onPress={() => {
-              console.log(isModalOverviewData)
+          <ViewRouteEmbed
+            onDeleteRoute={(name) => {
               webConfig.axiosFactory("PRIVATE").then((axios) => {
-                axios
-                  .delete(webConfig.apiEndpointFactory(ApiPathEnum.Route) + isModalOverviewData.name)
+                toast
+                  .promise(
+                    axios.delete(
+                      webConfig.apiEndpointFactory(ApiPathEnum.Route) +
+                        "/" +
+                        name
+                    ),
+                    {
+                      loading: "Deleting route...",
+                      success: "Route deleted",
+                      error: "Failed to delete route",
+                    }
+                  )
                   .then(() => {
+                    fether();
                     setModalOverviewData(undefined);
-                  })
-              })
+                  });
+              });
             }}
-          >
-            Delete
-          </Button>
+            resourceName={isModalOverviewData}
+          />
         </Modal>
       )}
 
@@ -277,6 +248,8 @@ export default function Routes() {
                       "text-red-500 font-semibold":
                         modelDomain?.startsWith("http://") ||
                         modelDomain?.startsWith("https://"),
+
+                      "text-blue-500 bg-blue-50 border-blue-200": modelDomain == "any"
                     })}
                     onChangeValue={setModelDomain}
                   />
@@ -341,6 +314,12 @@ export default function Routes() {
         onCreateAction={() => setIsModalCreateVisible(true)}
       />
 
+      <FirstRecordPlease 
+        title="Create router"
+        text="Create your first router to route traffic from different domains, different paths. Create and manage full-fledged routers"
+        isVisible={_.isEmpty(data) && _.isArray(data)}
+        icon={<img className="h-20" src={routerImage} alt="Server image"/>}/>
+
       <Table
         headers={
           data &&
@@ -353,19 +332,28 @@ export default function Routes() {
         data={data?.map((it) => ({
           ...it,
           name: (
-            <span
+            <div className="flex flex-row items-center w-full justify-start gap-2">
+              <span
+                className="cursor-pointer"
                 onClick={() => {
-                  webConfig.axiosFactory("PRIVATE").then(i => {
-                    i.get(webConfig.apiEndpointFactory(ApiPathEnum.Route) + it.name).then(i => {
-                      setModalOverviewData(i.data.value);
-                      setLastOpenOverviewData(moment().unix());
-                    })
-                  })
+                  setModalOverviewData(it.name);
                 }}
-                className="text-gray-400 hover:underline"
               >
-                {it.name}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                  className="size-4 text-gray-400 hover:text-gray-700 hover:bg-gray-200 p-0.5 rounded"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M11.013 2.513a1.75 1.75 0 0 1 2.475 2.474L6.226 12.25a2.751 2.751 0 0 1-.892.596l-2.047.848a.75.75 0 0 1-.98-.98l.848-2.047a2.75 2.75 0 0 1 .596-.892l7.262-7.261Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
               </span>
+              <span>{it.name || "-"}</span>
+            </div>
           ),
           path: (
             <div className="flex flex-row gap-1.5 items-center">

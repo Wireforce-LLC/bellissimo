@@ -19,7 +19,12 @@ pub fn bootstrap_fs() {
     let is_public_exist = Path::new(CONFIG["http_server_serve_path"].as_str().unwrap()).exists();
   
     if !is_public_dir && !is_public_exist {
-      fs::create_dir("./public").expect("Unable to create public directory");
+      fs::create_dir(CONFIG["http_server_serve_path"].as_str().unwrap()).expect("Unable to create public directory");
+    }
+
+    unsafe {
+      fs::create_dir(format!("{}/objects", CONFIG["http_server_serve_path"].as_str().unwrap())).unwrap_unchecked();
+      fs::create_dir(format!("{}/plugins", CONFIG["http_server_serve_path"].as_str().unwrap())).unwrap_unchecked();
     }
   
     let is_pugins_dir = Path::new(CONFIG["dir_plugins"].as_str().unwrap()).is_dir();

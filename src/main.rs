@@ -91,9 +91,14 @@ async fn register_routes_and_attach_server() {
   let is_http_future_static_serve: bool = CONFIG["is_http_future_static_serve"].as_bool().unwrap();
   let is_http_future_ping: bool = CONFIG["is_http_future_ping"].as_bool().unwrap();
   let is_http_future_main_router: bool = CONFIG["is_http_future_main_router"].as_bool().unwrap();
+  let is_http_future_kit =  CONFIG["is_http_future_kit"].as_bool().unwrap();
 
   // Launch Rocket
   let mut rocket_server = rocket::custom(&config);
+
+  if is_http_future_kit {
+    rocket_server = rocket_server.mount("/", routes![main_routes::webmanifest]);
+  }
 
   if is_http_future_static_serve {
     // rocket_server = rocket_server.mount(http_server_serve_uri_path, static_server);
@@ -112,6 +117,8 @@ async fn register_routes_and_attach_server() {
     rocket_server = rocket_server
       .mount(http_api_uri_path, routes![api::get_config])
       .mount(http_api_uri_path, routes![api::get_all_plugins])
+      .mount(http_api_uri_path, routes![api::update_resource_by_id])
+      .mount(http_api_uri_path, routes![api::create_file])
 
       .mount(http_api_uri_path, routes![api::get_postback_amount])
 
@@ -148,6 +155,7 @@ async fn register_routes_and_attach_server() {
 
   if is_http_future_main_router {
     rocket_server = rocket_server.mount(http_base_route_uri_path, routes![dynamic_router::router]);
+    rocket_server = rocket_server.mount(http_base_route_uri_path, routes![main_routes::object_get]);
   }
 
   rocket_server

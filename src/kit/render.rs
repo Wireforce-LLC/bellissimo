@@ -78,6 +78,30 @@ fn default_method_js_redirect(resource: Resource, _meta: HashMap<String, String>
   Box::pin(closure)
 }
 
+fn default_method_webmanifest(resource: Resource, _meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
+  let raw_json: String = resource.raw_content.clone().unwrap();
+  let ref_content: &str = include_str!("../../containers/webmanifest");
+
+  let mut ref_content: HashMap<String, Value> = serde_json::from_str(ref_content).unwrap_or(HashMap::new());
+  let raw_json: HashMap<String, Value> = serde_json::from_str(raw_json.as_str()).unwrap_or(HashMap::new());
+
+  ref_content.extend(raw_json);
+
+  let content = serde_json::json!(ref_content).to_string();
+
+  let closure = async move { 
+    (
+      Status::Ok,
+      (
+        ContentType::JSON,
+        content
+      )
+    )
+  };
+
+  Box::pin(closure)
+}
+
 fn default_method_json_write(_resource: Resource, _meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
   let json_raw_string = "{\"value\": *}".replace("*", _resource.raw_content.unwrap().as_str());
 
@@ -90,7 +114,7 @@ fn default_method_json_write(_resource: Resource, _meta: HashMap<String, String>
     (
       Status::Ok,
       (
-        ContentType::HTML,
+        ContentType::JSON,
         json_raw
       )
     )
@@ -448,6 +472,7 @@ pub fn register_default_render_methods() {
   register_render_method("html", default_method_html);
   register_render_method("php", default_method_php);
   register_render_method("http_status_page", default_method_http_status_page);
+  register_render_method("webmanifest", default_method_webmanifest);
   
   for plugin in plugin::get_all_runtime_plugins() {
     if &plugin.attach_at == "render_driver" && &plugin.engine == "v8" {

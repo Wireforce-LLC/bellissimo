@@ -1,11 +1,18 @@
-use std::{collections::HashMap, fs, path::{Path, PathBuf}};
+use std::{collections::HashMap, fs, path::{self, Path, PathBuf}};
 use chrono::{Duration, Utc};
-use mongodb::{bson::doc, options::FindOptions, sync::Collection};
-use rocket::{form::Form, http::{ContentType, Status}, FromForm};
+use mongodb::{bson::{bson, doc}, options::FindOptions, results, sync::Collection};
+use rocket::{form::Form, futures::future::join, http::{ContentType, Status}, FromForm};
 use serde::{Serialize, Deserialize};
-use crate::{config::CONFIG, database::get_database, dto_factory::{asn_record, postback_payout_postback::{self, PostbackPayoutPostback}}, dynamic_router::Route, plugin::{get_all_runtime_plugins, PluginRuntimeManifest}, resource_kit::Resource};
+use crate::{config::CONFIG, database::get_database, dto_factory::{asn_record, postback_payout_postback::{self, PostbackPayoutPostback}, resource}, dynamic_router::Route, plugin::{get_all_runtime_plugins, PluginRuntimeManifest}, resource_kit::Resource};
 use glob::glob;
 use crate::dto_factory::filter;
+
+#[derive(FromForm)]
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreateFile {
+  pub name: String,
+  pub pwd: String,
+}
 
 #[derive(FromForm)]
 #[derive(Serialize, Deserialize, Debug)]
@@ -516,6 +523,64 @@ pub fn get_resource_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
   }
 }
 
+#[put("/resource/<id..>", data = "<input>")]
+pub fn update_resource_by_id(id: PathBuf, input: Form<CreateResource>) -> (Status, (ContentType, String)) {
+  let collection: Collection<Resource> = get_database(String::from("resources"))
+    .collection("resources");
+
+  if collection.count_documents(
+    doc! {
+      "resource_id": id.display().to_string()
+    },
+    None
+  ).expect("Unable to count documents") == 0 {
+    return (
+      Status::NotFound, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Resource not found",
+          "value": null
+        }).to_string()
+      )
+    )
+  }
+
+  let result = collection
+    .update_one(
+      doc! {
+        "resource_id": id.display().to_string()
+      },
+      doc! {
+        "$set": {
+          "driver": input.driver.clone(),
+          "resource_id": input.resource_id.clone(),
+          "raw_content": input.raw_data.clone(),
+          "file_path": input.file_path.clone(),
+        }
+      },
+      None
+    )
+    .expect("Failed to update resource");
+
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": result.modified_count,
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
+} 
+
 #[delete("/resource/<id..>")]
 pub fn delete_resource_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
   let collection: Collection<Resource> = get_database(String::from("resources"))
@@ -591,6 +656,120 @@ pub fn get_all_resources() -> (Status, (ContentType, String))  {
 
   return (
     Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
+}
+
+#[post("/file/create", data = "<input>")]
+pub fn create_file(input: Form<CreateFile>) -> (Status, (ContentType, String)) {
+  let uri = format!(
+    "{}/{}",
+    &input.pwd,
+    &input.name
+  );
+
+  if uri.contains("..") {
+    return (
+      Status::BadRequest, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Server can't handle .. for navigation",
+          "value": null
+        }).to_string()
+      )
+    )
+  }
+
+  let path = String::from(
+    &format!(
+      "{}/{}",
+      CONFIG["http_server_serve_path"].as_str().unwrap(),
+      &uri
+    )
+  );
+
+  if Path::new(&path).exists() {
+    return (
+      Status::BadRequest, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "File already exists",
+          "value": null
+        }).to_string()
+      )
+    )
+  }
+
+  if Path::new(&path).parent().unwrap().exists() == false && !path.contains("/objects/") && !path.contains("/plugins/") {
+    let parent_path_as_string = Path::new(&path).parent().unwrap().to_str().unwrap();
+
+    fs::create_dir_all(parent_path_as_string).expect("Failed to create directory");
+  }
+
+  if path.contains("/objects/") && !path.ends_with(".json") {
+    return (
+      Status::BadRequest, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "File must be a JSON file",
+          "value": null
+        }).to_string()
+      )
+    ) 
+  }
+
+  if path.contains("/plugins/") && !path.ends_with(".js") {
+    return (
+      Status::BadRequest, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "File must be a JS file",
+          "value": null
+        }).to_string()
+      )
+    ) 
+  }
+
+  let result = fs::write(
+    &path,
+    ""
+  );
+
+  if result.is_err() {
+    return (
+      Status::InternalServerError, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Failed to create file",
+          "value": null
+        }).to_string()
+      )
+    )
+  }
+
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": null,
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Created, 
     (
       ContentType::JSON,
       result
@@ -861,7 +1040,8 @@ pub fn get_all_drivers_for_resources() -> (Status, (ContentType, String))  {
     "redirect::meta",
     "redirect::javascript",
     "php",
-    "http_status_page"
+    "http_status_page",
+    "webmanifest"
   ];
 
   let plugins = get_all_runtime_plugins();

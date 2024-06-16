@@ -1,156 +1,119 @@
 import type { MetaFunction } from "@remix-run/node";
-import _ from "lodash";
-import { useState, useEffect, useCallback, useRef } from "react";
-import Modal from "~/components/Modal";
+import _, { set } from "lodash";
 import SubNavbar from "~/components/SubNavbar";
 import DashboardLayout, { LeftActiveBarItem } from "~/layouts/DashboardLayout";
 import string from "~/localization/polyglot";
+import FileEditorEmbed from "~/embed/FileEditor";
+import { useCallback, useEffect, useState } from "react";
+import Modal from "~/components/Modal";
+import Input from "~/components/Input";
+import Button from "~/components/Button";
 import webConfig, { ApiPathEnum } from "~/web.config";
-import Editor, { DiffEditor, useMonaco, loader } from '@monaco-editor/react';
 import toast from "react-hot-toast";
 
 export const meta: MetaFunction = () => {
   return [{ title: string("meta.title.files") }];
 };
 
-
+/**
+ * Represents a file list page.
+ * @returns The rendered file list page.
+ */
 export default function Files() {
-  const [data, setData] = useState<any[] | undefined>(undefined);
-  const [rawContent, setRawContent] = useState<string>("");
+  /**
+   * The visibility state of the modal to create a file.
+   */
+  const [isModalCreateVisible, setIsModalCreateVisible] = useState(false);
 
-  const [currentPwd, setCurrentPwd] = useState("/");
-  const [cursorOnFile, setCursorOnFile] = useState<string|undefined>();
-  const [rawLanguage, setRawLanguage] = useState<string>("html");
+  /**
+   * The current path of the file editor.
+   */
+  const [pwd, setPwd] = useState<string | undefined>();
+  const [name, setName] = useState<string | undefined>();
 
-  const editorRef = useRef<HTMLDivElement|null>(null);
-
-  useEffect(() => {
-    let ext = String(cursorOnFile?.split('.').pop()).toLowerCase()
-
-    switch (ext) {
-      case 'js':
-        setRawLanguage('javascript');
-        break;
-    
-      default:
-        setRawLanguage(ext);
-        break;
+  /**
+   * Handles the keydown event.
+   * @param e - The keydown event.
+   */
+  const keydownHandler = (e: KeyboardEvent) => {
+    if(e.key === 'n' && (e.ctrlKey || e.metaKey || e.altKey)) {
+      e.preventDefault()
+      setIsModalCreateVisible(true)
     }
-  }, [rawContent]);
+  };
 
-  useEffect(() => {
-    fether();
-  }, [currentPwd]);
-
-  useEffect(() => {
-    setCursorOnFile(undefined);
-  }, [currentPwd]);
-  
-  useEffect(() => {
-    if (cursorOnFile) {
-      setRawContent("Loading... 😈");
-
-      webConfig.axiosFactory("PRIVATE").then((i) => {
-        i.get(webConfig.apiEndpointFactory(ApiPathEnum.GetFile) + '?path=' + cursorOnFile).then(
-          (res) => {
-            setRawContent(res.data.value);
-          }
-        );
-      });  
-    }
-  }, [cursorOnFile]);
-
-  const fether = useCallback(() => {
+  const onCreateFile = useCallback(() => {
     webConfig.axiosFactory("PRIVATE").then((i) => {
-      i.get(webConfig.apiEndpointFactory(ApiPathEnum.GetAllFiles) + '?path=' + currentPwd).then(
-        (res) => {
-          setData(res.data.value);
-        }
-      );
-    });
-  }, [currentPwd]); 
+      const data = new FormData();
 
+      data.append("pwd", pwd!);
+      data.append("name", name!); 
+
+      toast.promise(i.post(webConfig.apiEndpointFactory(ApiPathEnum.CreateFile), data), {
+        loading: "Creating file...",
+        success: <div>
+          <span className="font-medium">File created successfully</span>
+          <p className="text-xs text-zinc-500">{pwd}/{name}</p>
+        </div>,
+        error: "Failed to create file"
+      });
+    })
+  }, [pwd, name]);
+
+  useEffect(() => {
+    // Add the keydown event listener
+    document.addEventListener('keydown', keydownHandler);
+
+    // Remove the keydown event listener when the component unmounts
+    return () => {
+      document.removeEventListener('keydown', keydownHandler);
+    }
+  }, []);
+
+  /**
+   * Renders the file list page.
+   * @returns The rendered file list page.
+   */
   return (
     <DashboardLayout
       subTitle={string("dashboard.subtitle.files")}
       currentLeftActiveBarItem={LeftActiveBarItem.FILES}
     >
-      <SubNavbar 
-        createActionLabel="Save file"
-        onCreateAction={() => {
-          if (_.isEmpty(rawContent)) {
-            return
-          }
-          
-          let data = new FormData();
+      <SubNavbar
+        onCreateAction={() => setIsModalCreateVisible(true)}
+        createActionLabel="Create file"
+        title={string("dashboard.subtitle.files")}
+      />
 
-          data.append("content", rawContent);
+      {/* Render the modal to create a file */}
+      {
+        isModalCreateVisible && (
+          <Modal
+            title="Create file"
+            onClose={() => setIsModalCreateVisible(false)}
+          >
+            <div className="flex flex-col gap-4">
+              <Input
+                value={pwd}
+                onChangeValue={(it) => setPwd(it)}
+                label="PWD"
+                isDisabled
+                placeholder="PWD" />
 
-          webConfig.axiosFactory("PRIVATE").then((i) => {
-            toast.promise(
-              i.post(
-                webConfig.apiEndpointFactory(ApiPathEnum.WriteFile) + '?path=' + cursorOnFile,
-                data
-              ),
-               {
-                 loading: 'Saving...',
-                 success: 'File saved!',
-                 error: 'Could not save.',
-               }
-             );
-            }
-          );
-        
-        }}
-        title={string("dashboard.subtitle.files")} />
+              <Input
+                value={name}
+                onChangeValue={(it) => setName(it)}
+                label="Path"
+                placeholder="Path" />
 
-      <div className="w-full h-full bg-white overflow-hidden flex flex-row">
-        <div className="w-[200px] h-full divide-y divide-zinc-200 border-r ">
-          {_.orderBy(data || [], "is_file").map((it) => (
-            <div onClick={() => {
-              if (!it.is_file) {
-                setCurrentPwd(it.path)
-              } else {
-                setCursorOnFile(it.path);
-              }
-            }} className="w-full cursor-pointer flex flex-row items-center gap-2 bg-white py-1 px-2">
-              {!it.is_file ? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-3 fill-yellow-500">
-                <path d="M3.75 3A1.75 1.75 0 0 0 2 4.75v3.26a3.235 3.235 0 0 1 1.75-.51h12.5c.644 0 1.245.188 1.75.51V6.75A1.75 1.75 0 0 0 16.25 5h-4.836a.25.25 0 0 1-.177-.073L9.823 3.513A1.75 1.75 0 0 0 8.586 3H3.75ZM3.75 9A1.75 1.75 0 0 0 2 10.75v4.5c0 .966.784 1.75 1.75 1.75h12.5A1.75 1.75 0 0 0 18 15.25v-4.5A1.75 1.75 0 0 0 16.25 9H3.75Z" />
-                </svg> : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-3 fill-gray-500">
-                  <path d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0 0 16.5 9h-1.875a1.875 1.875 0 0 1-1.875-1.875V5.25A3.75 3.75 0 0 0 9 1.5H5.625Z" />
-                  <path d="M12.971 1.816A5.23 5.23 0 0 1 14.25 5.25v1.875c0 .207.168.375.375.375H16.5a5.23 5.23 0 0 1 3.434 1.279 9.768 9.768 0 0 0-6.963-6.963Z" />
-                </svg>
-              }
-
-              <span className="text-xs">{_.last(_.split(it.path, "/"))}</span>
+              <Button onPress={onCreateFile}>Create</Button>
             </div>
-          ))}
-        </div>
+          </Modal>
+        )
+      }
 
-        <div className="overflow-hidden w-full h-full" ref={editorRef}>
-          {
-            typeof window !== "undefined" &&
-            <Editor
-              width={editorRef.current?.clientWidth} 
-              line={0}
-              height="calc(100vh - 120px)" 
-              defaultLanguage="html"
-              language={rawLanguage}
-              value={rawContent}
-              theme="vs-light"
-              options={{
-                formatOnType: true,
-                formatOnPaste: true
-              }}
-              onChange={it => {
-                if (it) {
-                  setRawContent(it);
-                }
-              }} />
-          }
-        </div>
-      </div>
-      
+      {/* Render the file editor */}
+      <FileEditorEmbed onChangePwd={setPwd} pwd={pwd} />
     </DashboardLayout>
   );
 }
