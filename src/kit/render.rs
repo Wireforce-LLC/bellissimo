@@ -16,6 +16,7 @@ use std::{env, fs};
 use std::path::Path;
 use std::sync::Mutex;
 use tokio::net::TcpStream;
+use css_minify::optimizations::{Minifier, Level};
 
 lazy_static! {
   pub static ref RENDER_METHODS: Mutex<
@@ -463,8 +464,191 @@ fn plugin_v8(resource: Resource, meta: HashMap<String, String>) -> Pin<Box<dyn F
   Box::pin(closure)
 }
 
+// Serve static files JS
+fn default_method_serve_js_file(resource: Resource, _meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
+  let closure = async move { 
+    if resource.file_path.is_some() {
+      let path = resource.file_path.unwrap();
+      let path = Path::new(&path);
+
+      if !path.exists() {
+        return (
+          Status::InternalServerError,
+          (
+            ContentType::from_extension(path.extension().unwrap().to_str().unwrap()).unwrap(),
+            "Unable to find file".to_string()
+          )
+        );
+      }
+
+      if !path.is_file() {
+        return (
+          Status::InternalServerError,
+          (
+            ContentType::from_extension(path.extension().unwrap().to_str().unwrap()).unwrap(),
+            "You are trying to reference a directory instead of a file".to_string()
+          )
+        );
+      }
+
+      let content = fs::read_to_string(path).unwrap();
+
+      return (
+        Status::Ok,
+        (
+          ContentType::JavaScript,
+          content
+        )
+      );
+    } else if resource.raw_content.is_some() {
+      return (
+        Status::Ok,
+        (
+          ContentType::JavaScript,
+          resource.raw_content.unwrap().to_string()
+        )
+      );
+    } else {
+      return (
+        Status::InternalServerError,
+        (
+          ContentType::JavaScript,
+          "Unable to serve resource".to_string()
+        )
+      );
+    }
+  };
+
+  Box::pin(closure)
+}
+
+// Serve static files css
+fn default_method_serve_css_file(resource: Resource, _meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
+  let closure = async move { 
+    if resource.file_path.is_some() {
+      let path = resource.file_path.unwrap();
+      let path = Path::new(&path);
+
+      if !path.exists() {
+        return (
+          Status::InternalServerError,
+          (
+            ContentType::from_extension(path.extension().unwrap().to_str().unwrap()).unwrap(),
+            "Unable to find file".to_string()
+          )
+        );
+      }
+
+      if !path.is_file() {
+        return (
+          Status::InternalServerError,
+          (
+            ContentType::from_extension(path.extension().unwrap().to_str().unwrap()).unwrap(),
+            "You are trying to reference a directory instead of a file".to_string()
+          )
+        );
+      }
+
+      let content_raw = fs::read_to_string(path).unwrap();
+      let content = Minifier::default().minify(content_raw.clone().as_str(), Level::Three).unwrap_or(content_raw);
+
+      return (
+        Status::Ok,
+        (
+          ContentType::CSS,
+          content
+        )
+      );
+    } else if resource.raw_content.is_some() {
+      let content_raw = resource.raw_content.unwrap();
+      let content = Minifier::default().minify(content_raw.clone().as_str(), Level::Three).unwrap_or(content_raw);
+
+      return (
+        Status::Ok,
+        (
+          ContentType::CSS,
+          content
+        )
+      );
+    } else {
+      return (
+        Status::InternalServerError,
+        (
+          ContentType::CSS,
+          "Unable to serve resource".to_string()
+        )
+      );
+    }
+  };
+
+  Box::pin(closure)
+}
+
+// Serve static files (txt or based on extension)
+fn default_method_serve_plain_file(resource: Resource, _meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
+  let closure = async move { 
+    if resource.file_path.is_some() {
+      let path = resource.file_path.unwrap();
+      let path = Path::new(&path);
+
+      if !path.exists() {
+        return (
+          Status::InternalServerError,
+          (
+            ContentType::from_extension(path.extension().unwrap().to_str().unwrap()).unwrap(),
+            "Unable to find file".to_string()
+          )
+        );
+      }
+
+      if !path.is_file() {
+        return (
+          Status::InternalServerError,
+          (
+            ContentType::from_extension(path.extension().unwrap().to_str().unwrap()).unwrap(),
+            "You are trying to reference a directory instead of a file".to_string()
+          )
+        );
+      }
+
+      let content = fs::read_to_string(path).unwrap();
+
+      return (
+        Status::Ok,
+        (
+          ContentType::from_extension(path.extension().unwrap().to_str().unwrap()).unwrap(),
+          content
+        )
+      );
+
+    } else if resource.raw_content.is_some() {
+      return (
+        Status::Ok,
+        (
+          ContentType::from_extension("txt").unwrap(),
+          resource.raw_content.unwrap().to_string()
+        )
+      );
+    } else {
+      return (
+        Status::InternalServerError,
+        (
+          ContentType::from_extension("txt").unwrap(),
+          "Unable to serve resource".to_string()
+        )
+      );
+    }
+  };
+
+  Box::pin(closure)
+}
+
 // Register render methods
 pub fn register_default_render_methods() {
+  register_render_method("file::javascript", default_method_serve_js_file);
+  register_render_method("file::css", default_method_serve_css_file);
+  register_render_method("file::plain", default_method_serve_plain_file);
+
   register_render_method("proxy::html", default_method_proxy_html);
   register_render_method("redirect::meta", default_method_meta_redirect);
   register_render_method("redirect::javascript", default_method_js_redirect);

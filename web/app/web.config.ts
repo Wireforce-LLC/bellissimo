@@ -97,6 +97,30 @@ export const DRIVERS = [
     },
   },
   {
+    name: "JavaScript (.js) file",
+    value: "file::javascript",
+    description: "Serve static javascript file",
+    rules: {
+      valueType: "any",
+    },
+  },
+  {
+    name: "CSS (.css) file",
+    value: "file::css",
+    description: "Serve static css file",
+    rules: {
+      valueType: "any",
+    },
+  },
+  {
+    name: "Any file",
+    value: "file::plain",
+    description: "Serve static plain/text file",
+    rules: {
+      valueType: "any",
+    },
+  },
+  {
     name: "PHP",
     description: "Render PHP page",
     value: "php",
