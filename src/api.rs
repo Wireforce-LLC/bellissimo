@@ -192,11 +192,13 @@ pub fn get_requests_summary(query: HashMap<String, String>) -> (Status, (Content
     if record.headers.is_some() {
       let headers = record.headers.unwrap();
 
-      if !stat_by_host.contains_key(&headers.get("host").unwrap().to_string()) {
-        stat_by_host.insert(headers.get("host").unwrap().to_string(), 0);
+      if headers.get("host").is_some() {
+        if !stat_by_host.contains_key(&headers.get("host").unwrap().to_string()) {
+          stat_by_host.insert(headers.get("host").unwrap().to_string(), 0);
+        }
+    
+        stat_by_host.insert(headers.get("host").unwrap().to_string(), stat_by_host[&headers.get("host").unwrap().to_string()] + 1);         
       }
-  
-      stat_by_host.insert(headers.get("host").unwrap().to_string(), stat_by_host[&headers.get("host").unwrap().to_string()] + 1);        
     }
 
     requests_per_day.insert(date, requests_per_day[&date] + 1);
