@@ -14,6 +14,10 @@ pub fn bootstrap_fs() {
     if !Path::new("./plugins.toml").exists() {
       fs::write("./plugins.toml", example_plugins_toml).expect("Unable to create plugins.toml");
     }
+
+    if !Path::new("./config.local.toml").exists() {
+      fs::write("./config.local.toml", example_plugins_toml).expect("Unable to create config.local.toml");
+    }
   
     let is_public_dir = Path::new(CONFIG["http_server_serve_path"].as_str().unwrap()).is_dir();
     let is_public_exist = Path::new(CONFIG["http_server_serve_path"].as_str().unwrap()).exists();

@@ -420,13 +420,36 @@ fn default_method_html(resource: Resource, _meta: HashMap<String, String>) -> Pi
 }
 
 
-fn default_method_proxy_html(_resource: Resource, _meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
+fn default_method_proxy_html(resource: Resource, meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
   let closure = async move { 
+    if resource.file_path.is_some() {
+      return (
+        Status::InternalServerError,
+        (
+          ContentType::HTML,
+          "Unable to render resource".to_string()
+        )
+      )
+    }
+
+
+    let url_for_tunnel = resource.raw_content.unwrap();
+    let client = reqwest::Client::new();
+
+    let body = client
+      .get(url_for_tunnel)
+      .header("user-agent", meta.get("http-header-user-agent").unwrap_or(&"unknown".to_string()))
+      .send()
+      .await
+      .unwrap();
+
+    let status = body.status();
+
     (
-      Status::Ok,
+      Status::from_code(status.as_u16()).unwrap_or(Status::Ok),
       (
         ContentType::HTML,
-        "json_raw".to_string()
+        body.text().await.unwrap()
       )
     )
   };

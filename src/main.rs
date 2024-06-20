@@ -75,12 +75,6 @@ async fn register_routes_and_attach_server() {
     ..Config::debug_default()
   };
 
-  // Serve static files
-  let static_server = FileServer::new(
-    server_path, 
-    Options::Index | Options::NormalizeDirs
-  ).rank(3);
-
   let http_server_serve_uri_path: &str = CONFIG["http_server_serve_uri_path"].as_str().unwrap();
   let http_base_route_uri_path: &str = CONFIG["http_base_route_uri_path"].as_str().unwrap();
   let http_api_uri_path: &str = CONFIG["http_api_uri_path"].as_str().unwrap();
@@ -119,6 +113,8 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api::get_all_plugins])
       .mount(http_api_uri_path, routes![api::update_resource_by_id])
       .mount(http_api_uri_path, routes![api::create_file])
+      .mount(http_api_uri_path, routes![api::get_requests_summary])
+      .mount(http_api_uri_path, routes![api::set_route_params])
 
       .mount(http_api_uri_path, routes![api::get_postback_amount])
 

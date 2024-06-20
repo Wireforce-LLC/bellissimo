@@ -18,3 +18,4 @@ web/app/production.ts
 public/
 plugins/
 plugins.toml
+config.local.toml

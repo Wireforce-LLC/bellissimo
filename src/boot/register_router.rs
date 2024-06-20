@@ -457,7 +457,7 @@ pub async fn router(
     route_way.push(way);
 
     if result {
-      let meta = create_meta_dataset_for_template(
+      let mut meta = create_meta_dataset_for_template(
         &x_real_ip.0.to_owned(),
         domain,
         &user_agent.0.to_owned(),
@@ -465,6 +465,11 @@ pub async fn router(
         query.clone(),
         &resource
       );
+
+      if result_route.params.is_some() {
+        let params = result_route.params.clone().unwrap();
+        meta.extend(params);
+      }
 
       let closure = rdr_kit::render_resource_for_http(resource, meta);
       let out = closure.await;
@@ -495,7 +500,7 @@ pub async fn router(
 
   if !result_route.resource_id.is_none() {
     let resource = resource_kit::require_resource(result_route.resource_id.unwrap().as_str());
-    let meta: HashMap<String, String> = create_meta_dataset_for_template(
+    let mut meta: HashMap<String, String> = create_meta_dataset_for_template(
       &x_real_ip.0.to_owned(),
       domain,
       &user_agent.0.to_owned(),
@@ -504,6 +509,10 @@ pub async fn router(
       &resource
     );
 
+    if result_route.params.is_some() {
+      let params = result_route.params.clone().unwrap();
+      meta.extend(params);
+    }
 
     return Some(rdr_kit::render_resource_for_http(resource, meta).await);
   }

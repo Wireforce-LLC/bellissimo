@@ -5,6 +5,41 @@ use asn_db::Record;
 use rocket::http::HeaderMap;
 use uaparser::{Parser, UserAgentParser};
 
+// Filter method by Proxycheck
+fn proxycheck_io(_this: &str, x_real_ip: &str, _user_agent: &str, _raw_headers: HeaderMap, _asn_record: Option<&Record>, _filter_value: &str, operator: &str) -> bool {
+  let always_disallow = vec!["::1", "127.0.0.1", "", "0.0.0.0"];
+  let token = CONFIG["proxycheck_io_token"].as_str().unwrap();
+
+  if always_disallow.contains(&x_real_ip) {
+    return false;
+  }
+
+  let response = reqwest
+    ::blocking
+    ::get("https://proxycheck.io/v2/".to_owned() + x_real_ip + "?key=public-" + token + "vpn=1");
+
+  if response.is_err() {
+    return false;
+  }
+
+  let response = response.unwrap();
+  let response = response.text().unwrap();
+  let response = serde_json::from_str::<HashMap<String, serde_json::Value>>(&response);
+
+  if response.is_err() {
+    return false;
+  }
+
+  let response = response.unwrap();
+  let response = response.get("proxy").unwrap();
+  let response = response.as_str().unwrap();
+
+  return match operator {
+    "==" => response == "yes",
+    "!=" => response != "yes",
+    _ => false,
+  }
+}
 
 pub fn register_default_filters() {
   filter_kit::register_filter(
@@ -94,10 +129,10 @@ pub fn register_default_filters() {
       let cuntry_code = asn_record.unwrap().country.clone().to_uppercase();
 
       return match operator {
-        "==" => cuntry_code == filter_value,
-        "!=" => cuntry_code != filter_value,
-        "~" => cuntry_code.contains(filter_value),
-        "in" => filter_value.split(",").collect::<Vec<&str>>().contains(&cuntry_code.as_str()),
+        "==" => cuntry_code == filter_value.to_uppercase(),
+        "!=" => cuntry_code != filter_value.to_uppercase(),
+        "~" => cuntry_code.contains(&filter_value.to_uppercase()),
+        "in" => filter_value.to_uppercase().split(",").collect::<Vec<&str>>().contains(&cuntry_code.as_str()),
 
         _ => false
       };
@@ -131,6 +166,19 @@ pub fn register_default_filters() {
         "==" => raw_headers.get_one("referer").unwrap_or("") == filter_value,
         "!=" => raw_headers.get_one("referer").unwrap_or("") != filter_value,
         "~" => raw_headers.get_one("referer").unwrap_or("").to_string().contains(filter_value),
+
+        _ => false
+      };
+    }
+  );
+
+  filter_kit::register_filter(
+    "accept_language",
+    |_this: &str, _x_real_ip: &str, _user_agent: &str, raw_headers: HeaderMap, _asn_record: Option<&Record>, filter_value: &str, operator: &str|  {
+      return match operator {
+        "==" => raw_headers.get_one("accept-language").unwrap_or("") == filter_value,
+        "!=" => raw_headers.get_one("accept-language").unwrap_or("") != filter_value,
+        "~" => raw_headers.get_one("accept-language").unwrap_or("").to_string().contains(filter_value),
 
         _ => false
       };
@@ -243,8 +291,8 @@ pub fn register_default_filters() {
   );
 
   filter_kit::register_filter(
-    "ua::os::family",
-    |_this: &str, _x_real_ip: &str, user_agent: &str, _raw_headers: HeaderMap, _asn_record: Option<&Record>, filter_value: &str, _operator: &str| {
+    "ua::device::family",
+    |_this: &str, _x_real_ip: &str, user_agent: &str, _raw_headers: HeaderMap, _asn_record: Option<&Record>, filter_value: &str, operator: &str| {
       if user_agent.is_empty() {
         return false;
       }
@@ -252,9 +300,65 @@ pub fn register_default_filters() {
       let ua_parser = UserAgentParser::from_bytes(include_bytes!("../../containers/user_agent_parser.bin")).expect("Parser creation failed");
       let client: uaparser::Client = ua_parser.parse(&user_agent);
 
-      client.os.family == filter_value
+      return match operator {
+        "==" => {
+          return client.device.family.to_lowercase() == filter_value.to_lowercase()
+        }
+
+        "!=" => {
+          return client.device.family.to_lowercase() != filter_value.to_lowercase()
+        }
+
+        "~" => {
+          return client.device.family.to_lowercase().contains(filter_value.to_lowercase().as_str())
+        }
+
+        _ => false
+      }
     }
   );
+
+  filter_kit::register_filter(
+    "ua::device::brand",
+    |_this: &str, _x_real_ip: &str, user_agent: &str, _raw_headers: HeaderMap, _asn_record: Option<&Record>, filter_value: &str, operator: &str| {
+      if user_agent.is_empty() {
+        return false;
+      }
+      
+      let ua_parser = UserAgentParser::from_bytes(include_bytes!("../../containers/user_agent_parser.bin")).expect("Parser creation failed");
+      let client: uaparser::Client = ua_parser.parse(&user_agent); 
+      let brand = client.device.brand;
+
+      if brand.is_none() {
+        return false;
+      }
+
+      let brand = brand.unwrap().to_lowercase();
+      
+      return match operator {
+        "==" => {
+          return brand == filter_value.to_lowercase()
+        }
+
+        "!=" => {
+          return brand != filter_value.to_lowercase()
+        }
+
+        "~" => {
+          return brand.contains(filter_value.to_lowercase().as_str())
+        }
+
+        _ => false
+      }
+    }
+  );
+
+  if CONFIG.contains_key("proxycheck_io_token") {
+    filter_kit::register_filter(
+      "proxycheck_io",
+      proxycheck_io
+    );
+  }
 }
 
 /**

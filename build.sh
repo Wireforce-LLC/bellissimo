@@ -20,6 +20,9 @@ mkdir -p public
 echo "Creating plugins.toml..."
 touch plugins.toml
 
+echo "Creating config.local.toml..."
+touch config.local.toml
+
 ## Build
 echo "Building core..."
 echo "Do you want to build binaries of bellissimo-core? (y/n)"\

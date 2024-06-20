@@ -1,9 +1,9 @@
-use std::{collections::HashMap, fs, path::{self, Path, PathBuf}};
-use chrono::{Duration, Utc};
-use mongodb::{bson::{bson, doc}, options::FindOptions, results, sync::Collection};
-use rocket::{form::Form, futures::future::join, http::{ContentType, Status}, FromForm};
+use std::{collections::{HashMap}, fs, path::{Path, PathBuf}};
+use chrono::{DateTime, Duration, TimeZone, Utc};
+use mongodb::{bson::{doc, document}, options::FindOptions, sync::Collection};
+use rocket::{form::Form, http::{ContentType, Status}, FromForm};
 use serde::{Serialize, Deserialize};
-use crate::{config::CONFIG, database::get_database, dto_factory::{asn_record, postback_payout_postback::{self, PostbackPayoutPostback}, resource}, dynamic_router::Route, plugin::{get_all_runtime_plugins, PluginRuntimeManifest}, resource_kit::Resource};
+use crate::{config::CONFIG, database::get_database, dto_factory::{asn_record, postback_payout_postback::{self, PostbackPayoutPostback}, resource}, dynamic_router::Route, filter_kit::{self, get_all_registred_filters_names}, plugin::{get_all_runtime_plugins, PluginRuntimeManifest}, resource_kit::Resource};
 use glob::glob;
 use crate::dto_factory::filter;
 
@@ -18,6 +18,12 @@ pub struct CreateFile {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FileOverviewPath {
   pub path: Option<String>,
+}
+
+#[derive(FromForm)]
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PutRouteParams {
+  pub name: String,
 }
 
 #[derive(FromForm)]
@@ -106,6 +112,133 @@ pub fn get_all_plugins() -> (Status, (ContentType, String)) {
   )
 }
 
+#[get("/requests/summary?<query>")]
+pub fn get_requests_summary(query: HashMap<String, String>) -> (Status, (ContentType, String)) {
+  let collection: Collection<asn_record::AsnRecord> = get_database(String::from("requests"))
+    .collection("asn_records");
+  
+  let mut ua_bots_counts: HashMap<String, i64> = HashMap::from([
+    ("bot".to_string(), 0),
+    ("not_bot".to_string(), 0),
+  ]);
+
+  let mut stat_by_host: HashMap<String, i64> = HashMap::new();
+  let mut requests_per_day: HashMap<chrono::DateTime<Utc>, i64> = HashMap::new();
+  let mut filter_ways:  HashMap<String, i64> = HashMap::new();
+
+  let mut result = collection
+    .find(
+      doc! {},
+      FindOptions::builder()
+        .sort(doc! { "time": -1 })
+        .limit(query.get("limit").unwrap_or(&"10000".to_string()).parse::<i64>().unwrap())
+        .skip(0)
+        .build()
+    )
+    .expect("Failed to find ASN requests");
+  
+  let mut vector: Vec<asn_record::AsnRecord> = Vec::new();
+
+  while let Some(doc) = result.next() {
+    vector.push(doc.unwrap());
+  }
+
+  for record in vector {
+    let date: DateTime<Utc> = Utc.timestamp_micros(record.clone().time).unwrap();
+
+    let routes = record.route_way.clone();
+
+    // Create a separate binding for the filtered routes
+    let filtered_routes: Vec<asn_record::RouteWay> = routes
+      .unwrap()
+      .into_iter()
+      .filter(|x| x.use_this_way)
+      .collect();
+
+    let right_way = filtered_routes.first().cloned();
+
+    if let Some(way) = right_way {
+        // Clone the name to create an owned value
+        let way_name = way.name;
+    
+        if !filter_ways.contains_key(&way_name) {
+            filter_ways.insert(way_name, 0);
+        } else {
+          // Update the counter for the route name
+          *filter_ways.entry(way_name).or_insert(0) += 1;
+        }
+    }
+
+    if !requests_per_day.contains_key(&date) {
+      requests_per_day.insert(date, 0);
+    }
+
+    if record.is_ua_bot.is_some() {
+      let is_bot = record.is_ua_bot.unwrap();
+      if is_bot {
+        ua_bots_counts
+          .entry("bot".to_string())
+          .and_modify(|v| *v += 1)
+          .or_insert(1);
+      } else {
+        ua_bots_counts
+          .entry("not_bot".to_string())
+          .and_modify(|v| *v += 1)
+          .or_insert(1);
+      }
+    }
+
+
+    if record.headers.is_some() {
+      let headers = record.headers.unwrap();
+
+      if !stat_by_host.contains_key(&headers.get("host").unwrap().to_string()) {
+        stat_by_host.insert(headers.get("host").unwrap().to_string(), 0);
+      }
+  
+      stat_by_host.insert(headers.get("host").unwrap().to_string(), stat_by_host[&headers.get("host").unwrap().to_string()] + 1);        
+    }
+
+    requests_per_day.insert(date, requests_per_day[&date] + 1);
+  }
+
+  let mut requests_per_day_string: HashMap<String, i64> = HashMap::new();
+
+  for (key, value) in requests_per_day.iter() {
+    let time = key.format("%Y-%m-%d").to_string();
+    requests_per_day_string
+      .entry(time)
+      .and_modify(|v| *v += value)
+      .or_insert(*value);
+  }
+
+  let bots_and_not_bots = ua_bots_counts.get("bot").unwrap_or(&0) + ua_bots_counts.get("not_bot").unwrap_or(&0);
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      serde_json::json!({
+        "isOk": true,
+        "error": null,
+        "value": {
+          "requests_per_day": requests_per_day_string,
+          "stat_by_host": stat_by_host,
+          "filter_ways": filter_ways,
+          "ua_bots": {
+            "is_bot": ua_bots_counts.get("bot").unwrap_or(&0),
+            "is_not_bot": ua_bots_counts.get("not_bot").unwrap_or(&0),
+            "percentage": {
+              "bot": ((*ua_bots_counts.get("bot").unwrap_or(&0) as f64) / (bots_and_not_bots as f64) * 100.0).round(),
+              "not_bot": ((*ua_bots_counts.get("not_bot").unwrap_or(&0) as f64) / (bots_and_not_bots as f64) * 100.0).round(),
+            }
+          }
+        }
+      }).to_string()
+    )
+  )
+}
+
 #[post("/route/create", data = "<input>")]
 pub fn create_new_route(input: Form<CreateRoute>) -> (Status, (ContentType, String)) {
   let collection: Collection<filter::Filter> = get_database(String::from("filters"))
@@ -163,7 +296,8 @@ pub fn create_new_route(input: Form<CreateRoute>) -> (Status, (ContentType, Stri
   };
 
   if collection.count_documents(doc! {
-    "path": input.path.clone()
+    "path": input.path.clone(),
+    "domain": input.domain.clone()
   }, None).expect("Unable to count documents") > 0 {
     return (
       Status::Conflict, 
@@ -1266,32 +1400,77 @@ pub fn delete_filter_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
   );
 }
 
+#[put("/resource/setParams?<name..>", data="<input>")]
+pub fn set_route_params(name: PutRouteParams, input: Form<HashMap<String, String>>) -> (Status, (ContentType, String)) {
+  let collection: Collection<Route> =
+    get_database(String::from("routes")).collection("routes");
+
+  let route_name = name.name.clone();
+  
+  let result = collection
+    .find_one(
+      doc! {
+        "name": route_name.clone()
+      },
+      None
+    )
+    .expect("Failed to find resource");
+
+  if result.is_none() {
+    return (
+      Status::NotFound, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Resource not found",
+          "value": null
+        }).to_string()
+      )
+    )
+  }
+
+  let params = input.into_inner();
+
+  let mut document = document::Document::new();
+
+  for (key, value) in params.iter() {
+    document.insert(key, value);
+  }
+
+  let result = collection.update_one(
+    doc! {
+      "name": route_name
+    },
+    doc! {
+      "$set": {
+        "params": document
+      }
+    },
+    None
+  );
+
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": result.unwrap().modified_count,
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
+}
+
+
 #[get("/filter/plugin/list")]
 pub fn get_all_plugins_for_filters() -> (Status, (ContentType, String))  {
-  let mut vector = vec![
-    "ua",
-    "ip",
-    "ua::bot",
-    "asn::owner",
-    "cookie::string",
-    "ip::country_code",
-    "asn::country_code",
-    "asn::groups",
-    "referrer",
-    "session_id"
-  ];
-
-  let plugins = get_all_runtime_plugins();
-
-  for plugin in plugins.iter() {
-    let name = &plugin.name;
-    
-    if &plugin.attach_at != "plugin_filter" {
-      continue;
-    }
-
-    vector.push(name.as_str());
-  }
+  let mut vector = filter_kit::get_all_registred_filters_names();
 
   let value = serde_json::json!({
     "isOk": true,

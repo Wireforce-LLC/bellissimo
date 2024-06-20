@@ -2,14 +2,14 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct RouteWay {
     pub name: String,
     pub use_this_way: bool,
 }
 
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct AsnRecord {
     pub request_id: String,
     pub time: i64,

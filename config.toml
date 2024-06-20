@@ -40,7 +40,7 @@ stdout_warning = true
 
 use_cloudflare_data_priority = true
 
-is_save_requests_in_mongodb = false
+is_save_requests_in_mongodb = true
 is_save_requests_in_elastic = false
 
 # Ext configs

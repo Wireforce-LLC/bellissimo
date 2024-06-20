@@ -16,6 +16,10 @@ pub fn register_filter(name: &str, function: fn(this: &str, x_real_ip: &str, use
     .insert(String::from(name), function);
 }
 
+pub fn get_all_registred_filters_names() -> Vec<String> {
+  return FILTERS_METHODS.lock().unwrap().keys().map(|x| -> String { String::from(x) }).collect();
+}
+
 pub fn is_filter(name: &str) -> bool {
   return FILTERS_METHODS
     .lock()
