@@ -11,6 +11,8 @@ Bellissimo Build Tools
 ----------------------------------
 """
 
+export BUILDKIT_PROGRESS=plain
+
 ## Prebuild
 echo "Prebuilding..."
 echo "Creating folders..."
