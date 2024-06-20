@@ -3,6 +3,7 @@ import classNames from "classnames";
 interface Props {
   readonly children: string;
   readonly onPress?: () => void;
+  readonly type?: string;
   readonly disabled?: boolean;
   readonly variant?: "primary" | "secondary" | "delete";
 }
@@ -10,6 +11,7 @@ interface Props {
 export default function Button({
   children,
   variant = "primary",
+  type,
   onPress,
   disabled,
 }: Props) {
@@ -17,6 +19,7 @@ export default function Button({
     <button
       onClick={onPress}
       disabled={disabled}
+      type={(type || "button") as "button" | "submit" | "reset" | undefined}
       className={classNames(
         "w-full disabled:text-[#52af59] disabled:cursor-not-allowed disabled:bg-[#e7f2e9] focus:outline focus:outline-gray-500 focus:outline-offset-2 px-2.5 py-1.5 font-medium text-xs text-white bg-[#52af59]",
         {

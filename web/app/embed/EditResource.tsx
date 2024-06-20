@@ -147,8 +147,9 @@ export default function EditResourceEmbed({
     <div className="space-y-4">
       <Input
         label="Primary Link" // The label for the input field.
-        value={protocol + '://' + host + "/object/get/" + resourceId} // The current value of the input field.
-        isDisabled/>
+        value={protocol + "://" + host + "/object/get/" + resourceId} // The current value of the input field.
+        isDisabled
+      />
 
       {/* Render the Input component for displaying the resource ID. */}
       <Input

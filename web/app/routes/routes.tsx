@@ -18,6 +18,8 @@ import DashboardLayout, { LeftActiveBarItem } from "~/layouts/DashboardLayout";
 import string from "~/localization/polyglot";
 import webConfig, { ApiPathEnum } from "~/web.config";
 import routerImage from "/router.png";
+import BigInput from "~/components/BigInput";
+import EditRouterParamsEmbed from "~/embed/EditRouterParams";
 
 export const meta: MetaFunction = () => {
   return [{ title: string("meta.title.routes") }];
@@ -41,6 +43,7 @@ export default function Routes() {
   const [protocol, setProtocol] = useState<string | undefined>("http");
 
   const [isModalOverviewData, setModalOverviewData] = useState<any>();
+  const [isModalEditParams, setModalEditParams] = useState<any>();
 
   useEffect(() => {
     setHost(window.location.hostname);
@@ -224,6 +227,16 @@ export default function Routes() {
         </Modal>
       )}
 
+      {isModalEditParams && (
+        <Modal
+          onClose={() => setModalEditParams(undefined)}
+          title="Edit params"
+          isBigModal
+        >
+          <EditRouterParamsEmbed routeName={isModalEditParams} />
+        </Modal>
+      )}
+
       {isModalCreateVisible && (
         <Modal
           title="Create route"
@@ -249,7 +262,8 @@ export default function Routes() {
                         modelDomain?.startsWith("http://") ||
                         modelDomain?.startsWith("https://"),
 
-                      "text-blue-500 bg-blue-50 border-blue-200": modelDomain == "any"
+                      "text-blue-500 bg-blue-50 border-blue-200":
+                        modelDomain == "any",
                     })}
                     onChangeValue={setModelDomain}
                   />
@@ -314,11 +328,12 @@ export default function Routes() {
         onCreateAction={() => setIsModalCreateVisible(true)}
       />
 
-      <FirstRecordPlease 
+      <FirstRecordPlease
         title="Create router"
         text="Create your first router to route traffic from different domains, different paths. Create and manage full-fledged routers"
         isVisible={_.isEmpty(data) && _.isArray(data)}
-        icon={<img className="h-20" src={routerImage} alt="Server image"/>}/>
+        icon={<img className="h-20" src={routerImage} alt="Server image" />}
+      />
 
       <Table
         headers={
@@ -331,8 +346,9 @@ export default function Routes() {
         }
         data={data?.map((it) => ({
           ...it,
+          params: it.params && _.values(it.params).length + " params",
           name: (
-            <div className="flex flex-row items-center w-full justify-start gap-2">
+            <div className="flex flex-row items-center w-full justify-start gap-0.5">
               <span
                 className="cursor-pointer"
                 onClick={() => {
@@ -352,7 +368,28 @@ export default function Routes() {
                   />
                 </svg>
               </span>
-              <span>{it.name || "-"}</span>
+
+              <span
+                className="cursor-pointer"
+                onClick={() => {
+                  setModalEditParams(it.name);
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                  className="size-4 text-gray-400 hover:text-gray-700 hover:bg-gray-200 p-0.5 rounded"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M2 2.75A.75.75 0 0 1 2.75 2h10.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 2.75Zm0 10.5a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1-.75-.75ZM2 6.25a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 6.25Zm0 3.5A.75.75 0 0 1 2.75 9h10.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 9.75Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </span>
+
+              <span className="ml-2">{it.name || "-"}</span>
             </div>
           ),
           path: (

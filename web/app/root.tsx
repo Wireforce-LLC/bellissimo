@@ -30,7 +30,20 @@ export function Layout({ children }: { children: ReactNode }) {
       <body>
         <main>{children}</main>
         <div>
-          <Toaster position="bottom-right" reverseOrder={false} />
+          <Toaster
+            toastOptions={{
+              className: "",
+              style: {
+                fontSize: 12,
+                border: "1px solid #e6e6e6",
+                padding: "4px 16px",
+                color: "white",
+                borderRadius: 0,
+              },
+            }}
+            position="bottom-right"
+            reverseOrder={false}
+          />
         </div>
 
         <ScrollRestoration />

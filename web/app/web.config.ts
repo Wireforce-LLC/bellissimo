@@ -12,9 +12,11 @@ export enum ApiPathEnum {
   Resources = "/api/resource/list",
   Resource = "/api/resource/",
   Route = "/api/route/",
+  RouteSetPrams = "/api/resource/setParams",
   CreateFile = "/api/file/create",
   GetAllFilesShort = "/api/file/list/short",
   GetMoneyVolumeByPostbacks = "/api/postback/24h-amount",
+  GetSummaryRequests = "/api/requests/summary",
 
   CreateRoutes = "/api/route/create",
   CreateResources = "/api/resource/create",
@@ -89,7 +91,7 @@ export const DRIVERS = [
     },
   },
   {
-    name: "HTML Proxy",
+    name: "Tunnel",
     description: "Reverse proxy, like target site hosted in this resource",
     value: "proxy::html",
     rules: {

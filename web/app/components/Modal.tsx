@@ -5,10 +5,17 @@ interface Props {
   readonly children: ReactNode;
   readonly title?: String;
   readonly isBigModal?: boolean;
+  readonly isNoPadding?: boolean;
   readonly onClose: () => void | any;
 }
 
-export default function Modal({ title, isBigModal, children, onClose }: Props) {
+export default function Modal({
+  title,
+  isBigModal,
+  children,
+  onClose,
+  isNoPadding = false,
+}: Props) {
   useEffect(() => {
     const handleEsc = (event: any) => {
       if (event.key === "Escape") {
@@ -35,7 +42,11 @@ export default function Modal({ title, isBigModal, children, onClose }: Props) {
         )}
       >
         <div className="w-full h-[calc(100%-32px)]">
-          <div className="w-full h-[32px] bg-[#f8f9fa] p-2 flex flex-row justify-between items-center border-b border-b-[#dee2e6] pb-2">
+          <div
+            className={classNames(
+              "w-full p-2 pb-2 h-[32px] bg-[#f8f9fa] flex flex-row justify-between items-center border-b border-b-[#dee2e6]"
+            )}
+          >
             <span className="text-xs font-medium">{title}</span>
             <button className="w-4 h-4 hover:bg-gray-100" onClick={onClose}>
               <svg
@@ -49,7 +60,14 @@ export default function Modal({ title, isBigModal, children, onClose }: Props) {
             </button>
           </div>
 
-          <div className="p-2 h-full w-full">{children}</div>
+          <div
+            className={classNames({
+              "p-2 h-full w-full": !isNoPadding,
+              "h-full w-full": isNoPadding,
+            })}
+          >
+            {children}
+          </div>
         </div>
       </div>
     </div>

@@ -36,9 +36,9 @@ export default function Files() {
    * @param e - The keydown event.
    */
   const keydownHandler = (e: KeyboardEvent) => {
-    if(e.key === 'n' && (e.ctrlKey || e.metaKey || e.altKey)) {
-      e.preventDefault()
-      setIsModalCreateVisible(true)
+    if (e.key === "n" && (e.ctrlKey || e.metaKey || e.altKey)) {
+      e.preventDefault();
+      setIsModalCreateVisible(true);
     }
   };
 
@@ -47,27 +47,34 @@ export default function Files() {
       const data = new FormData();
 
       data.append("pwd", pwd!);
-      data.append("name", name!); 
+      data.append("name", name!);
 
-      toast.promise(i.post(webConfig.apiEndpointFactory(ApiPathEnum.CreateFile), data), {
-        loading: "Creating file...",
-        success: <div>
-          <span className="font-medium">File created successfully</span>
-          <p className="text-xs text-zinc-500">{pwd}/{name}</p>
-        </div>,
-        error: "Failed to create file"
-      });
-    })
+      toast.promise(
+        i.post(webConfig.apiEndpointFactory(ApiPathEnum.CreateFile), data),
+        {
+          loading: "Creating file...",
+          success: (
+            <div>
+              <span className="font-medium">File created successfully</span>
+              <p className="text-xs text-zinc-500">
+                {pwd}/{name}
+              </p>
+            </div>
+          ),
+          error: "Failed to create file",
+        }
+      );
+    });
   }, [pwd, name]);
 
   useEffect(() => {
     // Add the keydown event listener
-    document.addEventListener('keydown', keydownHandler);
+    document.addEventListener("keydown", keydownHandler);
 
     // Remove the keydown event listener when the component unmounts
     return () => {
-      document.removeEventListener('keydown', keydownHandler);
-    }
+      document.removeEventListener("keydown", keydownHandler);
+    };
   }, []);
 
   /**
@@ -86,31 +93,31 @@ export default function Files() {
       />
 
       {/* Render the modal to create a file */}
-      {
-        isModalCreateVisible && (
-          <Modal
-            title="Create file"
-            onClose={() => setIsModalCreateVisible(false)}
-          >
-            <div className="flex flex-col gap-4">
-              <Input
-                value={pwd}
-                onChangeValue={(it) => setPwd(it)}
-                label="PWD"
-                isDisabled
-                placeholder="PWD" />
+      {isModalCreateVisible && (
+        <Modal
+          title="Create file"
+          onClose={() => setIsModalCreateVisible(false)}
+        >
+          <div className="flex flex-col gap-4">
+            <Input
+              value={pwd}
+              onChangeValue={(it) => setPwd(it)}
+              label="PWD"
+              isDisabled
+              placeholder="PWD"
+            />
 
-              <Input
-                value={name}
-                onChangeValue={(it) => setName(it)}
-                label="Path"
-                placeholder="Path" />
+            <Input
+              value={name}
+              onChangeValue={(it) => setName(it)}
+              label="Path"
+              placeholder="Path"
+            />
 
-              <Button onPress={onCreateFile}>Create</Button>
-            </div>
-          </Modal>
-        )
-      }
+            <Button onPress={onCreateFile}>Create</Button>
+          </div>
+        </Modal>
+      )}
 
       {/* Render the file editor */}
       <FileEditorEmbed onChangePwd={setPwd} pwd={pwd} />
