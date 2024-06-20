@@ -148,25 +148,27 @@ pub fn get_requests_summary(query: HashMap<String, String>) -> (Status, (Content
 
     let routes = record.route_way.clone();
 
-    // Create a separate binding for the filtered routes
-    let filtered_routes: Vec<asn_record::RouteWay> = routes
-      .unwrap()
-      .into_iter()
-      .filter(|x| x.use_this_way)
-      .collect();
+    if routes.is_some() {
+      // Create a separate binding for the filtered routes
+      let filtered_routes: Vec<asn_record::RouteWay> = routes
+        .unwrap()
+        .into_iter()
+        .filter(|x| x.use_this_way)
+        .collect();
 
-    let right_way = filtered_routes.first().cloned();
+      let right_way = filtered_routes.first().cloned();
 
-    if let Some(way) = right_way {
+      if let Some(way) = right_way {
         // Clone the name to create an owned value
         let way_name = way.name;
-    
+
         if !filter_ways.contains_key(&way_name) {
             filter_ways.insert(way_name, 0);
         } else {
           // Update the counter for the route name
           *filter_ways.entry(way_name).or_insert(0) += 1;
         }
+      }
     }
 
     if !requests_per_day.contains_key(&date) {

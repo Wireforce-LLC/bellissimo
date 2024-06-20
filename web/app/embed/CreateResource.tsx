@@ -7,6 +7,7 @@ import ErrorString from "~/components/ErrorString";
 import Input from "~/components/Input";
 import Select from "~/components/Select";
 import webConfig, { ApiPathEnum, DRIVERS } from "~/web.config";
+import humanizeString from 'humanize-string';
 
 /**
  * The intent for the CreateResourceEmbed component.
@@ -165,7 +166,7 @@ export default function CreateResourceEmbed({
                   }
                 )}
               >
-                <h4 className="text-sm font-regular">{it.name}</h4>
+                <h4 className="text-sm font-regular">{humanizeString(it.name)}</h4>
                 <p className="text-[10px] w-[80%] text-gray-400">
                   {it.description}
                 </p>
