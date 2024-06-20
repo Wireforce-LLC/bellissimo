@@ -59,6 +59,8 @@ if [ "$answer" != "${answer#[Yy]}" ] ;then
 
     npm install
     npm run build
+
+    cd ..
 fi
 
 
