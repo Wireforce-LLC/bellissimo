@@ -19,3 +19,5 @@ public/
 plugins/
 plugins.toml
 config.local.toml
+ipsum.txt
+containers/ipsum.txt

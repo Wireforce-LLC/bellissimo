@@ -12,6 +12,7 @@ export enum ApiPathEnum {
   Resources = "/api/resource/list",
   Resource = "/api/resource/",
   Route = "/api/route/",
+  SelectGuard = "/api/requests/guard/",
   RouteSetPrams = "/api/resource/setParams",
   CreateFile = "/api/file/create",
   GetAllFilesShort = "/api/file/list/short",

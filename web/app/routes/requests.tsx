@@ -16,9 +16,9 @@ import {
   Sparklines,
   SparklinesLine,
   SparklinesNormalBand,
-  SparklinesBars,
   SparklinesReferenceLine,
 } from "react-sparklines";
+import RequestOverviewEmbed from "~/embed/RequestOverview";
 
 export const meta: MetaFunction = () => {
   return [{ title: string("meta.title.filters") }];
@@ -64,31 +64,7 @@ export default function Requests() {
           onClose={() => setModalOverviewData(undefined)}
           title="Overview request"
         >
-          <div className="w-full overflow-hidden">
-            <Table
-              data={modalOverviewData.map(([key, value]: string[]) => {
-                if (key == "route_way") {
-                  return {
-                    key,
-                    value: "Data is corrupted",
-                  };
-                }
-
-                if (key == "query") {
-                  return {
-                    key,
-                    value: "Data is corrupted",
-                  };
-                }
-
-                return {
-                  key,
-                  value,
-                };
-              })}
-              headers={["Key", "Value"]}
-            />
-          </div>
+          <RequestOverviewEmbed requestBody={modalOverviewData} />
         </Modal>
       )}
 
@@ -181,7 +157,7 @@ export default function Requests() {
             request_id: (
               <span
                 onClick={() => {
-                  setModalOverviewData(_.toPairs(flatten(data[index]) || {}));
+                  setModalOverviewData(data[index]);
                 }}
                 className="text-gray-400 hover:underline"
               >

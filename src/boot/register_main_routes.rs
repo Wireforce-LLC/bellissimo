@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::{self, Path, PathBuf}, sync::Arc};
+use std::{collections::HashMap, path::{Path, PathBuf}, sync::Arc};
 
 use clap::builder::OsStr;
 use rocket::{fs::NamedFile, http::{ContentType, Status}};

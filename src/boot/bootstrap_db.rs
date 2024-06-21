@@ -21,4 +21,8 @@ pub fn register_database_tables() {
   get_database(String::from("requests"))
     .create_collection("asn_records", None)
     .expect("Unable to create collection");
+
+  get_database(String::from("requests"))
+    .create_collection("guard", None)
+    .expect("Unable to create collection");
 }

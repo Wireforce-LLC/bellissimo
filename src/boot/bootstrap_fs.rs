@@ -1,4 +1,4 @@
-use crate::config::CONFIG;
+use crate::{config::CONFIG, ipsum_kit};
 
 use std::{fs, path::Path};
 
@@ -8,7 +8,7 @@ use std::{fs, path::Path};
  * Create the plugins directory if it doesn't exist
  * Create the plugins.toml if it doesn't exist
  */
-pub fn bootstrap_fs() {
+pub async fn bootstrap_fs() {
     let example_plugins_toml = include_str!("../../containers/example_plugins.toml");
   
     if !Path::new("./plugins.toml").exists() {
@@ -38,5 +38,7 @@ pub fn bootstrap_fs() {
       fs::create_dir(CONFIG["dir_plugins"].as_str().unwrap())
         .expect("Unable to create plugins directory");
     }
+
+    ipsum_kit::update_database_with_ip().await;
   }
   

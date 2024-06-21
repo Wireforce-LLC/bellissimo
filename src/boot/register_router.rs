@@ -24,7 +24,7 @@ use std::sync::{Arc, Mutex};
 use std::env;
 use serde::{Deserialize, Serialize};
 use crate::config::CONFIG;
-use crate::filter_kit;
+use crate::{filter_kit, guard_kit};
 use crate::main_routes::not_found;
 use crate::{rdr_kit, resource_kit, database::get_database};
 use elasticsearch::{
@@ -156,7 +156,7 @@ fn async_register_request_info(
   user_agent: String,
   query: HashMap<String, String>,
   route_way: Option<Vec<asn_record::RouteWay>>
-) {
+) -> String {
   let now = Utc::now();
   let mut headers: HashMap<String, String> = HashMap::new();
 
@@ -172,6 +172,8 @@ fn async_register_request_info(
   } else {
     nanoid!()
   };
+
+  let return_request_id = request_id.clone();
 
   let collection: Collection<asn_record::AsnRecord> =
     get_database(String::from("requests"))
@@ -268,7 +270,9 @@ fn async_register_request_info(
         }
       })
     });
-  } 
+  };
+
+  return return_request_id;
 }
 
 fn create_meta_dataset_for_template(
@@ -405,6 +409,7 @@ pub async fn router(
     }
   }
 
+
   let collection: Collection<filter::Filter> =
     get_database(String::from("filters")).collection("filters");
 
@@ -420,7 +425,7 @@ pub async fn router(
 
   // memory-leak?
   let asn_database = DATABASE.to_owned();
-  let asn_record = asn_database.lookup(x_real_ip.0.parse().unwrap_or("0.0.0.0".parse().unwrap())).to_owned();
+  let asn_record = asn_database.lookup(x_real_ip.0.parse().unwrap_or("0.0.0.0".parse().unwrap()));
 
   let mut filter_break: Option<(Status, (ContentType, String))> = None;
   let mut route_way: Vec<asn_record::RouteWay> = vec![];
@@ -485,14 +490,38 @@ pub async fn router(
       name: "default".to_string(),
       use_this_way: filter_break.is_none()
     });
-  
-  async_register_request_info(
+
+  let request_id = async_register_request_info(
     asn_record,
     raw_headers.0.to_owned(),
     user_agent.0.to_owned(),
     query.clone(),
     Some(route_way)
   );
+
+  if asn_record.is_some() {
+    let score = guard_kit::rate_traffic(
+      guard_kit::TrafficRequest {
+        asn_record: asn_record.unwrap().to_owned(),
+        ip: x_real_ip.0.to_owned(),
+        user_agent: user_agent.0.to_owned(),
+        headers: raw_headers.0.to_owned(),
+        request_id: Some(request_id),
+        resource_id: None
+      }
+    );
+
+    let collection: Collection<guard_kit::GuardScore> = get_database(String::from("requests")).collection("guard");
+
+    collection
+      .insert_one(
+        score,
+        None
+      )
+      .unwrap();
+    // println!("rate {}", reate);
+  }
+  
 
   if filter_break.is_some() {
     return Some(filter_break.unwrap());

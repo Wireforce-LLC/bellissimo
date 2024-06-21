@@ -50,3 +50,5 @@ ext_apply_http_query = true
 # Protection static files
 is_static_file_protection = true
 static_file_protection_exts = ["php", "html", "htm"]
+
+ipsum_registry = "https://raw.githubusercontent.com/stamparm/ipsum/master/ipsum.txt"

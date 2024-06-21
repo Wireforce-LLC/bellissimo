@@ -22,6 +22,8 @@
 #[path = "kit/plugin.rs"] mod plugin;
 #[path = "kit/filter.rs"] mod filter_kit;
 #[path = "kit/http_proxy.rs"] mod hp_kit;
+#[path = "kit/guard_score.rs"] mod guard_kit;
+#[path = "kit/ipsum.rs"] mod ipsum_kit;
 
 #[path = "boot/register_main_routes.rs"] mod main_routes;
 #[path = "boot/register_router.rs"] mod dynamic_router;
@@ -33,7 +35,7 @@
 use config::CONFIG;
 use std::{net::IpAddr, time::Instant};
 use colored::Colorize;
-use rocket::{config::Ident, data::Limits, fairing::AdHoc, fs::{FileServer, Options}, Config};
+use rocket::{config::Ident, data::Limits, fairing::AdHoc, Config};
 use background_service::register_background_service;
 use args::parse_launched_mode;
 use dto_factory::mode::StartupMode;
@@ -61,8 +63,6 @@ async fn register_routes_and_attach_server() {
   
   let address: IpAddr = host.parse::<IpAddr>().unwrap();
 
-  let server_path: &str = CONFIG["http_server_serve_path"].as_str().unwrap();
-  
   // Configure Rocket
   let config = Config {
     port: port, // 8000 = default debug 
@@ -115,6 +115,8 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api::create_file])
       .mount(http_api_uri_path, routes![api::get_requests_summary])
       .mount(http_api_uri_path, routes![api::set_route_params])
+      .mount(http_api_uri_path, routes![api::get_all_guards])
+      .mount(http_api_uri_path, routes![api::get_guard_by_request_id])
 
       .mount(http_api_uri_path, routes![api::get_postback_amount])
 
@@ -211,7 +213,7 @@ async fn main() {
     // Server
     StartupMode::Server => {
       // Bootstrap FS (file system)
-      bfs::bootstrap_fs();
+      bfs::bootstrap_fs().await;
 
       // Register default render methods
       rdr_kit::register_default_render_methods();
@@ -223,7 +225,7 @@ async fn main() {
       println!("Runtime plugins ({}): {}", plugins_len.to_string().blue(), plugins);
       println!("Runtime filtes ({}): {}", filters_len.to_string().blue(), filters);
       println!("");
-
+    
       register_routes_and_attach_server().await;
     }
 

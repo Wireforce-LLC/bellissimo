@@ -3,7 +3,7 @@ use chrono::{DateTime, Duration, TimeZone, Utc};
 use mongodb::{bson::{doc, document}, options::FindOptions, sync::Collection};
 use rocket::{form::Form, http::{ContentType, Status}, FromForm};
 use serde::{Serialize, Deserialize};
-use crate::{config::CONFIG, database::get_database, dto_factory::{asn_record, postback_payout_postback::{self, PostbackPayoutPostback}, resource}, dynamic_router::Route, filter_kit::{self, get_all_registred_filters_names}, plugin::{get_all_runtime_plugins, PluginRuntimeManifest}, resource_kit::Resource};
+use crate::{config::CONFIG, database::get_database, dto_factory::{asn_record, postback_payout_postback::{self, PostbackPayoutPostback}}, dynamic_router::Route, filter_kit::{self, get_all_registred_filters_names}, guard_kit::GuardScore, plugin::{get_all_runtime_plugins, PluginRuntimeManifest}, resource_kit::Resource};
 use glob::glob;
 use crate::dto_factory::filter;
 
@@ -1471,10 +1471,93 @@ pub fn set_route_params(name: PutRouteParams, input: Form<HashMap<String, String
   );
 }
 
+#[get("/requests/guard/<rid..>")]
+pub fn get_guard_by_request_id(rid: PathBuf) -> (Status, (ContentType, String)) {
+  let collection: Collection<GuardScore> = get_database(String::from("requests")).collection("guard");
+
+  let result = collection
+    .find_one(
+      doc! {
+        "request_id": rid.display().to_string()
+      },
+      None
+    )
+    .expect("Failed to find guard");
+
+  if result.is_none() {
+    return (
+      Status::NotFound, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Guard not found",
+          "value": null
+        }).to_string()
+      )
+    )
+  }
+
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": result.unwrap(),
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
+}
+
+#[get("/requests/guard/list")]
+pub fn get_all_guards() -> (Status, (ContentType, String))  {
+  let mut guards: Vec<GuardScore> = Vec::new();
+
+  let collection: Collection<GuardScore> = get_database(String::from("requests")).collection("guard");
+
+  let mut result= collection
+    .find(
+      doc! {},
+      FindOptions::builder()
+        .sort(doc! { "time": -1 })
+        .limit(100)
+        .skip(0)
+        .build()
+    )
+    .expect("Failed to find guard");
+
+
+  while let Some(doc) = result.next() {
+    guards.push(doc.expect("Unable to get document"));
+  }
+
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": guards,
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
+}
+
 
 #[get("/filter/plugin/list")]
 pub fn get_all_plugins_for_filters() -> (Status, (ContentType, String))  {
-  let mut vector = filter_kit::get_all_registred_filters_names();
+  let vector: Vec<String> = filter_kit::get_all_registred_filters_names();
 
   let value = serde_json::json!({
     "isOk": true,
