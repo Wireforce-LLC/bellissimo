@@ -3,7 +3,7 @@ use chrono::{DateTime, Duration, TimeZone, Utc};
 use mongodb::{bson::{doc, document}, options::FindOptions, sync::Collection};
 use rocket::{form::Form, http::{ContentType, Status}, FromForm};
 use serde::{Serialize, Deserialize};
-use crate::{config::CONFIG, database::get_database, dto_factory::{asn_record, postback_payout_postback::{self, PostbackPayoutPostback}}, dynamic_router::Route, filter_kit::{self, get_all_registred_filters_names}, guard_kit::GuardScore, plugin::{get_all_runtime_plugins, PluginRuntimeManifest}, resource_kit::Resource};
+use crate::{background_service::User, config::CONFIG, database::get_database, dto_factory::{asn_record, postback_payout_postback::{self, PostbackPayoutPostback}}, dynamic_router::Route, filter_kit::{self, get_all_registred_filters_names}, guard_kit::GuardScore, plugin::{get_all_runtime_plugins, PluginRuntimeManifest}, resource_kit::Resource};
 use glob::glob;
 use crate::dto_factory::filter;
 
@@ -1472,7 +1472,7 @@ pub fn set_route_params(name: PutRouteParams, input: Form<HashMap<String, String
 }
 
 #[get("/user/list")]
-pub fn get_users() {
+pub fn get_users() -> (Status, (ContentType, String)) {
   let collection: Collection<User> = get_database(String::from("classification")).collection("users");
 
   let users: Vec<User> = collection
@@ -1481,7 +1481,21 @@ pub fn get_users() {
     .map(|res| res.unwrap().into())
     .collect();
 
-  return users;
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": users,
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
 }
 
 #[get("/requests/guard/<rid..>")]
