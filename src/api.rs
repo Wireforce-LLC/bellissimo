@@ -1471,6 +1471,19 @@ pub fn set_route_params(name: PutRouteParams, input: Form<HashMap<String, String
   );
 }
 
+#[get("/user/list")]
+pub fn get_users() {
+  let collection: Collection<User> = get_database(String::from("classification")).collection("users");
+
+  let users: Vec<User> = collection
+    .find(None, None)
+    .expect("Unable to find users")
+    .map(|res| res.unwrap().into())
+    .collect();
+
+  return users;
+}
+
 #[get("/requests/guard/<rid..>")]
 pub fn get_guard_by_request_id(rid: PathBuf) -> (Status, (ContentType, String)) {
   let collection: Collection<GuardScore> = get_database(String::from("requests")).collection("guard");
