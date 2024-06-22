@@ -52,3 +52,6 @@ is_static_file_protection = true
 static_file_protection_exts = ["php", "html", "htm"]
 
 ipsum_registry = "https://raw.githubusercontent.com/stamparm/ipsum/master/ipsum.txt"
+
+score_kit_value = 65.0
+ddos_limit=12

@@ -54,6 +54,7 @@ const DEFAULT_PLUGINS = [
   { name: "🛡️ Referrer", value: "referrer" },
   { name: "🛡️ Domain", value: "domain" },
 
+  { name: "🛡️ Tor Traffic", value: "traffic::tor" },
   { name: "🛡️ Cookies", value: "cookie::string" },
   { name: "🛡️ Headers", value: "header::string" },
   { name: "🛡️ Session ID", value: "session_id" },
@@ -61,6 +62,12 @@ const DEFAULT_PLUGINS = [
 
   { name: "📦 User Agent Brand", value: "ua::device::brand" },
   { name: "📦 User Agent Family", value: "ua::device::family" },
+
+  { name: "🚥 Clean Traffic", value: "request_guard" },
+  { name: "🔒 ProxyCheck", value: "proxycheck_io" },
+
+  { name: "🚧 Other", value: "other" },
+  { name: "🚧 Unknown", value: "unknown" },
 ];
 
 interface RowFilter {
@@ -133,7 +140,7 @@ const filterValue = (
     );
   }
 
-  if (pluginName === "ua::bot" && (operator === "==" || operator === "!=")) {
+  if ((pluginName === "ua::bot" || pluginName === "request_guard" || pluginName === "proxycheck_io") && (operator === "==" || operator === "!=")) {
     return (
       <div className="w-full">
         <label className="text-xs text-gray-500 mb-[5px] block">
@@ -388,8 +395,8 @@ export default function BuildFilterEmbed({ onSubmit, startFilters }: Props) {
   }, []);
 
   return (
-    <div className="w-full h-full absolute top-0 left-0 right-0 bottom-0 flex flex-col overflow-y-auto pb-32 overflow-x-auto space-y-4">
-      <div>
+    <div className="w-full h-full absolute top-0 left-0 right-0 bottom-0 flex flex-col overflow-x-auto space-y-4">
+      <div className="flex flex-col space-y-4 overflow-y-auto pb-12">
         {modelFilters?.map((it, index) => (
           <RowFilterRecord
             key={index}
@@ -400,6 +407,15 @@ export default function BuildFilterEmbed({ onSubmit, startFilters }: Props) {
             resources={resources}
           />
         ))}
+
+        <button
+          className="w-full text-[#003049] bg-zinc-100 text-xs font-medium cursor-pointer py-2"
+          onClick={() => {
+            setModelFilters([...modelFilters!!, _.clone(DEFAULT_FILTER_ROW)]);
+          }}
+        >
+          Add filter
+        </button>
       </div>
 
       <div className="bottom-0 absolute left-0 right-0">
@@ -411,15 +427,6 @@ export default function BuildFilterEmbed({ onSubmit, startFilters }: Props) {
           Create
         </Button>
       </div>
-
-      <button
-        className="w-full text-[#003049] bg-zinc-100 text-xs font-medium cursor-pointer py-2"
-        onClick={() => {
-          setModelFilters([...modelFilters!!, _.clone(DEFAULT_FILTER_ROW)]);
-        }}
-      >
-        Add filter
-      </button>
     </div>
   );
 }

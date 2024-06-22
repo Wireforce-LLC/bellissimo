@@ -117,6 +117,7 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api::set_route_params])
       .mount(http_api_uri_path, routes![api::get_all_guards])
       .mount(http_api_uri_path, routes![api::get_guard_by_request_id])
+      .mount(http_api_uri_path, routes![api::get_users])
 
       .mount(http_api_uri_path, routes![api::get_postback_amount])
 

@@ -1,7 +1,9 @@
-use crate::{config::CONFIG, dynamic_router::BOT_DETECTOR, filter_kit::{self, ext_filter_v8}, plugin::get_all_runtime_plugins};
+use crate::{config::CONFIG, dynamic_router::{BOT_DETECTOR, REDIS}, filter_kit::{self, ext_filter_v8}, guard_kit, ipsum_kit, plugin::get_all_runtime_plugins};
 
 use std::{collections::HashMap, net::IpAddr};
 use asn_db::Record;
+use fake::faker::automotive::raw;
+use redis::Commands;
 use rocket::http::HeaderMap;
 use uaparser::{Parser, UserAgentParser};
 
@@ -347,6 +349,99 @@ pub fn register_default_filters() {
         "~" => {
           return brand.contains(filter_value.to_lowercase().as_str())
         }
+
+        _ => false
+      }
+    }
+  );
+
+  filter_kit::register_filter(
+    "traffic::tor",
+    |_this: &str, _x_real_ip: &str, user_agent: &str, raw_headers: HeaderMap, _asn_record: Option<&Record>, filter_value: &str, operator: &str| {
+      let ip = raw_headers.get_one("cf-ipcountry");
+
+      if ip.is_none() {
+        return false;
+      }
+
+      return match operator {
+        "==" => ip.unwrap().to_lowercase() == "t1",
+        "!=" => ip.unwrap().to_lowercase() != "t1",
+
+        _ => false
+      }
+    }
+  );
+
+  filter_kit::register_filter(
+    "traffic::ipsum",
+    |_this: &str, x_real_ip: &str, user_agent: &str, raw_headers: HeaderMap, _asn_record: Option<&Record>, filter_value: &str, operator: &str| {
+      let is_ipsum = ipsum_kit::is_ip_in_ipsum(x_real_ip);
+
+      if is_ipsum.is_none() {
+        return false;
+      }
+
+      return match operator {
+        "==" => true,
+
+        _ => false
+      }
+    }
+  );
+
+  filter_kit::register_filter(
+    "is_ddos",
+    |_this: &str, x_real_ip: &str, user_agent: &str, raw_headers: HeaderMap, _asn_record: Option<&Record>, filter_value: &str, operator: &str| {
+      if x_real_ip.is_empty() {
+        return false;
+      }
+
+      if x_real_ip == "127.0.0.1" {
+        return false;
+      }
+
+      let mut conn = REDIS.lock().unwrap();
+
+      let count_connections = conn.get("ddos:".to_owned() + x_real_ip).unwrap_or(0);
+    
+      let _: () = redis::pipe()
+        .cmd("SETEX")
+        .arg("ddos:".to_owned() + x_real_ip)
+        .arg(60)
+        .arg(count_connections + 1)
+        .query(&mut conn)
+        .expect("Unable to set redis result");
+
+      if count_connections >= CONFIG["ddos_limit"].as_integer().unwrap_or(12) {
+        return true;
+      }
+
+      return false;
+    }
+  );
+
+  filter_kit::register_filter(
+    "request_guard",
+    |_this: &str, x_real_ip: &str, user_agent: &str, raw_headers: HeaderMap, asn_record: Option<&Record>, _filter_value: &str, operator: &str| {
+      if asn_record.is_none() {
+        return false;
+      }
+
+      let score: guard_kit::GuardScore = guard_kit::rate_traffic(
+        guard_kit::TrafficRequest {
+          asn_record: asn_record.unwrap().to_owned(),
+          headers: raw_headers,
+          user_agent: user_agent.to_string(),
+          ip: x_real_ip.to_string(),
+          request_id: None,
+          resource_id: None
+        }
+      );
+
+      return match operator {
+        "==" => score.score > CONFIG["score_kit_value"].as_integer().unwrap() as i8,
+        "!=" => score.score <= CONFIG["score_kit_value"].as_integer().unwrap() as i8,
 
         _ => false
       }

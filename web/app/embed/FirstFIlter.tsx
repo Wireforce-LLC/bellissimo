@@ -28,6 +28,13 @@ const DEFAULT_SCHEMA = [
     plugin: "ua::bot",
     resourceId: "",
   },
+  {
+    name: "Request Guard",
+    value: "",
+    operator: "!=",
+    plugin: "request_guard",
+    resourceId: "",
+  }
 ];
 
 const SCHEMAS = [
@@ -89,6 +96,102 @@ const SCHEMAS = [
       },
     ],
   },
+
+  {
+    name: "Twitter",
+    description: "Preventing Twitter traffic from reaching your resources",
+    value: [
+      ...DEFAULT_SCHEMA,
+      {
+        name: "Twitter",
+        value: "twitter",
+        operator: "in",
+        plugin: "asn::groups",
+        resourceId: "",
+      },
+    ],
+  },
+
+  {
+    name: "Tor Traffic",
+    description: "Preventing Tor traffic from reaching your resources",
+    value: [
+      ...DEFAULT_SCHEMA,
+      {
+        name: "Tor",
+        value: "",
+        operator: "==",
+        plugin: "traffic::tor",
+        resourceId: "",
+      },
+    ],
+  },
+
+  {
+    name: "Wireforce Protect",
+    description: "Complex filtering traffic by Wireforce Protect",
+    value: [
+      ...DEFAULT_SCHEMA,
+      {
+        name: "Tor",
+        value: "",
+        operator: "==",
+        plugin: "traffic::tor",
+        resourceId: "",
+      },
+      {
+        name: "Facebook",
+        value: "facebook",
+        operator: "in",
+        plugin: "asn::groups",
+        resourceId: "",
+      },
+      {
+        name: "Google",
+        value: "google",
+        operator: "in",
+        plugin: "asn::groups",
+        resourceId: "",
+      },
+      {
+        name: "Amazon",
+        value: "amazon",
+        operator: "in",
+        plugin: "asn::groups",
+        resourceId: "",
+      },
+      {
+        name: "Amazon (contains)",
+        value: "amazon",
+        operator: "~",
+        plugin: "asn::owner",
+        resourceId: "",
+      },
+      {
+        name: "Amazon (contains 2)",
+        value: "amaz",
+        operator: "~",
+        plugin: "asn::owner",
+        resourceId: "",
+      },
+      
+      {
+        name: "Microsoft",
+        value: "microsoft",
+        operator: "~",
+        plugin: "asn::owner",
+        resourceId: "",
+      },
+
+      {
+        name: "Microsoft (owner)",
+        value: "microsoft",
+        operator: "in",
+        plugin: "asn::groups",
+        resourceId: "",
+      },
+    ],
+  }
 ];
 
 export default function FirstFilterEmbed({ onSubmit }: Props) {
@@ -99,7 +202,7 @@ export default function FirstFilterEmbed({ onSubmit }: Props) {
 
   return (
     <div className="w-full">
-      <div className="grid grid-cols-4 justify-between items-top space-x-2">
+      <div className="grid grid-cols-4 justify-between items-top gap-2">
         {rows.map((row) => (
           <div onClick={() => onSubmit(row.value)}>
             <ExampleCards

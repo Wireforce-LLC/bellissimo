@@ -72,7 +72,7 @@ export default function Filters() {
           });
       });
     },
-    [modelFilters]
+    [modelFilters, modelFilterName, modelFilterId]
   );
 
   return (
@@ -83,7 +83,7 @@ export default function Filters() {
       {isModalCreateVisible && (
         <Modal
           isBigModal
-          title="Create new filter"
+          title={!modelFilterName ? "Create new filter" : ("Edit new filter " + modelFilterName)}
           onClose={() => setIsModalCreateVisible(false)}
         >
           <div className="relative h-full w-full">
