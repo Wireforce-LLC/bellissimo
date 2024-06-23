@@ -151,10 +151,10 @@ pub fn register_default_filters() {
       };
 
       return match operator {
-        "==" => cuntry_code.unwrap() == filter_value,
-        "!=" => cuntry_code.unwrap() != filter_value,
-        "~" => cuntry_code.unwrap().contains(filter_value),
-        "in" => filter_value.split(",").collect::<Vec<&str>>().contains(&cuntry_code.unwrap().as_str()),
+        "==" => cuntry_code.unwrap().to_uppercase() == filter_value.to_uppercase(),
+        "!=" => cuntry_code.unwrap().to_uppercase() != filter_value.to_uppercase(),
+        "~" => cuntry_code.unwrap().to_uppercase().contains(&filter_value.to_uppercase()),
+        "in" => filter_value.to_uppercase().split(",").collect::<Vec<&str>>().contains(&cuntry_code.unwrap().to_uppercase().as_str()),
 
         _ => false
       };
@@ -438,10 +438,10 @@ pub fn register_default_filters() {
           resource_id: None
         }
       );
-
+      
       return match operator {
-        "==" => score.score > CONFIG["score_kit_value"].as_integer().unwrap() as i8,
-        "!=" => score.score <= CONFIG["score_kit_value"].as_integer().unwrap() as i8,
+        "==" => score.score > CONFIG["score_kit_value"].as_integer().unwrap_or(65) as i8,
+        "!=" => score.score <= CONFIG["score_kit_value"].as_integer().unwrap_or(65) as i8,
 
         _ => false
       }
