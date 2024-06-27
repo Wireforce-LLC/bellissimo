@@ -7,15 +7,18 @@ interface Submit {
   readonly filterName: string;
 }
 
+// This is the top - level interface that we'll use to create the
 interface Props {
   readonly onSubmit: (submit: Submit) => void;
 }
 
 /**
- * The CreateFilterNameEmbed component is a form for creating a new filter.
- * It allows the user to enter a filter ID and a filter name, and then submits
- * the form when the "Next" button is pressed.
- */
+* Embed for the filter name input. It is used to create a new filter and set its name to the value of modelFilterName
+* 
+* @param Props - Props object with properties to pass to the component
+* 
+* @return { JSX. Element } The embed to show in the form of a filter name input with a
+*/
 export default function CreateFilterNameEmbed({ onSubmit }: Props) {
   // The state variables for the filter ID and filter name inputs
   const [modelFilterName, setModelFilterName] = useState<string | undefined>();
@@ -56,6 +59,7 @@ export default function CreateFilterNameEmbed({ onSubmit }: Props) {
           {/* The submit button */}
           <Button
             onPress={() => {
+              // Submit the form when both filter ID and filter name are provided.
               if (modelFilterId && modelFilterName) {
                 // Submit the form when both filter ID and filter name are provided
                 onSubmit({

@@ -5,13 +5,20 @@
 
 #[path = "args.rs"] mod args;
 #[path = "database.rs"] mod database;
-#[path = "dto_factory.rs"] mod dto_factory;
 
 // Services
 #[path = "background_service.rs"] mod background_service;
 
 // API Routes
 #[path = "api.rs"] mod api;
+#[path = "api/Route.rs"] mod api_route;
+#[path = "api/Filter.rs"] mod api_filter;
+#[path = "api/Resource.rs"] mod api_resource;
+#[path = "api/Request.rs"] mod api_request;
+#[path = "api/File.rs"] mod api_file;
+#[path = "api/Postback.rs"] mod api_postback;
+#[path = "api/User.rs"] mod api_user;
+#[path = "api/Plugin.rs"] mod api_plugin;
 
 // Config Files
 #[path = "config.rs"] mod config;
@@ -29,16 +36,26 @@
 #[path = "boot/register_router.rs"] mod dynamic_router;
 #[path = "boot/register_filters.rs"] mod register_filters;
 #[path = "boot/bootstrap_fs.rs"] mod bfs;
-#[path = "boot/register_postback_listener.rs"] mod register_postback_listener;
 #[path = "boot/bootstrap_db.rs"] mod bootstrap_db;
 
+// DTO
+#[path = "dto/postback_payout_postback.rs"] pub mod postback_payout_postback;
+#[path = "dto/mode.rs"] pub mod mode;
+#[path = "dto/resource.rs"] pub mod resource;
+#[path = "dto/filter.rs"] pub mod filter;
+#[path = "dto/asn_record.rs"] pub mod asn_record;
+#[path = "dto/create_file.rs"] pub mod create_file;
+#[path = "dto/domains_group.rs"] pub mod domains_by_source;
+
+
 use config::CONFIG;
+use ipsum_kit::REGISTRIES;
+use mode::StartupMode;
 use std::{net::IpAddr, time::Instant};
 use colored::Colorize;
 use rocket::{config::Ident, data::Limits, fairing::AdHoc, Config};
 use background_service::register_background_service;
 use args::parse_launched_mode;
-use dto_factory::mode::StartupMode;
 
 /**
  * Now the main.rs is responsible for launching the server
@@ -110,45 +127,48 @@ async fn register_routes_and_attach_server() {
   if is_http_future_api {
     rocket_server = rocket_server
       .mount(http_api_uri_path, routes![api::get_config])
-      .mount(http_api_uri_path, routes![api::get_all_plugins])
-      .mount(http_api_uri_path, routes![api::update_resource_by_id])
-      .mount(http_api_uri_path, routes![api::create_file])
-      .mount(http_api_uri_path, routes![api::get_requests_summary])
-      .mount(http_api_uri_path, routes![api::set_route_params])
-      .mount(http_api_uri_path, routes![api::get_all_guards])
-      .mount(http_api_uri_path, routes![api::get_guard_by_request_id])
-      .mount(http_api_uri_path, routes![api::get_users])
+      .mount(http_api_uri_path, routes![api_plugin::get_all_plugins])
+      .mount(http_api_uri_path, routes![api_resource::update_resource_by_id])
+      .mount(http_api_uri_path, routes![api_file::create_file])
+      .mount(http_api_uri_path, routes![api_request::get_requests_summary])
+      .mount(http_api_uri_path, routes![api_resource::set_route_params])
+      .mount(http_api_uri_path, routes![api_request::get_all_guards])
+      .mount(http_api_uri_path, routes![api_request::get_guard_by_request_id])
+      .mount(http_api_uri_path, routes![api_user::get_users])
+      .mount(http_api_uri_path, routes![api_filter::update_filter_by_id])
+      .mount(http_api_uri_path, routes![api_request::get_all_domains_grouped_by_source])
+      .mount(http_api_uri_path, routes![api_request::get_all_routes])
 
-      .mount(http_api_uri_path, routes![api::get_postback_amount])
+      .mount(http_api_uri_path, routes![api_postback::get_postback_amount])
 
-      .mount(http_api_uri_path, routes![api::get_all_files])
-      .mount(http_api_uri_path, routes![api::get_file])
-      .mount(http_api_uri_path, routes![api::write_file])
-      .mount(http_api_uri_path, routes![api::get_files_as_placeholder])
+      .mount(http_api_uri_path, routes![api_file::get_all_files])
+      .mount(http_api_uri_path, routes![api_file::get_file])
+      .mount(http_api_uri_path, routes![api_file::write_file])
+      .mount(http_api_uri_path, routes![api_file::get_files_as_placeholder])
       
-      .mount(http_api_uri_path, routes![api::create_new_route])
-      .mount(http_api_uri_path, routes![api::create_new_filter])
-      .mount(http_api_uri_path, routes![api::create_new_resource])
+      .mount(http_api_uri_path, routes![api_route::create_new_route])
+      .mount(http_api_uri_path, routes![api_filter::create_new_filter])
+      .mount(http_api_uri_path, routes![api_resource::create_new_resource])
 
-      .mount(http_api_uri_path, routes![api::delete_resource_by_id])
-      .mount(http_api_uri_path, routes![api::delete_filter_by_id])
-      .mount(http_api_uri_path, routes![api::delete_route_by_name])
+      .mount(http_api_uri_path, routes![api_resource::delete_resource_by_id])
+      .mount(http_api_uri_path, routes![api_filter::delete_filter_by_id])
+      .mount(http_api_uri_path, routes![api_route::delete_route_by_name])
       
-      .mount(http_api_uri_path, routes![api::get_all_routes])
-      .mount(http_api_uri_path, routes![api::get_filter_by_id])
-      .mount(http_api_uri_path, routes![api::get_route_by_name])
-      .mount(http_api_uri_path, routes![api::get_all_filters])
-      .mount(http_api_uri_path, routes![api::get_all_resources])
-      .mount(http_api_uri_path, routes![api::get_resource_by_id])
-      .mount(http_api_uri_path, routes![api::get_all_requests])
-      .mount(http_api_uri_path, routes![api::get_all_postbacks])
-      .mount(http_api_uri_path, routes![api::get_all_plugins_for_filters])
-      .mount(http_api_uri_path, routes![api::get_all_drivers_for_resources]);
+      .mount(http_api_uri_path, routes![api_route::get_all_routes])
+      .mount(http_api_uri_path, routes![api_filter::get_filter_by_id])
+      .mount(http_api_uri_path, routes![api_route::get_route_by_name])
+      .mount(http_api_uri_path, routes![api_filter::get_all_filters])
+      .mount(http_api_uri_path, routes![api_resource::get_all_resources])
+      .mount(http_api_uri_path, routes![api_resource::get_resource_by_id])
+      .mount(http_api_uri_path, routes![api_request::get_all_requests])
+      .mount(http_api_uri_path, routes![api_postback::get_all_postbacks])
+      .mount(http_api_uri_path, routes![api_filter::get_all_plugins_for_filters])
+      .mount(http_api_uri_path, routes![api_resource::get_all_drivers_for_resources]);
   }
 
   if is_http_future_postbacks {
-    rocket_server = rocket_server.mount("/service", routes![register_postback_listener::postback_get]);
-    rocket_server = rocket_server.mount("/service", routes![register_postback_listener::postback_post]);
+    rocket_server = rocket_server.mount("/service", routes![api_postback::postback_get]);
+    rocket_server = rocket_server.mount("/service", routes![api_postback::postback_post]);
   }
 
 
@@ -222,9 +242,12 @@ async fn main() {
       // Bootstrap DB
       bootstrap_db::register_database_tables();
 
+      let ipsum_registry_count = REGISTRIES.len();
+
       println!("Bootstrap time: {:.4?}", elapsed);
       println!("Runtime plugins ({}): {}", plugins_len.to_string().blue(), plugins);
       println!("Runtime filtes ({}): {}", filters_len.to_string().blue(), filters);
+      println!("Runtime IPSUM registries: {} items", ipsum_registry_count.to_string().blue());
       println!("");
     
       register_routes_and_attach_server().await;

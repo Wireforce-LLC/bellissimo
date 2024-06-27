@@ -77,9 +77,9 @@ export default function EditRouterParamsEmbed({
         // Make API request to edit route params
         const axios = await webConfig.axiosFactory("PRIVATE");
         const response = await toast.promise(
-          axios.put(
+          axios.post(
             webConfig.apiEndpointFactory(ApiPathEnum.RouteSetPrams) +
-              "?name=" +
+              "/" +
               routeName,
             data
           ),

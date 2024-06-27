@@ -19,6 +19,7 @@
     "@remix-run/serve": "^2.9.2",
     "apexcharts": "^3.49.1",
     "axios": "^1.6.8",
+    "axios-retry": "^4.4.1",
     "base-64": "^1.0.0",
     "chart.js": "^4.4.3",
     "classname": "^0.0.0",
@@ -50,6 +51,7 @@
     "react-simple-code-editor": "^0.13.1",
     "react-sparklines": "^1.7.0",
     "react-syntax-highlighter": "^15.5.0",
+    "string-to-color": "^2.2.2",
     "zod": "^3.22.4",
     "zor": "^1.1.5"
   },

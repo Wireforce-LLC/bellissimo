@@ -5,7 +5,7 @@ interface Props {
 export default function Label({ children }: Props) {
   return (
     children && (
-      <label className="text-sm font-normal uppercase text-black">
+      <label className="text-xs font-medium uppercase text-black">
         {children}
       </label>
     )

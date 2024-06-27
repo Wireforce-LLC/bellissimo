@@ -3,17 +3,19 @@ import { useCallback, useEffect, useState } from "react";
 import Button from "~/components/Button";
 import Input from "~/components/Input";
 import Select from "~/components/Select";
-import webConfig, { ApiPathEnum } from "~/web.config";
+import webConfig, { ApiPathEnum, DEFAULT_FILTER_ROW, DEFAULT_PLUGINS, OPEARTORS } from "~/web.config";
 import asnGroups from "../../../containers/asn_owners_group.json";
 
 interface Props {
   readonly onSubmit: (submit: FilterRow[]) => void;
   readonly startFilters: FilterRow[];
+  readonly extPlugins?: PluginRow[];
+  readonly onSubmitLabel?: string;
 }
 
 interface PluginRow {
-  name: string;
-  value: string;
+  readonly name: string;
+  readonly value: string;
 }
 
 export interface FilterRow {
@@ -23,52 +25,6 @@ export interface FilterRow {
   plugin?: string;
   resourceId?: string;
 }
-
-const DEFAULT_FILTER_ROW = {
-  name: "",
-  value: "",
-  operator: "==",
-  plugin: "",
-  resourceId: "",
-};
-
-const OPEARTORS = [
-  { name: "==", value: "==" },
-  { name: "!=", value: "!=" },
-  { name: "~", value: "~" },
-  { name: "in", value: "in" },
-];
-
-const DEFAULT_PLUGINS = [
-  { name: "🔥 BotDetect by User Agent", value: "ua::bot" },
-
-  { name: "🔥 IP", value: "ip" },
-  { name: "🔥 Country by IP", value: "ip::country_code" },
-
-  { name: "🔥 User Agent", value: "ua" },
-
-  { name: "📡 Owner network by ASN", value: "asn::owner" },
-  { name: "📡 Group of ASN", value: "asn::groups" },
-  { name: "📡 Country by ASN", value: "asn::country_code" },
-
-  { name: "🛡️ Referrer", value: "referrer" },
-  { name: "🛡️ Domain", value: "domain" },
-
-  { name: "🛡️ Tor Traffic", value: "traffic::tor" },
-  { name: "🛡️ Cookies", value: "cookie::string" },
-  { name: "🛡️ Headers", value: "header::string" },
-  { name: "🛡️ Session ID", value: "session_id" },
-  { name: "🛡️ Accept Language", value: "accept_language" },
-
-  { name: "📦 User Agent Brand", value: "ua::device::brand" },
-  { name: "📦 User Agent Family", value: "ua::device::family" },
-
-  { name: "🚥 Clean Traffic", value: "request_guard" },
-  { name: "🔒 ProxyCheck", value: "proxycheck_io" },
-
-  { name: "🚧 Other", value: "other" },
-  { name: "🚧 Unknown", value: "unknown" },
-];
 
 interface RowFilter {
   index: number;
@@ -351,7 +307,7 @@ function RowFilterRecord({
   );
 }
 
-export default function BuildFilterEmbed({ onSubmit, startFilters }: Props) {
+export default function BuildFilterEmbed({ onSubmit, onSubmitLabel, startFilters, extPlugins }: Props) {
   const [resources, setResources] = useState([]);
   const [plugins, setPlugins] = useState<PluginRow[]>([]);
 
@@ -368,7 +324,7 @@ export default function BuildFilterEmbed({ onSubmit, startFilters }: Props) {
       i.get(webConfig.apiEndpointFactory(ApiPathEnum.GetAllFilterPlugins)).then(
         (res) => {
           if (_.isArray(res.data.value)) {
-            const pluginsRow: PluginRow[] = res.data.value.map(
+            const pluginsRow: PluginRow[] = res.data.value.concat(extPlugins || []).map(
               (it: string) => ({
                 name:
                   DEFAULT_PLUGINS.find((p) => p.value === it)?.name ||
@@ -424,7 +380,7 @@ export default function BuildFilterEmbed({ onSubmit, startFilters }: Props) {
             onSubmit(modelFilters);
           }}
         >
-          Create
+          {onSubmitLabel || "Create"}
         </Button>
       </div>
     </div>

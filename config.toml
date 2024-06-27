@@ -32,6 +32,11 @@ is_allow_debug_throw = true
 is_plugins_enabled = true
 
 dir_plugins = "./plugins"
+dir_registry = "./registry"
+dir_logs = "./logs"
+dir_cache = "./cache"
+dir_tmp = "./tmp"
+dir_data = "./data"
 
 v8_init_heap_size = 1000000
 v8_max_heap_size = 5000000
@@ -51,7 +56,6 @@ ext_apply_http_query = true
 is_static_file_protection = true
 static_file_protection_exts = ["php", "html", "htm"]
 
-ipsum_registry = "https://raw.githubusercontent.com/stamparm/ipsum/master/ipsum.txt"
-
+use_ipsum_once_join_for_score = true
 score_kit_value = 65.0
 ddos_limit=12

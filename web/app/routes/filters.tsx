@@ -10,6 +10,7 @@ import webConfig, { ApiPathEnum } from "~/web.config";
 import CreateFilterNameEmbed from "~/embed/CreateFilterName";
 import BuildFilterEmbed, { FilterRow } from "~/embed/BuildFilter";
 import FirstFilterEmbed from "~/embed/FirstFIlter";
+import EditFilterEmbed from "~/embed/EditFilter";
 
 export const meta: MetaFunction = () => {
   return [{ title: string("meta.title.filters") }];
@@ -24,6 +25,9 @@ export default function Filters() {
   const [modelFilterName, setModelFilterName] = useState<string | undefined>();
   const [modelFilterId, setModelFilterId] = useState<string | undefined>();
   const [modelFilters, setModelFilters] = useState<any[]>([]);
+  const [editModelFilterId, setEditModelFilterId] = useState<
+    string | undefined
+  >();
 
   useEffect(() => {
     fether();
@@ -75,6 +79,32 @@ export default function Filters() {
     [modelFilters, modelFilterName, modelFilterId]
   );
 
+  const onEditFilter = useCallback(
+    (filterRows: FilterRow[], filterId?: string) => {
+      if (filterId == undefined) {
+        return;
+      }
+
+      webConfig.axiosFactory("PRIVATE").then((i) => {
+        let data = new FormData();
+
+        data.append("name", "any name");
+        data.append("filter_id", filterId);
+
+        filterRows?.forEach((filter, index) => {
+          data.append(`conditions[${index}][name]`, filter.name!!);
+          data.append(`conditions[${index}][value]`, filter.value!!);
+          data.append(`conditions[${index}][operator]`, filter.operator!!);
+          data.append(`conditions[${index}][plugin]`, filter.plugin!!);
+          data.append(`conditions[${index}][resource_id]`, filter.resourceId!!);
+        });
+
+        i.put(webConfig.apiEndpointFactory(ApiPathEnum.UpdateFilter), data);
+      });
+    },
+    []
+  );
+
   return (
     <DashboardLayout
       subTitle={string("dashboard.subtitle.filters")}
@@ -83,7 +113,11 @@ export default function Filters() {
       {isModalCreateVisible && (
         <Modal
           isBigModal
-          title={!modelFilterName ? "Create new filter" : ("Edit new filter " + modelFilterName)}
+          title={
+            !modelFilterName
+              ? "Create new filter"
+              : "Edit new filter " + modelFilterName
+          }
           onClose={() => setIsModalCreateVisible(false)}
         >
           <div className="relative h-full w-full">
@@ -119,6 +153,19 @@ export default function Filters() {
         </Modal>
       )}
 
+      {editModelFilterId && (
+        <Modal
+          isBigModal
+          title={"Edit filter " + editModelFilterId}
+          onClose={() => setEditModelFilterId(undefined)}
+        >
+          <EditFilterEmbed
+            filterId={editModelFilterId}
+            onEditFilter={onEditFilter}
+          />
+        </Modal>
+      )}
+
       <SubNavbar
         title={string("dashboard.subtitle.filters")}
         onCreateAction={() => setIsModalCreateVisible(true)}
@@ -131,7 +178,10 @@ export default function Filters() {
             ...it,
             name: (
               <div className="flex flex-row items-center w-full justify-start gap-2">
-                <span className="cursor-pointer" onClick={() => {}}>
+                <span
+                  className="cursor-pointer"
+                  onClick={() => setEditModelFilterId(it.filter_id)}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 16 16"

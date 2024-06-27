@@ -19,7 +19,7 @@ export default function Card({ children, title, className }: Props) {
       )}
 
       <section
-        className={classNames({
+        className={classNames(className, {
           "px-3 pt-0.5 pb-3 block": title,
         })}
       >

@@ -155,7 +155,9 @@ fn async_register_request_info(
   raw_headers: HeaderMap,
   user_agent: String,
   query: HashMap<String, String>,
-  route_way: Option<Vec<asn_record::RouteWay>>
+  route_way: Option<Vec<asn_record::RouteWay>>,
+  route_name: Option<String>,
+  resource_id: Option<String>,
 ) -> String {
   let now = Utc::now();
   let mut headers: HashMap<String, String> = HashMap::new();
@@ -205,7 +207,9 @@ fn async_register_request_info(
           is_ua_bot: Some(BOT_DETECTOR.is_bot(user_agent.as_str())),
           headers: Some(headers.clone()),
           query: Some(query),
-          route_way: route_way
+          route_way: route_way,
+          route_name: route_name,
+          resource_id: resource_id,
         };
     
         let insert_json_raw = json!(insert_data);
@@ -244,7 +248,9 @@ fn async_register_request_info(
           is_ua_bot: Some(BOT_DETECTOR.is_bot(user_agent.as_str())),
           headers: Some(headers),
           query: Some(query),
-          route_way: route_way
+          route_way: route_way,
+          route_name: route_name,
+          resource_id: resource_id,
         };
     
         let insert_json_raw = json!(insert_data);
@@ -330,34 +336,29 @@ fn create_meta_dataset_for_template(
   return meta;
 }
 
-#[get("/<router..>?<query..>", rank=15)]
-pub async fn router(
-  x_real_ip: XRealIp<'_>,
-  user_agent: UserAgent<'_>,
-  router: PathBuf,
-  raw_headers: HeadersMap<'_>,
-  query: HashMap<String, String>,
-) -> Option<(Status, (ContentType, String))> {
-  let path = if router == PathBuf::new() {
+fn receive_path(router: PathBuf) -> String {
+  if router == PathBuf::new() {
     Path::new("/").join("index")
   } else {
     Path::new("/").join(router)
-  };
-
-  let path_as_string = path
+  }
     .into_os_string()
     .into_string()
-    .expect("Unable to convert path to string");
+    .expect("Unable to convert path to string")
+    .to_owned()
+}
 
-  let domain = raw_headers.0.get_one("host");
- 
+fn get_router_by_path_and_domain(
+  path: &str,
+  domain: Option<&str>
+) -> Option<Route> {
   let collection: Collection<Route> =
     get_database(String::from("routes")).collection("routes");
 
   let mut find_result = collection
     .find_one(
       doc! {
-        "path": &path_as_string,
+        "path": path,
         "domain": domain
       },
       FindOneOptions::builder().build(),
@@ -369,7 +370,7 @@ pub async fn router(
     find_result = collection
       .find_one(
         doc! {
-          "path": &path_as_string,
+          "path": path,
           "$or": [
             {"domain": "any"},
             {"domain": "*"},
@@ -385,30 +386,30 @@ pub async fn router(
       .or(None);
   }
 
+  return find_result;
+}
+
+#[get("/<router..>?<query..>", rank=15)]
+pub async fn router(
+  x_real_ip: XRealIp<'_>,
+  user_agent: UserAgent<'_>,
+  router: PathBuf,
+  raw_headers: HeadersMap<'_>,
+  query: HashMap<String, String>,
+) -> Option<(Status, (ContentType, String))> {
+  let path_as_string = receive_path(router);
+  let domain = raw_headers.0.get_one("host");
+  let find_result = get_router_by_path_and_domain(&path_as_string, domain);
+  
   if find_result.is_none() {
     return Some(not_found());
   }
 
-  let result_route = find_result.unwrap();
+  let route = find_result.unwrap();
 
-  if result_route.filter_id.is_none() { 
-    if CONFIG["is_allow_debug_throw"].as_bool().unwrap() {
-      return Some((
-        Status::InternalServerError,
-        (
-          ContentType::Plain,
-          vec![
-            "Debugger:",
-            "",
-            "Filter ID is empty"
-          ].join("\n")
-        )
-      ))
-    } else {
-      return Some(not_found());
-    }
+  if route.resource_id.is_none() || route.filter_id.is_none() {
+    return Some(not_found());
   }
-
 
   let collection: Collection<filter::Filter> =
     get_database(String::from("filters")).collection("filters");
@@ -416,7 +417,7 @@ pub async fn router(
   let filter = collection
     .find_one(
       doc! {
-        "filter_id": result_route.filter_id.clone().unwrap()
+        "filter_id": &route.filter_id.clone().unwrap()
       },
       None,
     )
@@ -471,8 +472,8 @@ pub async fn router(
         &resource
       );
 
-      if result_route.params.is_some() {
-        let params = result_route.params.clone().unwrap();
+      if route.params.is_some() {
+        let params = route.params.clone().unwrap();
         meta.extend(params);
       }
 
@@ -487,16 +488,24 @@ pub async fn router(
 
   route_way
     .push(asn_record::RouteWay {
-      name: "default".to_string(),
+      name: String::from("default"),
       use_this_way: filter_break.is_none()
     });
+
+  let register_resource_id = if filter_break.is_none() {
+    route.resource_id.clone()
+  } else {
+    None
+  };
 
   let request_id = async_register_request_info(
     asn_record,
     raw_headers.0.to_owned(),
     user_agent.0.to_owned(),
     query.clone(),
-    Some(route_way)
+    Some(route_way),
+    Some(route.name),
+    register_resource_id,
   );
 
   if asn_record.is_some() {
@@ -519,16 +528,15 @@ pub async fn router(
         None
       )
       .unwrap();
-    // println!("rate {}", reate);
   }
-  
 
   if filter_break.is_some() {
     return Some(filter_break.unwrap());
   }
+  
+  let resource_id = route.resource_id.unwrap();
+    let resource = resource_kit::require_resource(resource_id.as_str());
 
-  if !result_route.resource_id.is_none() {
-    let resource = resource_kit::require_resource(result_route.resource_id.unwrap().as_str());
     let mut meta: HashMap<String, String> = create_meta_dataset_for_template(
       &x_real_ip.0.to_owned(),
       domain,
@@ -538,13 +546,10 @@ pub async fn router(
       &resource
     );
 
-    if result_route.params.is_some() {
-      let params = result_route.params.clone().unwrap();
+    if route.params.is_some() {
+      let params = route.params.clone().unwrap();
       meta.extend(params);
     }
 
     return Some(rdr_kit::render_resource_for_http(resource, meta).await);
-  }
-
-  return Some(not_found());
 }

@@ -2,7 +2,7 @@ use asn_db::Record;
 use rocket::http::HeaderMap;
 use serde::{Deserialize, Serialize};
 
-use crate::{dynamic_router::{BOT_DETECTOR}, ipsum_kit};
+use crate::{config::CONFIG, dynamic_router::BOT_DETECTOR, ipsum_kit};
 
 pub struct TrafficRequest<'a> {
     pub asn_record: Record,
@@ -31,6 +31,8 @@ pub struct GuardScore {
 }
 
 pub fn rate_traffic(traffic: TrafficRequest) -> GuardScore {
+  let black_ref = include_str!("../../containers/black_referer.txt");
+
     let score = 100;
     let mut quality_traffic_density = 0;
     let mut score_calculate: Vec<CalculateScore> = Vec::new();
@@ -107,7 +109,10 @@ pub fn rate_traffic(traffic: TrafficRequest) -> GuardScore {
         .to_lowercase();
 
     let is_ipsum = if traffic.ip != "" {
-      ipsum_kit::is_ip_in_ipsum(traffic.ip.as_str())
+      ipsum_kit::search_ip_in_ipsum_registries(
+        traffic.ip.as_str(), 
+        CONFIG["use_ipsum_once_join_for_score"].as_bool().unwrap()
+      )
     } else {
       None
     };
@@ -143,12 +148,24 @@ pub fn rate_traffic(traffic: TrafficRequest) -> GuardScore {
     if is_ipsum.is_some() {
       tags.push("Ipsum traffic");
       
-      score_calculate.push(
-        CalculateScore {
-          name: String::from("IP is in ipsum database (spam/malware/phishing)"),
-          value: 15
-        }  
-      );
+      if CONFIG["use_ipsum_once_join_for_score"].as_bool().unwrap() {
+        score_calculate.push(
+          CalculateScore {
+            name: String::from(format!("IP is in ipsum database ({})", is_ipsum.unwrap().ipsum.unwrap().first().unwrap().registry)),
+            value: 15
+          }  
+        );
+
+      } else {
+        for ipsum_registry in is_ipsum.unwrap().ipsum.unwrap() {
+          score_calculate.push(
+            CalculateScore {
+              name: String::from(format!("IP is regarded as IP, traffic transmission IPSUM, subcategories {}", ipsum_registry.registry)),
+              value: 7
+            }  
+          );
+        }
+      }
     }
 
 
@@ -165,7 +182,7 @@ pub fn rate_traffic(traffic: TrafficRequest) -> GuardScore {
       )
     }
     
-    if country_by_cloudflare != "" && (country_by_asn != country_by_cloudflare) {
+    if country_by_cloudflare != "" && (country_by_asn.to_lowercase().trim() != country_by_cloudflare.to_lowercase().trim()) {
         score_calculate.push(
             CalculateScore {
                 name: String::from("IP country by cloudflare and asn is not equal"),
@@ -203,16 +220,6 @@ pub fn rate_traffic(traffic: TrafficRequest) -> GuardScore {
         );
     }
 
-    if referer != "" {
-        quality_traffic_density += 10;
-        score_calculate.push(
-            CalculateScore {
-                name: String::from("Referer not empty"),
-                value: -3
-            }  
-        );
-    }
-
     if user_agent_in_headers == "" {
         score_calculate.push(
             CalculateScore {
@@ -239,8 +246,8 @@ pub fn rate_traffic(traffic: TrafficRequest) -> GuardScore {
       quality_traffic_density += 5;
     }
 
-    if referer.contains("duckduckgo.com") {
-      quality_traffic_density -= 2;
+    if black_ref.contains(&referer) { 
+      quality_traffic_density -= 5;
     }
 
     if x_requested_with.to_lowercase() == "XMLHttpRequest".to_lowercase() {
@@ -255,9 +262,9 @@ pub fn rate_traffic(traffic: TrafficRequest) -> GuardScore {
     let score = score - score_calculate.iter().map(|x| x.value).sum::<i8>();
 
     return GuardScore {
-      score: if score < 0 { 0 } else { score },
+      score: if score > 100 { 100 } else { if score < 0 { 0 } else { score } },
       score_calculate,
-      quality_traffic_density: quality_traffic_density,
+      quality_traffic_density: if quality_traffic_density > 100 { 100 } else { if quality_traffic_density < 0 { 0 } else { quality_traffic_density } },
       is_tor: is_tor,
       tags: tags.iter().map(|x| x.to_string()).collect(),
       request_id: traffic.request_id,

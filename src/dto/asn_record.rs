@@ -21,4 +21,6 @@ pub struct AsnRecord {
     pub headers: Option<HashMap<String, String>>,
     pub query: Option<HashMap<String, String>>,
     pub route_way: Option<Vec<RouteWay>>,
+    pub resource_id: Option<String>,
+    pub route_name: Option<String>,
 }

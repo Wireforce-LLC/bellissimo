@@ -13,7 +13,15 @@ lazy_static! {
   );
 }
 
-// Function that retrieves the client options for connecting to the MongoDB server.
+/**
+ * Retrieves the client options for
+ * connecting to the MongoDB server.
+ * 
+ * This function fetches the client options required to
+ * establish a connection to the MongoDB server.
+ *
+ * @returns {ClientOptions} The options for connecting to the MongoDB server.
+ */
 pub fn get_client_options() -> ClientOptions {
   // Retrieve the MongoDB URI from the environment variables, defaulting to a local URI.
   let connection_value = env::var("MONGO_URI").unwrap_or("mongodb://localhost:27018".to_string());
@@ -24,7 +32,14 @@ pub fn get_client_options() -> ClientOptions {
     .expect("Unable to parse client options")
 }
 
-// Function that retrieves the database with the specified name.
+/**
+ * Retrieves the database with the specified name.
+ * 
+ * This function fetches the MongoDB database object based on the provided name.
+ *
+ * @param {String} name - The name of the database to retrieve.
+ * @returns {Database} The database object associated with the specified name.
+ */
 pub fn get_database(name: String) -> Database {
   return DATABASE_CLIENT
     .lock()

@@ -1,10 +1,11 @@
-use crate::{database::get_database, dto_factory::{asn_record::AsnRecord, resource::Resource}, dynamic_router::{REDIS, REDIS_CLIENT}, guard_kit::GuardScore, hp_kit};
+use crate::{asn_record::AsnRecord, config::CONFIG, database::get_database, dynamic_router::{REDIS, REDIS_CLIENT}, guard_kit::GuardScore, hp_kit, ipsum_kit::{optimize_registry_lists, read_ipsum_config, read_ipsum_registry, search_ip_in_ipsum_registries, search_ip_in_ipsum_registry}};
 
-use std::{fs, path::Path, thread, time::Duration};
+use std::{fs, thread, time::Duration};
+use get_size::GetSize;
 use mongodb::{bson::{doc, Bson}, sync::Collection};
-use redis::Commands;
 use serde::Serialize;
 use serde::Deserialize;
+use tokio::task::spawn_blocking;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Device {
@@ -53,17 +54,8 @@ fn user_classification() {
     .find({
       doc! {
         "score": doc! {
-            "$gte": 65
-        },
-        "tags": [],
-        "$or": [
-            doc! {
-                "is_tor": false
-            },
-            doc! {
-                "is_tor": Bson::Null
-            }
-        ]
+            "$gte": 75
+        }
     }
     }, None)
     .expect("Unable to find guard scores")
@@ -76,7 +68,7 @@ fn user_classification() {
     }
 
     let request_id = guard_score.request_id.unwrap();
-    let request_body: Option<AsnRecord> = get_database(String::from("requests")).collection("requests").find_one(
+    let request_body: Option<AsnRecord> = get_database(String::from("requests")).collection("asn_records").find_one(
       doc! {
         "request_id": request_id
       },
@@ -131,8 +123,58 @@ fn user_classification() {
 
 }
 
+
+pub fn fetch_ipsum() {
+  let registry_root = CONFIG["dir_registry"].as_str().unwrap();
+  
+  for registry in read_ipsum_config() {
+    let reg_object = registry.1.as_table().unwrap();
+    let reg_name = registry.0;
+    let reg_url = reg_object["url"].as_str().unwrap();
+
+    println!("Updating registry '{}'", reg_name);
+
+    let registry_content = read_ipsum_registry(reg_url);
+
+    if registry_content.is_none() {
+      continue;
+    }
+
+    if fs::write(
+      format!("{}/{}.list", registry_root, reg_name), 
+      registry_content.unwrap()
+    ).is_ok() {
+      println!("Registry '{}' updated", reg_name);
+    }
+  }
+
+  optimize_registry_lists();
+}
+
 pub async fn register_background_service() {
   let interval = Duration::from_secs(30);
+  
+  // spawn_blocking(fetch_ipsum).await;
+
+  // let time_opeartion = optimize_registry_lists();
+
+  // println!("Registry lists optimized in {} seconds", time_opeartion);
+
+  for index in 0..10 {
+    let find = search_ip_in_ipsum_registries("62.109.0.213", true);
+    
+    if find.is_some() {
+      let r = find.unwrap();
+
+      println!("iteration#{}: {}, {}s", index, r.ipsum.unwrap().first().unwrap().registry, r.elapsed);
+    }
+
+    // for found in find {
+    //   println!("iteration#{} {}, {}", index, found.elapsed, found.registry_count);
+    // }
+  }
+
+  return;
 
   loop {
     user_classification();

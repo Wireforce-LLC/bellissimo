@@ -19,6 +19,8 @@ import {
   SparklinesReferenceLine,
 } from "react-sparklines";
 import RequestOverviewEmbed from "~/embed/RequestOverview";
+import Tabs from "~/components/Tabs";
+import RequestsSelectorCard from "~/embed/RequestsSelectorCard";
 
 export const meta: MetaFunction = () => {
   return [{ title: string("meta.title.filters") }];
@@ -90,111 +92,122 @@ export default function Requests() {
         title={string("dashboard.subtitle.asnRecords")}
       />
 
-      {summaryRequest && data && (
-        <div className="bg-white grid grid-cols-1 lg:grid-cols-5 gap-2 border-b border-gray-200 p-2">
-          <div className="h-26">
-            {summaryRequest?.requests_per_day && (
-              <Sparklines
-                data={_.orderBy(
-                  _.take(_.toPairs(summaryRequest.requests_per_day), 5),
-                  0,
-                  "asc"
-                ).map((i) => i[1])}
-              >
-                <SparklinesLine color="green" />
-                <SparklinesReferenceLine type="mean" />
-                <SparklinesNormalBand />
-              </Sparklines>
-            )}
+      <Tabs isDisablePaddings titles={["Overview", "Ads Campaigns", "", "Flow"]}>
+        <div>
+          {summaryRequest && data && (
+          <div className="bg-white grid grid-cols-1 lg:grid-cols-5 gap-2 border-b border-gray-200 p-2">
+            <div className="h-26">
+              {summaryRequest?.requests_per_day && (
+                <Sparklines
+                  data={_.orderBy(
+                    _.take(_.toPairs(summaryRequest.requests_per_day), 5),
+                    0,
+                    "asc"
+                  ).map((i) => i[1])}
+                >
+                  <SparklinesLine color="green" />
+                  <SparklinesReferenceLine type="mean" />
+                  <SparklinesNormalBand />
+                </Sparklines>
+              )}
 
-            <p className="text-black mt-2 text-xs font-medium">
-              Requests per day
-            </p>
-          </div>
-
-          <div className="h-26 flex flex-col">
-            <div className="flex flex-row h-full gap-2">
-              <div className="bg-gradient-to-r w-full from-gray-100 to-gray-200 h-full rounded-lg flex flex-row gap-2 items-center justify-center">
-                <span className="text-gray-400 font-black text-3xl">
-                  {summaryRequest.ua_bots.is_bot}
-                </span>
-              </div>
-
-              <div className="bg-gradient-to-r from-lime-300 to-lime-400 w-full h-full rounded-lg flex flex-row gap-2 items-center justify-center">
-                <span className="text-white font-black text-3xl">
-                  {summaryRequest.ua_bots.is_not_bot}
-                </span>
-              </div>
+              <p className="text-black mt-2 text-xs font-medium">
+                Requests per day
+              </p>
             </div>
 
-            <p className="text-black mt-2 text-xs font-medium">
-              Bot traffic (UserAgent Detect)
-            </p>
+            <div className="h-26 flex flex-col">
+              <div className="flex flex-row h-full gap-2">
+                <div className="bg-gradient-to-r w-full from-gray-100 to-gray-200 h-full rounded-lg flex flex-row gap-2 items-center justify-center">
+                  <span className="text-gray-400 font-black text-3xl">
+                    {summaryRequest.ua_bots.is_bot}
+                  </span>
+                </div>
+
+                <div className="bg-gradient-to-r from-lime-300 to-lime-400 w-full h-full rounded-lg flex flex-row gap-2 items-center justify-center">
+                  <span className="text-white font-black text-3xl">
+                    {summaryRequest.ua_bots.is_not_bot}
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-black mt-2 text-xs font-medium">
+                Bot traffic (UserAgent Detect)
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <FirstRecordPlease
-        title="Received requests"
-        text="When any router receives any request, you will see it here"
-        isVisible={_.isEmpty(data) && _.isArray(data)}
-        icon={<img className="h-20" src={serverImage} alt="Server image" />}
-      />
+        <FirstRecordPlease
+          title="Received requests"
+          text="When any router receives any request, you will see it here"
+          isVisible={_.isEmpty(data) && _.isArray(data)}
+          icon={<img className="h-20" src={serverImage} alt="Server image" />}
+        />
 
-      <Table
-        headers={
-          data &&
-          (!_.isEmpty(data)
-            ? _.keys(_.omit(_.first(data), hiddenCols)).map((i) =>
-                humanizeString(i).replace("Asn", "ASN")
-              )
-            : [])
-        }
-        data={data?.map((it, index) => {
-          const row = {
-            ...it,
+        <Table
+          headers={
+            data &&
+            (!_.isEmpty(data)
+              ? _.keys(_.omit(_.first(data), hiddenCols)).map((i) =>
+                  humanizeString(i).replace("Asn", "ASN")
+                )
+              : [])
+          }
+          data={data?.map((it, index) => {
+            const row = {
+              ...it,
 
-            request_id: (
-              <span
-                onClick={() => {
-                  setModalOverviewData(data[index]);
-                }}
-                className="text-gray-400 hover:underline"
-              >
-                {it.request_id}
-              </span>
-            ),
-            time: (
-              <span className="text-gray-400">
-                {moment(it.time / 1000).format("DD.MM.YYYY HH:mm")}
-              </span>
-            ),
-            headers: (
-              <span>
-                <span>{_.size(it.headers)}</span>{" "}
-                <span className="text-gray-400">times</span>
-              </span>
-            ),
-            route_way: it.route_way ? "Existing" : "Unknown",
-            query: it.query ? "Yes" : "No",
-            asn_country_code: it?.asn_country_code && (
-              <span className="flex items-center flex-row gap-2">
-                <img
-                  className="size-3"
-                  alt="United States"
-                  src={`http://purecatamphetamine.github.io/country-flag-icons/3x2/${it?.asn_country_code?.toUpperCase()}.svg`}
-                />
-
-                <span className="font-medium">
-                  {it?.asn_country_code?.toUpperCase()}
+              request_id: (
+                <span
+                  onClick={() => {
+                    setModalOverviewData(data[index]);
+                  }}
+                  className="text-gray-400 hover:underline"
+                >
+                  {it.request_id}
                 </span>
-              </span>
-            ),
-          };
+              ),
+              time: (
+                <span className="text-gray-400">
+                  {moment(it.time / 1000).format("DD.MM.YYYY HH:mm")}
+                </span>
+              ),
+              headers: (
+                <span>
+                  <span>{_.size(it.headers)}</span>{" "}
+                  <span className="text-gray-400">times</span>
+                </span>
+              ),
+              route_way: it.route_way ? "Existing" : "Unknown",
+              query: it.query ? "Yes" : "No",
+              asn_country_code: it?.asn_country_code && (
+                <span className="flex items-center flex-row gap-2">
+                  <img
+                    className="size-3"
+                    alt="United States"
+                    src={`http://purecatamphetamine.github.io/country-flag-icons/3x2/${it?.asn_country_code?.toUpperCase()}.svg`}
+                  />
 
-          return _.omit(row, hiddenCols);
-        })}
-      />
+                  <span className="font-medium">
+                    {it?.asn_country_code?.toUpperCase()}
+                  </span>
+                </span>
+              ),
+            };
+
+            return _.omit(row, hiddenCols);
+          })}
+        />
+        </div>
+
+        <div className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 p-2">
+          <RequestsSelectorCard title="By source" selector="utm_source"/>
+          <RequestsSelectorCard title="By campaign" selector="utm_campaign"/>
+          <RequestsSelectorCard title="By term" selector="utm_term"/>
+          <RequestsSelectorCard title="By medium" selector="utm_medium"/>
+        </div>
+      </Tabs>
     </DashboardLayout>
   );
 }
