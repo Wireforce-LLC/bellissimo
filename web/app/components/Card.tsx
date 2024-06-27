@@ -5,9 +5,10 @@ interface Props {
   readonly children: ReactNode;
   readonly title?: string | null;
   readonly className?: string | null;
+  readonly isDisablePaddings?: boolean;
 }
 
-export default function Card({ children, title, className }: Props) {
+export default function Card({ children, isDisablePaddings, title, className }: Props) {
   return (
     <div
       className={classNames("bg-white border block border-gray-100", className)}
@@ -20,7 +21,8 @@ export default function Card({ children, title, className }: Props) {
 
       <section
         className={classNames(className, {
-          "px-3 pt-0.5 pb-3 block": title,
+          "px-3 pt-0.5 pb-3 block": title && !isDisablePaddings,
+          "block": title && isDisablePaddings,
         })}
       >
         {children}

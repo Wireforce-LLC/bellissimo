@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import Card from "./Card";
 import _ from "lodash";
 
@@ -50,7 +50,7 @@ export default function Tabs({
       <div
         className={classNames({ "px-4 py-2.5": isDisablePaddings !== true })}
       >
-        {_.isArray(children) ? children[activeTab] : children}
+        {_.isArray(children) && children[activeTab] || null}
       </div>
     </Card>
   );

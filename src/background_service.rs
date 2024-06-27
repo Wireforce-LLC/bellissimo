@@ -18,6 +18,7 @@ pub struct User {
   pub real_ip: String,
   pub country_code: String,
   pub devices: Vec<Device>,
+  pub source: Option<String>,
 }
 
 pub fn get_all_registred_users() -> Vec<User> {
@@ -107,11 +108,25 @@ fn user_classification() {
       continue;
     }
 
+    let source = if request_body.query.is_some() {
+      let reqwest_body = request_body.query.unwrap();
+      let utm_source = reqwest_body.get("utm_source");
+
+      if utm_source.is_some() {
+        Some(utm_source.unwrap().to_owned())
+      } else {
+        None
+      }
+    } else {
+      None
+    };
+
     let user = User {
       name: String::new(),
       real_ip,
       country_code,
       devices: vec![Device { user_agent: user_agent.to_owned() }],
+      source: source
     };
 
     let is_user_registered = register_user_if_needed(&user);

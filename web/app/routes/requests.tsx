@@ -17,6 +17,7 @@ import {
   SparklinesLine,
   SparklinesNormalBand,
   SparklinesReferenceLine,
+  //@ts-ignore
 } from "react-sparklines";
 import RequestOverviewEmbed from "~/embed/RequestOverview";
 import Tabs from "~/components/Tabs";
@@ -32,7 +33,7 @@ export default function Requests() {
   const [data, setData] = useState<any[] | undefined>(undefined);
   const [modalOverviewData, setModalOverviewData] = useState<any | undefined>();
   const [modelSummary, setModelSummary] = useState<boolean>(false);
-  const [summaryRequest, setSummaryRequest] = useState<any | undefined>();
+  const [summaryRequest, setSummaryRequest] = useState<{[key: string]: any}>({});
 
   useEffect(() => {
     fether();
@@ -78,7 +79,8 @@ export default function Requests() {
         >
           <div className="w-full overflow-hidden">
             <Table
-              data={_.toPairs(flatten(summaryRequest))}
+              //@ts-ignore
+              data={_.toPairs(flatten(summaryRequest)) as any[]}
               headers={["Key", "Value"]}
             />
           </div>
@@ -92,9 +94,9 @@ export default function Requests() {
         title={string("dashboard.subtitle.asnRecords")}
       />
 
-      <Tabs isDisablePaddings titles={["Overview", "Ads Campaigns", "", "Flow"]}>
+      <Tabs isDisableBorders isDisablePaddings titles={["Overview", "Ads Campaigns", "Users segments", "Flow"]}>
         <div>
-          {summaryRequest && data && (
+          {/* {summaryRequest && data && (
           <div className="bg-white grid grid-cols-1 lg:grid-cols-5 gap-2 border-b border-gray-200 p-2">
             <div className="h-26">
               {summaryRequest?.requests_per_day && (
@@ -136,7 +138,7 @@ export default function Requests() {
               </p>
             </div>
           </div>
-        )}
+        )} */}
 
         <FirstRecordPlease
           title="Received requests"
@@ -201,12 +203,12 @@ export default function Requests() {
         />
         </div>
 
-        <div className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 p-2">
-          <RequestsSelectorCard title="By source" selector="utm_source"/>
-          <RequestsSelectorCard title="By campaign" selector="utm_campaign"/>
-          <RequestsSelectorCard title="By term" selector="utm_term"/>
-          <RequestsSelectorCard title="By medium" selector="utm_medium"/>
-        </div>
+        <Tabs isDisablePaddings isDisableBorders titles={["By source", "By campaign", "By term", "By medium"]}>
+          <RequestsSelectorCard key="utm_source" title="By source" selector="utm_source"/>
+          <RequestsSelectorCard key="utm_campaign" title="By campaign" selector="utm_campaign"/>
+          <RequestsSelectorCard key="utm_term" title="By term" selector="utm_term"/>
+          <RequestsSelectorCard key="utm_medium" title="By medium" selector="utm_medium"/>
+        </Tabs>
       </Tabs>
     </DashboardLayout>
   );
