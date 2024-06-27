@@ -50,6 +50,10 @@ pub async fn bootstrap_fs() {
     spawn_blocking(fetch_ipsum).await.unwrap();
   }
 
+  if fs::read_dir(CONFIG["dir_registry"].as_str().unwrap()).unwrap().count() == 0 {
+    spawn_blocking(fetch_ipsum).await.unwrap();
+  }
+
   ipsum_kit::optimize_registry_lists();
 }
   

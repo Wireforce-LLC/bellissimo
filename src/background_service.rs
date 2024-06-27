@@ -153,31 +153,16 @@ pub fn fetch_ipsum() {
 
 pub async fn register_background_service() {
   let interval = Duration::from_secs(30);
+  let mut i = 0;
   
-  // spawn_blocking(fetch_ipsum).await;
-
-  // let time_opeartion = optimize_registry_lists();
-
-  // println!("Registry lists optimized in {} seconds", time_opeartion);
-
-  for index in 0..10 {
-    let find = search_ip_in_ipsum_registries("62.109.0.213", true);
-    
-    if find.is_some() {
-      let r = find.unwrap();
-
-      println!("iteration#{}: {}, {}s", index, r.ipsum.unwrap().first().unwrap().registry, r.elapsed);
-    }
-
-    // for found in find {
-    //   println!("iteration#{} {}, {}", index, found.elapsed, found.registry_count);
-    // }
-  }
-
-  return;
-
   loop {
+    i += 1;
+
     user_classification();
+  
+    if i % 64 == 0 {
+      spawn_blocking(fetch_ipsum).await.unwrap();    
+    }
 
     thread::sleep(interval);
   }
