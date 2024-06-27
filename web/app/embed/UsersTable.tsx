@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Table from "~/components/Table";
 import webConfig, { ApiPathEnum } from "~/web.config";
 
@@ -8,6 +8,14 @@ interface Props {
 
 export default function UsersTableEmbed() {
   const [data, setData] = useState<any[]>([]);
+
+  const tableData = useMemo(() => {
+    return data?.map(it => {
+      const row = _.omit(it, ["devices"]);
+
+      return row;
+    });
+  }, [data]);
 
   const fetcher = useCallback(() => {
     webConfig.axiosFactory("PRIVATE").then((i) => {
@@ -26,8 +34,8 @@ export default function UsersTableEmbed() {
   }, [])
   
   return <Table 
-    headers={["Name", "Email"]}
-    data={data}
+    headers={_.keys(_.first(tableData))}
+    data={tableData}
     onSelectedItem={(index, item) => {
       console.log(index, item);
     }}/>
