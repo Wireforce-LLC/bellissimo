@@ -1,6 +1,5 @@
 import type { MetaFunction } from "@remix-run/node";
 import _ from "lodash";
-import moment from "moment";
 import { useState, useEffect, useCallback } from "react";
 import Modal from "~/components/Modal";
 import SubNavbar from "~/components/SubNavbar";
@@ -8,33 +7,22 @@ import Table from "~/components/Table";
 import DashboardLayout, { LeftActiveBarItem } from "~/layouts/DashboardLayout";
 import string from "~/localization/polyglot";
 import webConfig, { ApiPathEnum } from "~/web.config";
-import humanizeString from "humanize-string";
 import { flatten } from "flat";
-import FirstRecordPlease from "~/components/FirstRecordPlease";
-import serverImage from "/server.png";
-import {
-  Sparklines,
-  SparklinesLine,
-  SparklinesNormalBand,
-  SparklinesReferenceLine,
-  //@ts-ignore
-} from "react-sparklines";
 import RequestOverviewEmbed from "~/embed/RequestOverview";
 import Tabs from "~/components/Tabs";
 import RequestsSelectorCard from "~/embed/RequestsSelectorCard";
+import RequestsTableEmbed from "~/embed/RequestsTable";
+import UsersTableEmbed from "~/embed/UsersTable";
 
 export const meta: MetaFunction = () => {
-  return [{ title: string("meta.title.filters") }];
+  return [{ title: string("meta.title.requests") }];
 };
 
-const hiddenCols = ["asn_description", "asn_number", "route_way"];
-
 export default function Requests() {
-  const [data, setData] = useState<any[] | undefined>(undefined);
   const [modalOverviewData, setModalOverviewData] = useState<any | undefined>();
   const [modelSummary, setModelSummary] = useState<boolean>(false);
   const [summaryRequest, setSummaryRequest] = useState<{[key: string]: any}>({});
-
+  
   useEffect(() => {
     fether();
   }, []);
@@ -44,12 +32,6 @@ export default function Requests() {
       i.get(webConfig.apiEndpointFactory(ApiPathEnum.GetSummaryRequests)).then(
         (res) => {
           setSummaryRequest(res.data.value);
-        }
-      );
-
-      i.get(webConfig.apiEndpointFactory(ApiPathEnum.GetAllASNRecords)).then(
-        (res) => {
-          setData(res.data.value);
         }
       );
     });
@@ -140,67 +122,10 @@ export default function Requests() {
           </div>
         )} */}
 
-        <FirstRecordPlease
-          title="Received requests"
-          text="When any router receives any request, you will see it here"
-          isVisible={_.isEmpty(data) && _.isArray(data)}
-          icon={<img className="h-20" src={serverImage} alt="Server image" />}
-        />
+        <RequestsTableEmbed onSelectedItem={(index, item) => {
+          setModalOverviewData(item);
+        }}/>
 
-        <Table
-          headers={
-            data &&
-            (!_.isEmpty(data)
-              ? _.keys(_.omit(_.first(data), hiddenCols)).map((i) =>
-                  humanizeString(i).replace("Asn", "ASN")
-                )
-              : [])
-          }
-          data={data?.map((it, index) => {
-            const row = {
-              ...it,
-
-              request_id: (
-                <span
-                  onClick={() => {
-                    setModalOverviewData(data[index]);
-                  }}
-                  className="text-gray-400 hover:underline"
-                >
-                  {it.request_id}
-                </span>
-              ),
-              time: (
-                <span className="text-gray-400">
-                  {moment(it.time / 1000).format("DD.MM.YYYY HH:mm")}
-                </span>
-              ),
-              headers: (
-                <span>
-                  <span>{_.size(it.headers)}</span>{" "}
-                  <span className="text-gray-400">times</span>
-                </span>
-              ),
-              route_way: it.route_way ? "Existing" : "Unknown",
-              query: it.query ? "Yes" : "No",
-              asn_country_code: it?.asn_country_code && (
-                <span className="flex items-center flex-row gap-2">
-                  <img
-                    className="size-3"
-                    alt="United States"
-                    src={`http://purecatamphetamine.github.io/country-flag-icons/3x2/${it?.asn_country_code?.toUpperCase()}.svg`}
-                  />
-
-                  <span className="font-medium">
-                    {it?.asn_country_code?.toUpperCase()}
-                  </span>
-                </span>
-              ),
-            };
-
-            return _.omit(row, hiddenCols);
-          })}
-        />
         </div>
 
         <Tabs isDisablePaddings isDisableBorders titles={["By source", "By campaign", "By term", "By medium"]}>
@@ -209,6 +134,8 @@ export default function Requests() {
           <RequestsSelectorCard key="utm_term" title="By term" selector="utm_term"/>
           <RequestsSelectorCard key="utm_medium" title="By medium" selector="utm_medium"/>
         </Tabs>
+
+        <UsersTableEmbed/>
       </Tabs>
     </DashboardLayout>
   );

@@ -16,12 +16,14 @@ use rocket::Request;
 use serde_json::json;
 use tokio::runtime::Handle;
 use tokio::task;
+use uaparser::{Parser, UserAgentParser};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::env;
+use std::time::Instant;
 use serde::{Deserialize, Serialize};
 use crate::config::CONFIG;
 use crate::{filter_kit, guard_kit};
@@ -134,6 +136,10 @@ lazy_static! {
       .expect("Unable to create redis client")
   );
 
+  pub static ref UA_PARSER: Mutex<UserAgentParser> = Mutex::new(
+    UserAgentParser::from_bytes(include_bytes!("../../containers/user_agent_parser.bin")).expect("Parser creation failed")
+  );
+
   // Define a static reference to a mutex
   // containing a Redis connection
   pub static ref REDIS: Mutex<Connection> = Mutex::new(
@@ -149,6 +155,41 @@ lazy_static! {
   );
 }
 
+
+fn write_info_about_request(
+  request_id: &str,
+  insert_data: &asn_record::AsnRecord
+) {
+  task::block_in_place(move || {
+    Handle::current().block_on(async move {
+      let collection: Collection<asn_record::AsnRecord> =
+        get_database(String::from("requests"))
+        .collection("asn_records");
+
+      let insert_json_raw = json!(insert_data);
+
+      if CONFIG["is_save_requests_in_mongodb"].as_bool().unwrap() {
+        collection
+          .insert_one(
+            insert_data,
+            None,
+          )
+          .unwrap();
+      }
+
+      if CONFIG["is_save_requests_in_elastic"].as_bool().unwrap() {
+        ELASTIC
+          .lock()
+          .unwrap()
+          .index(IndexParts::IndexId("requests", &request_id))
+          .body(insert_json_raw.to_owned())
+          .send()
+          .await
+          .unwrap();
+      }
+    })
+  });
+}
 
 fn async_register_request_info(
   asn_record: Option<&Record>,
@@ -174,111 +215,53 @@ fn async_register_request_info(
   } else {
     nanoid!()
   };
-
-  let return_request_id = request_id.clone();
-
-  let collection: Collection<asn_record::AsnRecord> =
-    get_database(String::from("requests"))
-    .collection("asn_records");
-
-  if let Some(result_record) = asn_record {
-    let is_allow_write_record = raw_headers
-      .get_one("cf-ipcountry")
-      .is_some() && 
-        CONFIG["use_cloudflare_data_priority"]
-          .as_bool()
-          .unwrap();
-
-    let cuntry_code = if is_allow_write_record {
-      Some(raw_headers.get_one("cf-ipcountry").unwrap().to_string().to_uppercase())
-    } else { 
-      Some(result_record.country.clone().to_uppercase())
-    };
-
-    task::block_in_place(move || {
-      Handle::current().block_on(async move {
-        let insert_data = asn_record::AsnRecord {
-          asn_name: Some(result_record.owner.clone()),
-          asn_country_code: cuntry_code.clone(),
-          asn_description: Some(String::new()),
-          request_id: request_id.clone(),
-          time: now.timestamp_micros(),
-          asn_number: Some(u32::from(result_record.as_number)),
-          is_ua_bot: Some(BOT_DETECTOR.is_bot(user_agent.as_str())),
-          headers: Some(headers.clone()),
-          query: Some(query),
-          route_way: route_way,
-          route_name: route_name,
-          resource_id: resource_id,
-        };
-    
-        let insert_json_raw = json!(insert_data);
-
-        if CONFIG["is_save_requests_in_mongodb"].as_bool().unwrap() {
-          collection
-            .insert_one(
-              insert_data,
-              None,
-            )
-            .unwrap();
-        }
-
-        if CONFIG["is_save_requests_in_elastic"].as_bool().unwrap() {
-          ELASTIC
-            .lock()
-            .unwrap()
-            .index(IndexParts::IndexId("requests", &request_id))
-            .body(insert_json_raw.to_owned())
-            .send()
-            .await
-            .unwrap();
-        }
-      })
-    });
-  } else {
-    task::block_in_place(move || {
-      Handle::current().block_on(async move {
-        let insert_data = asn_record::AsnRecord {
-          asn_name: None,
-          asn_country_code: None,
-          asn_description: None,
-          request_id: request_id.clone(),
-          time: now.timestamp_micros(),
-          asn_number: None,
-          is_ua_bot: Some(BOT_DETECTOR.is_bot(user_agent.as_str())),
-          headers: Some(headers),
-          query: Some(query),
-          route_way: route_way,
-          route_name: route_name,
-          resource_id: resource_id,
-        };
-    
-        let insert_json_raw = json!(insert_data);
-
-        if CONFIG["is_save_requests_in_mongodb"].as_bool().unwrap() {
-          collection
-            .insert_one(
-              insert_data,
-              None,
-            )
-            .unwrap();
-        }
-
-        if CONFIG["is_save_requests_in_elastic"].as_bool().unwrap() {
-          ELASTIC
-            .lock()
-            .unwrap()
-            .index(IndexParts::IndexId("requests", &request_id))
-            .body(insert_json_raw.to_owned())
-            .send()
-            .await
-            .unwrap();
-        }
-      })
-    });
+  
+  let is_allow_write_record = raw_headers
+    .get_one("cf-ipcountry")
+    .is_some() && 
+      CONFIG["use_cloudflare_data_priority"]
+        .as_bool()
+        .unwrap();
+      
+  let cuntry_code = if is_allow_write_record {
+    Some(raw_headers.get_one("cf-ipcountry").unwrap().to_string().to_uppercase())
+  } else if asn_record.is_some() { 
+    Some(asn_record.unwrap().country.clone().to_uppercase())
+  } else { 
+    None
   };
 
-  return return_request_id;
+  let client = UA_PARSER.lock().unwrap().parse(&user_agent);
+  
+  let insert_data = asn_record::AsnRecord {
+    asn_name: match asn_record {
+      Some(asn_record) => Some(asn_record.owner.to_owned()),
+
+      _ => None
+    },
+
+    asn_number: match asn_record {
+      Some(asn_record) => Some(asn_record.as_number.to_owned()),
+
+      _ => None
+    },
+
+    asn_country_code: cuntry_code.clone(),
+    asn_description: Some(String::new()),
+    request_id: request_id.to_string(),
+    time: now.timestamp_micros(),
+    is_ua_bot: Some(BOT_DETECTOR.is_bot(user_agent.as_str())),
+    headers: Some(headers.clone()),
+    query: Some(query),
+    route_way: route_way,
+    route_name: route_name,
+    resource_id: resource_id,
+    user_agent_client: Some(client)
+  };
+  
+  write_info_about_request(&request_id, &insert_data);
+
+  return request_id;
 }
 
 fn create_meta_dataset_for_template(

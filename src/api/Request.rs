@@ -2,10 +2,9 @@ use std::{collections::{BTreeMap, HashMap}, fs, ops::Add, path::{Path, PathBuf}}
 use chrono::{DateTime, TimeZone, Utc};
 use mongodb::{bson::{doc, document, Document}, options::FindOptions, sync::Collection};
 use rocket::{form::Form, http::{ContentType, Status}, FromForm};
-use v8::Allocator;
 use crate::{asn_record::{AsnRecord, RouteWay}, database::get_database, domains_by_source::DomainsGroupedBySource, guard_kit::GuardScore};
 
-fn select_requests(document: Document, limit: i64) -> Vec<AsnRecord> {
+fn select_requests(document: Document, limit: i64) -> Vec<AsnRecord<'static>> {
   let collection: Collection<AsnRecord> = get_database(String::from("requests"))
     .collection("asn_records");
 
@@ -230,7 +229,7 @@ pub fn get_all_guards() -> (Status, (ContentType, String))  {
 
 #[get("/requests/asn/list")]
 pub fn get_all_requests() -> (Status, (ContentType, String))  {
-  let vector = select_requests(doc! {}, 100);
+  let vector = select_requests(doc! {}, 256);
 
   let value = serde_json::json!({
     "isOk": true,

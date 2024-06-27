@@ -14,6 +14,11 @@ export default {
 
   meta: {
     title: {
+      requests: "Requests",
+      files: "Files",
+      postbacks: "Postbacks",
+      dashboard: "Dashboard",
+      routes: "Routes",
       filters: "Filters",
       login: `Welcome back in ${APP_NAME}`,
       createThread: "Create new thread",

@@ -20,7 +20,7 @@ import webConfig, { ApiPathEnum, DRIVERS } from "~/web.config";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: string("productName") + "|" + string("meta.title.filters") },
+    { title: string("meta.title.resources") },
   ];
 };
 

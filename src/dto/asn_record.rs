@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
+use uaparser::Client;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct RouteWay {
@@ -10,7 +11,7 @@ pub struct RouteWay {
 
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct AsnRecord {
+pub struct AsnRecord<'a> {
     pub request_id: String,
     pub time: i64,
     pub asn_name: Option<String>,
@@ -23,4 +24,5 @@ pub struct AsnRecord {
     pub route_way: Option<Vec<RouteWay>>,
     pub resource_id: Option<String>,
     pub route_name: Option<String>,
+    pub user_agent_client: Option<Client<'a>>
 }

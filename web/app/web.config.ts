@@ -7,6 +7,7 @@ export enum ApiPathEnum {
   CampaignsByRequests = "/api/requests/selector/g/q/utm_campaign",
   CampaignsBySource = "/api/requests/selector/g/q/utm_source",
   SelectorRequests = "/api/requests/selector/g/q/",
+  GetAllUsers = "/api/user/list",
   GetResource = "/api/resource",
   GetAllFiles = "/api/file/list/all",
   GetFile = "/api/file/read",
