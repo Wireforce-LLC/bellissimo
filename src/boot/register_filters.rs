@@ -27,6 +27,7 @@ use uaparser::{Parser, UserAgentParser};
 #[path="../filter/SecChUAPlatform.rs"] mod sec_ch_ua_platform;
 #[path="../filter/WebView.rs"] mod webview;
 #[path="../filter/BlackReferer.rs"] mod black_referer;
+#[path="../filter/AdvertisingCampaign.rs"] mod advertising_campaign;
 
 // Filter method by Proxycheck
 fn proxycheck_io(_this: &str, x_real_ip: &str, _user_agent: &str, _raw_headers: HeaderMap, _asn_record: Option<&Record>, _filter_value: &str, operator: &str) -> bool {
@@ -86,6 +87,7 @@ pub fn register_default_filters() {
   sec_ch_ua_platform::register_filter();
   webview::register_filter();
   black_referer::register_filter();
+  advertising_campaign::register_filter();
 
   if CONFIG.contains_key("proxycheck_io_token") {
     filter_kit::register_filter(

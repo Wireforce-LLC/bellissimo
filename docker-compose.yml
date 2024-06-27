@@ -83,6 +83,7 @@ services:
       - ./plugins.toml:/usr/src/app/plugins.toml:ro
       - ./plugins:/usr/src/app/plugins
       - ./public:/usr/src/app/public
+      - ./registry:/usr/src/app/registry
     build:
       context: .
       dockerfile: Dockerfile
