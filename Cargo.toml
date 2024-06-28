@@ -23,7 +23,7 @@ fake-useragent = "0.1.3"
 geoip2 = "0.1.7"
 isbot = "0.1.3"
 lazy_static = "1.4.0"
-mongodb = {version = "3.0.0", features = ["sync"], default-features = false}
+mongodb = {version = "2.8.2", features = ["sync"], default-features = false}
 nanoid = "0.4.0"
 num_cpus = "1.16.0"
 once_cell = "1.19.0"
