@@ -19,6 +19,7 @@
 #[path = "api/Postback.rs"] mod api_postback;
 #[path = "api/User.rs"] mod api_user;
 #[path = "api/Plugin.rs"] mod api_plugin;
+#[path = "api/Click.rs"] mod api_click;
 
 // Config Files
 #[path = "config.rs"] mod config;
@@ -140,6 +141,7 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api_filter::update_filter_by_id])
       .mount(http_api_uri_path, routes![api_request::get_all_domains_grouped_by_source])
       .mount(http_api_uri_path, routes![api_request::get_all_routes])
+      .mount(http_api_uri_path, routes![api_click::get_all_clicks])
 
       .mount(http_api_uri_path, routes![api_postback::get_postback_amount])
 
