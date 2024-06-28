@@ -46,7 +46,7 @@
 #[path = "dto/asn_record.rs"] pub mod asn_record;
 #[path = "dto/create_file.rs"] pub mod create_file;
 #[path = "dto/domains_group.rs"] pub mod domains_by_source;
-
+#[path = "dto/click.rs"] pub mod click;
 
 use config::CONFIG;
 use ipsum_kit::REGISTRIES;
@@ -123,6 +123,8 @@ async fn register_routes_and_attach_server() {
   if is_http_future_robots_txt {
     rocket_server = rocket_server.mount("/", routes![main_routes::robots_txt]);
   }
+
+  rocket_server = rocket_server.mount("/", routes![main_routes::click]);
 
   if is_http_future_api {
     rocket_server = rocket_server
