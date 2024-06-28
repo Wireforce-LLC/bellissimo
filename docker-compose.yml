@@ -84,6 +84,7 @@ services:
       - ./plugins:/usr/src/app/plugins
       - ./public:/usr/src/app/public
       - ./registry:/usr/src/app/registry
+      - ./ipsum.toml:/usr/src/app/ipsum.toml:ro
     build:
       context: .
       dockerfile: Dockerfile
