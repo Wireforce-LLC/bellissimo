@@ -86,6 +86,7 @@ services:
       - ./registry:/usr/src/app/registry
       - ./ipsum.toml:/usr/src/app/ipsum.toml:ro
       - ./config.local.toml:/usr/src/app/config.local.toml:ro
+      - ./config.toml:/usr/src/app/config.toml:ro
     build:
       context: .
       dockerfile: Dockerfile
