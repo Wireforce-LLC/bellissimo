@@ -5,7 +5,7 @@ use clap::builder::OsStr;
 use rocket::{fs::NamedFile, http::{ContentType, Status}};
 use serde_json::Value;
 
-use crate::{click::Click, config::CONFIG, database::get_database, rdr_kit, resource_kit};
+use crate::{click::Click, click::ReceiveClick, config::CONFIG, database::get_database, rdr_kit, resource_kit};
 
 lazy_static! {
     // Define static variables
@@ -39,29 +39,6 @@ pub async fn object_get(object: PathBuf) -> Option<(Status, (ContentType, String
   
   return Some(
     resource
-  )
-}
-
-#[get("/click?<click..>")]
-pub async fn click(click: Click) -> Option<(Status, (ContentType, String))> {
-  let collection: mongodb::sync::Collection<Click> = get_database(String::from("requests")).collection("clicks");
-
-  let click = Click {
-    time: Utc::now().timestamp(),
-    
-    ..click
-  };
-
-  collection.insert_one(click, None).unwrap();
-
-  return Some(
-    (
-      Status::Ok,
-      (
-        ContentType::HTML,
-        "OK".to_string()
-      )
-    )
   )
 }
 

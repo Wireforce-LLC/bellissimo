@@ -125,7 +125,7 @@ async fn register_routes_and_attach_server() {
     rocket_server = rocket_server.mount("/", routes![main_routes::robots_txt]);
   }
 
-  rocket_server = rocket_server.mount("/", routes![main_routes::click]);
+  rocket_server = rocket_server.mount("/", routes![api_click::click]);
 
   if is_http_future_api {
     rocket_server = rocket_server
