@@ -1,7 +1,7 @@
 FROM rust AS build
 
 # Capture dependencies
-COPY Cargo.toml Cargo.lock .cargo user_agents  /usr/src/app/
+COPY Cargo.toml Cargo.lock .cargo user_agents config.toml /usr/src/app/
 
 WORKDIR /usr/src/app/
 COPY src/ /usr/src/app/src/
