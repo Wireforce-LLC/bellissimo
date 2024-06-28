@@ -47,9 +47,9 @@ RUN cargo build --release
 FROM rust as runtime
 WORKDIR /usr/src/app
 COPY --from=builder /usr/src/app/target/release/bellissimo /usr/local/bin
-ENTRYPOINT ["./usr/local/bin/bellissimo"]
+ENTRYPOINT ["./usr/local/bin"]
 
-CMD ["/usr/src/app/target/release/bellissimo"]
+# CMD ["/usr/src/app/target/release/bellissimo"]
 
 # # FROM rust:latest
 
