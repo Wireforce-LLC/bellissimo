@@ -273,7 +273,13 @@ fn create_meta_dataset_for_template(
   resource: &resource_kit::Resource
 ) -> HashMap<String, String> {
   let mut meta = HashMap::new();
+  let time = Utc::now().timestamp_micros();
 
+  meta.insert("time".to_string(), time.to_string());
+  meta.insert("hello_rust".to_string(), "Rust".to_string());
+  // meta.insert("public".to_string(), CONFIG["http_server_serve_uri_path"].as_str().unwrap().to_string());
+  // meta.insert("static".to_string(), CONFIG["http_server_serve_uri_path"].as_str().unwrap().to_string());
+  
   meta.insert("ip".to_string(), client_ip.to_string());
   meta.insert("client-ip".to_string(), client_ip.to_string());
 
@@ -292,6 +298,8 @@ fn create_meta_dataset_for_template(
     let root = root.to_str().unwrap().split('/').collect::<Vec<&str>>();
     
     let pwd = Path::new(CONFIG["http_server_serve_uri_path"].as_str().unwrap());
+
+    meta.insert("pwd".to_string(), pwd.as_os_str().to_str().unwrap().to_string());
 
     let public = pwd
       .join(root.last().unwrap())

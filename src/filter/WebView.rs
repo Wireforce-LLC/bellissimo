@@ -22,6 +22,11 @@ pub fn register_filter() {
                 return true;
             }
 
+            // ios Facebook Application
+            if user_agent.to_uppercase().contains("FBAN") || user_agent.to_uppercase().contains("FBDV") || user_agent.to_uppercase().contains("FBAV") {
+                return true;
+            }
+
             if user_agent.contains("wv") {
                 return true;
             }

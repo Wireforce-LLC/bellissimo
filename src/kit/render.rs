@@ -6,6 +6,7 @@ use crate::resource_kit::Resource;
 
 use chrono::Utc;
 use fastcgi_client::{Client, Params, Request};
+use nanoid::nanoid;
 use rocket::http::{ContentType, Status};
 use serde_json::Value;
 use tokio::io;
@@ -325,16 +326,13 @@ fn default_external_python() {
 
 } 
 
-fn default_method_html(resource: Resource, _meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
+fn default_method_html(resource: Resource, meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
   let time = Utc::now().timestamp_micros();
 
   Box::pin(async move {
     let mut params = HashMap::new();
 
-    params.insert("time", time.to_string());
-    params.insert("hello_rust", "Rust".to_string());
-    params.insert("public", CONFIG["http_server_serve_uri_path"].as_str().unwrap().to_string());
-    params.insert("static", CONFIG["http_server_serve_uri_path"].as_str().unwrap().to_string());
+    params.extend(meta);
 
     if &resource.file_path.is_some() == &true {
       let template_uri_raw = resource
@@ -344,8 +342,6 @@ fn default_method_html(resource: Resource, _meta: HashMap<String, String>) -> Pi
 
       let pwd: String = CONFIG["http_server_serve_uri_path"].as_str().unwrap().to_string();
       let pwd_static = Path::new(&pwd).to_str().unwrap();
-
-      params.insert("pwd", String::from(pwd_static));
       
       if !Path::new(&template_uri_raw).exists() {
         if CONFIG["is_allow_debug_throw"].as_bool().unwrap() {
