@@ -18,7 +18,7 @@ WORKDIR /usr/src/app
 COPY . .
 # Copy over the cached dependencies
 COPY --from=cacher /usr/src/app/target target
-RUN cargo build --release
+RUN cargo build --release --features="rustls-tls"
 
 # Runtime
 FROM rust as runtime

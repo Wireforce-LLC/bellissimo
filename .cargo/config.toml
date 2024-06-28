@@ -1,0 +1,7 @@
+[build]
+jobs = 4
+
+[target]
+[target.aarch64-apple-darwin]
+linker = "/usr/bin/clang"
+rustflags = ["-C", "link-arg=--ld-path=mold-2.32.1-arm-linux/bin/mold"]

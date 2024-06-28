@@ -1,6 +1,3 @@
-[build]
-rustflags = ["-Z", "threads=8"]
-
 [package.metadata.leptos]
 separate-front-target-dir = true
 
