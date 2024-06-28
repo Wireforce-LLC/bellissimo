@@ -5,7 +5,7 @@ COPY Cargo.toml Cargo.lock .cargo /usr/src/app/
 
 WORKDIR /usr/src/app/
 COPY src/ /usr/src/app/src/
-COPY containters/ /usr/src/app/containters/
+COPY containers/ /usr/src/app/containers/
 
 RUN --mount=type=cache,target=/usr/local/cargo/registry cargo build --release
 
