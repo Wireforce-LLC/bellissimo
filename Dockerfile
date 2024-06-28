@@ -4,10 +4,10 @@ FROM rust AS build
 COPY Cargo.toml Cargo.lock .cargo /usr/src/app/
 
 WORKDIR /usr/src/app/
-RUN --mount=type=cache,target=/usr/local/cargo/registry cargo build --release
-
 COPY src/ /usr/src/app/src/
 COPY containters/ /usr/src/app/containters/
+
+RUN --mount=type=cache,target=/usr/local/cargo/registry cargo build --release
 
 RUN --mount=type=cache,target=/usr/local/cargo/registry <<EOF
   touch /usr/src/app/Cargo.toml
