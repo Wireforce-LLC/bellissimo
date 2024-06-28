@@ -9,6 +9,7 @@ pub fn register_filter() {
         |_this: &str, _x_real_ip: &str, user_agent: &str, raw_headers: HeaderMap, _asn_record: Option<&Record>, _filter_value: &str, _operator: &str| {
             let sec_ua = raw_headers.get_one("sec-ch-ua");
 
+            
             if sec_ua.is_some() {
                 let sec_ua = sec_ua.unwrap();
                 let sec_ua = sec_ua.to_lowercase();
