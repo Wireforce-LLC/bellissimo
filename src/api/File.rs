@@ -6,7 +6,6 @@ use serde::{Deserialize, Serialize};
 use crate::{asn_record::{AsnRecord, RouteWay}, config::CONFIG, create_file::CreateFile, database::get_database, guard_kit::GuardScore};
 use glob::glob;
 
-
 #[derive(FromForm)]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FileOverviewPath {

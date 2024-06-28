@@ -1,6 +1,6 @@
 use mongodb::{bson::doc, options::FindOptions, sync::Collection};
 use rocket::{form::Form, http::{ContentType, Status}, FromForm};
-use crate::{click::Click, database::get_database, plugin::PluginRuntimeManifest};
+use crate::{click::Click, database::get_database};
 
 #[get("/click/list")]
 pub fn get_all_clicks() -> (Status, (ContentType, String)) {
