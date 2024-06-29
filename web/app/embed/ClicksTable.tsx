@@ -13,7 +13,7 @@ export default function ClicksTableEmbed({}: Props) {
   const [data, setData] = useState<any[] | undefined>(undefined);
   const [isShowModalWithSource, setIsShowModalWithSource] = useState(false);
 
-  const [code] = useState(`<script>"use strict";var x=0,y=0;function r(n){var e=new XMLHttpRequest;e.open("GET","/click?name="+encodeURI(n)+"&cursor_x="+x+"&cursor_y="+y+"&time="+Date.now()),e.send()}document.addEventListener("DOMContentLoaded",function(){document.onmousemove=function(n){x=n.clientX,y=n.clientY,console.log({x:x,y:y})}});</script>`)
+  const [code] = useState(`<script src="/ga.js"></script>`)
 
   useEffect(() => {
     fether();

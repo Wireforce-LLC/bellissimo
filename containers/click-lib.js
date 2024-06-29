@@ -1,0 +1,1 @@
+"use strict";var x=0,y=0;function r(n){var e=new XMLHttpRequest;e.open("GET","/click?name="+encodeURI(n)+"&cursor_x="+x+"&cursor_y="+y+"&time="+Date.now()),e.send()}document.addEventListener("DOMContentLoaded",function(){document.onmousemove=function(n){x=n.clientX,y=n.clientY}});
