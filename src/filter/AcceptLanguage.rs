@@ -11,7 +11,8 @@ pub fn register_filter() {
             "==" => raw_headers.get_one("accept-language").unwrap_or("") == filter_value,
             "!=" => raw_headers.get_one("accept-language").unwrap_or("") != filter_value,
             "~" => raw_headers.get_one("accept-language").unwrap_or("").to_string().contains(filter_value),
-    
+            "in" => raw_headers.get_one("accept-language").unwrap_or("").split(",").collect::<Vec<&str>>().contains(&filter_value.to_owned().as_str()),
+            
             _ => false
           };
         }

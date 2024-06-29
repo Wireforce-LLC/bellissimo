@@ -17,13 +17,14 @@ pub fn register_filter() {
             }
 
             let query = query.split("?").collect::<Vec<&str>>();
-            let query = query.last().unwrap().to_owned();
+            let query = query.last().unwrap().to_owned().to_lowercase();
 
-            let contains = query.contains(format!("&{}=", filter_value).as_str()) || query.starts_with(format!("{}=", filter_value).as_str());
+            let contains = query.contains(format!("&{}=", filter_value.to_lowercase().as_str()).as_str()) || query.starts_with(format!("{}=", filter_value).as_str());
 
             return match operator {
                 "==" =>  contains,
                 "!=" => !contains,
+                "~" => query.contains(filter_value.to_lowercase().as_str()),
 
                 _ => false
             }

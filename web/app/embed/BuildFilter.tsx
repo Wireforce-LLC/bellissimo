@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import Button from "~/components/Button";
 import Input from "~/components/Input";
 import Select from "~/components/Select";
-import webConfig, { ApiPathEnum, DEFAULT_FILTER_ROW, DEFAULT_PLUGINS, OPEARTORS } from "~/web.config";
+import webConfig, { ApiPathEnum, DEFAULT_FILTER_ROW, DEFAULT_PLUGINS, OPERATORS } from "~/web.config";
 import asnGroups from "../../../containers/asn_owners_group.json";
 
 interface Props {
@@ -49,54 +49,10 @@ const filterValue = (
   pluginName: string,
   operator: string | undefined,
   value: string | undefined,
+  operators: { name: string; value: string; }[],
   onChangeValue: (it: string | undefined) => void
 ) => {
-  if (pluginName === "asn::owner" && operator === "in") {
-    return (
-      <div className="w-full">
-        <label className="text-xs text-gray-500 mb-[5px] block">
-          Filter value
-        </label>
-        <div className="w-full bg-red-50 flex justify-center items-center h-8">
-          <span className="text-xs text-red-500 font-medium py-2.5">
-            Doesnt support in
-          </span>
-        </div>
-      </div>
-    );
-  }
-
-  if (pluginName === "referrer" && operator === "in") {
-    return (
-      <div className="w-full">
-        <label className="text-xs text-gray-500 mb-[5px] block">
-          Filter value
-        </label>
-        <div className="w-full bg-red-50 flex justify-center items-center h-8">
-          <span className="text-xs text-red-500 font-medium py-2.5">
-            Doesnt support in
-          </span>
-        </div>
-      </div>
-    );
-  }
-
-  if (pluginName === "cookie::string" && operator === "in") {
-    return (
-      <div className="w-full">
-        <label className="text-xs text-gray-500 mb-[5px] block">
-          Filter value
-        </label>
-        <div className="w-full bg-red-50 flex justify-center items-center h-8">
-          <span className="text-xs text-red-500 font-medium py-2.5">
-            Doesnt support in
-          </span>
-        </div>
-      </div>
-    );
-  }
-
-  if ((pluginName === "ua::bot" || pluginName === "request_guard" || pluginName === "proxycheck_io") && (operator === "==" || operator === "!=")) {
+  if (_.isEqual(operators.map(it => it.value), ['==', '!=']) || _.isEqual(operators.map(it => it.value), ['=='])) {
     return (
       <div className="w-full">
         <label className="text-xs text-gray-500 mb-[5px] block">
@@ -104,21 +60,6 @@ const filterValue = (
         </label>
         <div className="w-full bg-lime-50 flex justify-center items-center h-8">
           <span className="text-xs text-lime-500 font-medium py-2.5">True</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (pluginName === "ua::bot" && !(operator === "==" || operator === "!=")) {
-    return (
-      <div className="w-full">
-        <label className="text-xs text-gray-500 mb-[5px] block">
-          Filter value
-        </label>
-        <div className="w-full bg-red-50 flex justify-center items-center h-8">
-          <span className="text-xs text-red-500 font-medium py-2.5">
-            Doesnt support operator
-          </span>
         </div>
       </div>
     );
@@ -148,6 +89,22 @@ const filterValue = (
           </span>
         </div>
       </div>
+    );
+  }
+
+  if (pluginName === "random") {
+    return (
+      <Input
+        type="number"
+        // Label for the Input component
+        label="Filter value"
+        // Class name for the Input component
+        className="w-full"
+        // Value of the Input component
+        value={value}
+        // Callback function to handle the change of the value
+        onChangeValue={onChangeValue}
+      />
     );
   }
 
@@ -202,9 +159,7 @@ function RowFilterRecord({
   resources,
 }: RowFilter) {
   return (
-    <div>
-      {/* Container for the filter record */}
-      <div className="flex flex-row justify-between items-top space-x-2 h-14 w-full">
+    <div className="flex flex-row justify-between items-top space-x-2 h-14 w-full">
         {/* Label for the filter name */}
         <Input
           label="Filter name"
@@ -236,8 +191,10 @@ function RowFilterRecord({
         {/* Select component for the operator */}
         <Select
           label="Operator"
+          isForceFillFirstElement
+          className="w-[450px]"
           // Array of values for the operator Select component
-          values={OPEARTORS}
+          values={DEFAULT_PLUGINS.find((p) => p.value == modelFilters[index]?.plugin)?.operators || OPERATORS}
           // Current value of the operator Select component
           value={modelFilters[index]?.operator}
           // Callback function to handle the change of the operator value
@@ -253,6 +210,7 @@ function RowFilterRecord({
           modelFilters[index].plugin!!,
           modelFilters[index]?.operator,
           modelFilters[index]?.value,
+          DEFAULT_PLUGINS.find((p) => p.value == modelFilters[index]?.plugin)?.operators || OPERATORS,
           (it) => {
             const from = _.clone(modelFilters);
             from[index].value = it;
@@ -303,7 +261,6 @@ function RowFilterRecord({
           />
         </svg>
       </div>
-    </div>
   );
 }
 

@@ -1,6 +1,6 @@
 import axios from "axios";
 import production from "./production";
-import axiosRetry from 'axios-retry';
+import axiosRetry from "axios-retry";
 
 export enum ApiPathEnum {
   Ping = "/ping",
@@ -57,9 +57,9 @@ async function getPrivateAxiosInstance() {
     headers: {},
   });
 
-  axiosRetry(_axios, { 
+  axiosRetry(_axios, {
     retries: 3,
-    retryDelay: axiosRetry.exponentialDelay 
+    retryDelay: axiosRetry.exponentialDelay,
   });
 
   return _axios;
@@ -73,7 +73,7 @@ export const DEFAULT_FILTER_ROW = {
   resourceId: "",
 };
 
-export const OPEARTORS = [
+export const OPERATORS = [
   { name: "==", value: "==" },
   { name: "!=", value: "!=" },
   { name: "~", value: "~" },
@@ -81,42 +81,226 @@ export const OPEARTORS = [
 ];
 
 export const DEFAULT_PLUGINS = [
-  { name: "🔥 BotDetect by User Agent", value: "ua::bot", operators: ["==", "!="] },
+  {
+    name: "🔥 BotDetect by User Agent",
+    value: "ua::bot",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+    ],
+  },
 
-  { name: "🔥 IP", value: "ip", operators: ["==", "!=", "in", "~"] },
-  { name: "🔥 Country by IP", value: "ip::country_code", operators: ["==", "!=", "in", "~"] },
+  {
+    name: "🔥 IP",
+    value: "ip",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+      { name: "in list", value: "in" },
+      { name: "contains", value: "~" },
+    ],
+  },
+  {
+    name: "🔥 Country by IP",
+    value: "ip::country_code",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+      { name: "in list", value: "in" },
+      { name: "contains", value: "~" },
+    ],
+  },
 
-  { name: "🔥 User Agent", value: "ua", operators: ["==", "!=", "in", "~"] },
+  {
+    name: "🔥 User Agent",
+    value: "ua",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+      { name: "in list", value: "in" },
+      { name: "contains", value: "~" },
+    ],
+  },
 
-  { name: "📡 Owner network by ASN", value: "asn::owner", operators: ["==", "!=", "in", "~"] },
-  { name: "📡 Group of ASN", value: "asn::groups", operators: ["in"] },
-  { name: "📡 Country by ASN", value: "asn::country_code", operators: ["==", "!=", "in", "~"] },
+  {
+    name: "📡 Owner network by ASN",
+    value: "asn::owner",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+      { name: "in list", value: "in" },
+      { name: "contains", value: "~" },
+    ],
+  },
+  {
+    name: "📡 Group of ASN",
+    value: "asn::groups",
+    operators: [{ name: "one of", value: "in" }],
+  },
+  {
+    name: "📡 Country by ASN",
+    value: "asn::country_code",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+      { name: "in list", value: "in" },
+      { name: "contains", value: "~" },
+    ],
+  },
 
-  { name: "🕵️ Search Query Key", value: "request::query_bind", operators: ["==", "!="]},
-  { name: "🕵️ DDOS", value: "is_ddos", operators: ["==", "!="]},
-  { name: "🕵️ WebView", value: "is_webview", operators: ["==", "!="]},
-  { name: "🕵️ Referer in spam list", value: "bad_referer", operators: ["==", "!="]},
-  
-  { name: "🎲 Random", value: "random", operators: ["=="]},
-  
-  { name: "👮 IPSUM", value: "traffic::ipsum", operators: ["==", "!="]},
-  { name: "👮 IPSUM FULL", value: "traffic::ipsum_full", operators: ["==", "!="]},
-  
+  {
+    name: "🕵️ Search Query Key",
+    value: "request::query_bind",
+    operators: [
+      { name: "has key", value: "==" },
+      { name: "dont has key", value: "!=" },
+      { name: "has key like", value: "~" },
+    ],
+  },
+  {
+    name: "🕵️ DDOS",
+    value: "is_ddos",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+    ],
+  },
+  {
+    name: "🕵️ WebView",
+    value: "is_webview",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+    ],
+  },
+  {
+    name: "🕵️ Referer in spam list",
+    value: "bad_referer",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+    ],
+  },
 
-  { name: "🛡️ Referrer", value: "referrer", operators: ["==", "!=", "in", "~"]},
-  { name: "🛡️ Domain", value: "domain", operators: ["==", "!=", "in", "~"] },
+  { name: "🎲 Random", value: "random", operators: [
+    { name: ">", value: ">" }
+  ] },
 
-  { name: "🛡️ Tor Traffic", value: "traffic::tor", operators: ["==", "!="] },
-  { name: "🛡️ Cookies", value: "cookie::string", operators: ["==", "!=", "~"] },
+  {
+    name: "👮 IPSUM",
+    value: "traffic::ipsum",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+    ],
+  },
+  {
+    name: "👮 IPSUM FULL",
+    value: "traffic::ipsum_full",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+    ],
+  },
+
+  {
+    name: "🛡️ Referrer",
+    value: "referrer",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+      { name: "in list", value: "in" },
+      { name: "contains", value: "~" },
+    ],
+  },
+  {
+    name: "🛡️ Domain",
+    value: "domain",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+      { name: "in list", value: "in" },
+      { name: "contains", value: "~" },
+    ],
+  },
+
+  {
+    name: "🛡️ Tor Traffic",
+    value: "traffic::tor",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+    ],
+  },
+  {
+    name: "🛡️ Cookies",
+    value: "cookie::string",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+      { name: "contains", value: "~" },
+    ],
+  },
   { name: "🛡️ Headers", value: "header::string" },
-  { name: "🛡️ Session ID", value: "session_id", operators: ["==", "!=", "~"]},
-  { name: "🛡️ Accept Language", value: "accept_language", operators: ["==", "!=", "in", "~"]},
+  {
+    name: "🛡️ Session ID",
+    value: "session_id",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+      { name: "contains", value: "~" },
+    ],
+  },
+  {
+    name: "🛡️ Accept Language",
+    value: "accept_language",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+      { name: "in list", value: "in" },
+      { name: "contains", value: "~" },
+    ],
+  },
 
-  { name: "📦 User Agent Brand", value: "ua::device::brand", operators: ["==", "!=", "~"] },
-  { name: "📦 User Agent Family", value: "ua::device::family", operators: ["==", "!=", "~"] },
+  {
+    name: "📦 User Agent Brand",
+    value: "ua::device::brand",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+      { name: "contains", value: "~" },
+    ],
+  },
+  {
+    name: "📦 User Agent Family",
+    value: "ua::device::family",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+      { name: "contains", value: "~" },
+    ],
+  },
 
-  { name: "🚥 Clean Traffic", value: "request_guard", operators: ["==", "!=", ">", "<", ">=", "<="] },
-  { name: "🔒 ProxyCheck", value: "proxycheck_io", operators: ["==", "!="]},
+  {
+    name: "🚥 Clean Traffic",
+    value: "request_guard",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+      { name: ">", value: ">" },
+      { name: "<", value: "<" },
+      { name: ">=", value: ">=" },
+      { name: "<=", value: "<=" }
+    ],
+  },
+  {
+    name: "🔒 ProxyCheck",
+    value: "proxycheck_io",
+    operators: [
+      { name: "==", value: "==" },
+      { name: "!=", value: "!=" },
+    ],
+  },
 
   { name: "🚧 Other", value: "other" },
   { name: "🚧 Unknown", value: "unknown" },
