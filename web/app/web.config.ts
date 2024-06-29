@@ -32,6 +32,7 @@ export enum ApiPathEnum {
 
   GetAllASNRecords = "/api/requests/asn/list",
   GetAllPostbacks = "/api/postback/list",
+  GetAllClicks = "/api/click/list",
   GetAllResourceDrivers = "/api/resource/driver/list",
   GetAllFilterPlugins = "/api/filter/plugin/list",
 }

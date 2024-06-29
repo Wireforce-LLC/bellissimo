@@ -300,7 +300,7 @@ export default {
       filters: "Filters",
       resources: "Resources",
       asnRecords: "Requests",
-      postbacks: "Postbacks",
+      postbacks: "Analytics",
 
       threads: "Threads",
       events: "Events",

@@ -8,6 +8,7 @@ import Card from "./Card";
 interface Props {
   readonly headers?: string[];
   readonly onSelectedItem?: (index: number, item: any) => void | any;
+  readonly isNoEmptyState?: boolean;
   readonly data?:
     | ({ [key: string]: ReactNode } | string | undefined)[]
     | undefined;
@@ -31,13 +32,13 @@ export function TableActionButton({ onClick }: { onClick: () => void | any }) {
   );
 }
 
-export default function Table({ headers, data, onSelectedItem }: Props) {
+export default function Table({ headers, data, onSelectedItem, isNoEmptyState }: Props) {
   const safeValue = useCallback((value: any) => {
     return value;
   }, []);
 
 
-  if (_.isArray(data) && data.length === 0) {
+  if (!isNoEmptyState && _.isArray(data) && data.length === 0) {
     return (
       <Card className="border-none">
         <div className="flex justify-center items-center flex-col w-full h-full min-h-[100px]">

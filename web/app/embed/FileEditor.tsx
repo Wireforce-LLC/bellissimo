@@ -19,6 +19,9 @@ import BigInput from "~/components/BigInput";
 import Select from "~/components/Select";
 import classNames from "classnames";
 import manWithIdea from "/man_with_idea.jpg";
+import Tabs from "~/components/Tabs";
+import MonacoEditorEmbed from "./MonacoEditor";
+import FileEditorSignleFileEmbed from "./FileEditorSignleFile";
 
 interface File {
   readonly path: string;
@@ -227,63 +230,10 @@ export default function FileEditorEmbed({ pwd = "/", onChangePwd }: Props) {
   const [tabs, setTabs] = useState<Tab[]>([]);
   const [currentPwd, setCurrentPwd] = useState(pwd);
   const [cursorOnFile, setCursorOnFile] = useState<string | undefined>();
-  const [rawLanguage, setRawLanguage] = useState<string>("html");
-  const [rawContent, setRawContent] = useState<string | undefined>();
   const [pwdHistory, setPwdHistory] = useState<string[]>([pwd]);
-
-  const [safeOut, setSafeOut] = useState<boolean>(true);
-
-  const [fontSize, setFontSize] = useState<number>(14);
+  const [isLastFileSaved, setIsLastFileSaved] = useState<boolean>(true);
 
   const editorRef = useRef<HTMLDivElement | null>(null);
-
-  /**
-   * Handles the save action.
-   * @param rawContent - The raw content to be saved.
-   */
-  const onSave = () => {
-    if (!cursorOnFile) {
-      toast.error("No file selected!");
-      return;
-    }
-
-    if (!rawContent) {
-      toast.error("Content is empty!");
-      return;
-    }
-
-    setSafeOut(true);
-
-    const data = new FormData();
-
-    data.append("content", rawContent);
-
-    webConfig
-      .axiosFactory("PRIVATE")
-      .then((i) => {
-        toast.promise(
-          i.post(
-            webConfig.apiEndpointFactory(ApiPathEnum.WriteFile) +
-              "?path=" +
-              cursorOnFile,
-            data
-          ),
-          {
-            loading: "Saving...",
-            success: (
-              <div>
-                <h4 className="text-lime-500 font-bold">Saved!</h4>
-                <p className="text-xs text-zinc-500">{cursorOnFile}</p>
-              </div>
-            ),
-            error: "Could not save.",
-          }
-        );
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  };
 
   /**
    * Creates a tab for the given path.
@@ -294,35 +244,6 @@ export default function FileEditorEmbed({ pwd = "/", onChangePwd }: Props) {
       _.uniqBy(tabs.concat([{ name: path, path, isActive: true }]), "path")
     );
   };
-
-  const keydownHandler = (e: KeyboardEvent) => {
-    if (e.key === "s" && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      onSave();
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener("keydown", keydownHandler);
-
-    return () => {
-      document.removeEventListener("keydown", keydownHandler);
-    };
-  }, [rawContent, cursorOnFile]);
-
-  const applyLanguage = useCallback(() => {
-    let ext = String(cursorOnFile?.split(".").pop()).toLowerCase();
-
-    switch (ext) {
-      case "js":
-        setRawLanguage("javascript");
-        break;
-
-      default:
-        setRawLanguage(ext);
-        break;
-    }
-  }, [cursorOnFile, rawContent]);
 
   useEffect(() => {
     fether();
@@ -336,29 +257,17 @@ export default function FileEditorEmbed({ pwd = "/", onChangePwd }: Props) {
     }
 
     createTab(cursorOnFile);
-    applyLanguage();
-
-    setRawContent("Loading... 😈");
-
-    webConfig
-      .axiosFactory("PRIVATE")
-      .then((i) => {
-        i.get(
-          webConfig.apiEndpointFactory(ApiPathEnum.GetFile) +
-            "?path=" +
-            cursorOnFile
-        )
-          .then((res) => {
-            setRawContent(res.data.value);
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-      })
-      .catch((error) => {
-        console.error(error);
-      });
   }, [cursorOnFile]);
+
+  const doIntentChangeTab = useCallback(() => {
+    if (isLastFileSaved) {
+      return true;
+    }
+
+    toast.error("Please save the file before changing tabs!");
+
+    return false;
+  }, [isLastFileSaved]);
 
   /**
    * Fetches the data for the current path.
@@ -411,7 +320,7 @@ export default function FileEditorEmbed({ pwd = "/", onChangePwd }: Props) {
                 setPwdHistory(pwdHistory.concat([it]));
               }}
               setCursorOnFile={(it) => {
-                if (!safeOut) {
+                if (!isLastFileSaved) {
                   toast(
                     <div>
                       <span>Please save your work before leaving!</span>
@@ -421,7 +330,7 @@ export default function FileEditorEmbed({ pwd = "/", onChangePwd }: Props) {
 
                       <button
                         onClick={() => {
-                          setSafeOut(true);
+                          setIsLastFileSaved(true);
                           toast.dismiss();
                           toast.success("Unlocked!");
                         }}
@@ -447,120 +356,40 @@ export default function FileEditorEmbed({ pwd = "/", onChangePwd }: Props) {
 
       {/* Right editor */}
       <div className="overflow-hidden w-full h-full" ref={editorRef}>
-        <div className="w-full overflow-x-auto border-b border-gray-200 flex flex-row items-start justify-start gap-2 bg-white py-1 px-2">
-          {tabs?.map((it) => (
-            <div
-              onClick={() => {
-                setCursorOnFile(it.path);
-              }}
-            >
-              <Tab
-                isActive={cursorOnFile == it.path}
-                key={it.path}
-                name={it.name}
-                path={it.path}
-              />
+        <div className="w-full h-full">
+          {!cursorOnFile && (
+            <div className="w-full h-[70%] flex flex-col items-center justify-center">
+              <img src={manWithIdea} alt="" className="w-64" />
+              <h1 className="font-medium text-gray-black">
+                Before your idea become real
+              </h1>
+              <p className="text-xs text-gray-500">
+                Select a file, or create a new one
+              </p>
             </div>
-          ))}
-        </div>
+          )}
 
-        {cursorOnFile && (
-          <div className="w-full flex flex-row items-center justify-between h-fit py-1 px-3 text-xs text-gray-500 border-b border-gray-200">
-            <span>{cursorOnFile}</span>
-            <div className="w-[100px]">
-              <Select
-                value={rawLanguage}
-                onChangeValue={(it) => {
-                  setRawLanguage(it || "html");
+          <Tabs
+            onIntentChangeTab={doIntentChangeTab}
+            isFullSize
+            isDisablePaddings
+            titles={tabs.map((tab) => tab.name.replace(/^.*[\\/]/, ""))}
+          >
+            {tabs.map((tab) => (
+              <FileEditorSignleFileEmbed
+                key={tab.path}
+                isLock={!isLastFileSaved}
+                path={tab.path}
+                onChangeContent={() => {
+                  setIsLastFileSaved(false);
                 }}
-                values={[
-                  { name: "HTML", value: "html" },
-                  { name: "JavaScript", value: "javascript" },
-                  { name: "TypeScript", value: "typescript" },
-                  { name: "CSS", value: "css" },
-                  { name: "JSON", value: "json" },
-                  { name: "YAML", value: "yaml" },
-                  { name: "Markdown", value: "markdown" },
-                  { name: "XML", value: "xml" },
-                  { name: "PHP", value: "php" },
-                ]}
+                onSavedContent={() => {
+                  setIsLastFileSaved(true);
+                }}
               />
-            </div>
-          </div>
-        )}
-
-        {/* Editor */}
-        {!cursorOnFile && (
-          <div className="w-full h-[70%] flex flex-col items-center justify-center">
-            <img src={manWithIdea} alt="" className="w-64" />
-            <h1 className="font-medium text-gray-black">
-              Before your idea become real
-            </h1>
-            <p className="text-xs text-gray-500">
-              Select a file, or create a new one
-            </p>
-          </div>
-        )}
-
-        {cursorOnFile && (
-          <Editor
-            width={editorRef.current?.clientWidth}
-            height={editorRef.current?.clientHeight}
-            defaultLanguage="html"
-            language={rawLanguage}
-            value={rawContent}
-            theme="vs-light"
-            loading="Loading... 😈"
-            beforeMount={(monaco) => {
-              monaco.languages.register({ id: "customLanguage" });
-
-              monaco.languages.setMonarchTokensProvider("customLanguage", {
-                tokenizer: {
-                  root: [[/{{[^}]+}}/, "variable"]],
-                },
-              });
-
-              monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions(
-                {
-                  noSemanticValidation: true,
-                  noSyntaxValidation: false,
-                }
-              );
-            }}
-            options={{
-              formatOnType: true,
-              formatOnPaste: true,
-              tabSize: 2,
-              fontSize: fontSize,
-              minimap: {
-                enabled: true,
-              },
-              scrollBeyondLastLine: true,
-              folding: true,
-              lineNumbers: "on",
-              wordWrap: true,
-              automaticLayout: true,
-              scrollbar: {
-                alwaysConsumeMouseWheel: false,
-                horizontal: "hidden",
-              },
-              renderLineHighlight: "all",
-            }}
-            onChange={(text) => {
-              if (!cursorOnFile) {
-                return;
-              }
-
-              if (!text) {
-                return;
-              }
-
-              setSafeOut(false);
-
-              setRawContent(text);
-            }}
-          />
-        )}
+            ))}
+          </Tabs>
+        </div>
       </div>
     </div>
   );

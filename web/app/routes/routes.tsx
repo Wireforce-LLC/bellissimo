@@ -336,6 +336,7 @@ export default function Routes() {
       />
 
       <Table
+        isNoEmptyState
         headers={
           data &&
           (!_.isEmpty(data)
