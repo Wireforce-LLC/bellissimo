@@ -18,7 +18,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex};
+use std::sync::{Mutex};
 use std::env;
 use serde::{Deserialize, Serialize};
 use crate::config::CONFIG;
@@ -115,7 +115,7 @@ lazy_static! {
   pub static ref BOT_DETECTOR: Bots = Bots::default();
 
   // a Db instance created from a TSV file
-  pub static ref DATABASE: Db = Db::form_tsv(BufReader::new(File::open("containers/ip2asn-v4.tsv").unwrap())).unwrap();
+  pub static ref DATABASE: Db = Db::form_tsv(BufReader::new(File::open("./containers/ip2asn-v4.tsv").unwrap())).unwrap();
 
   // Define a static reference to a mutex
   // containing a Redis client
