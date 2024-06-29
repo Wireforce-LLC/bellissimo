@@ -84,7 +84,7 @@ services:
       - ./plugins:/usr/src/app/plugins
       - ./public:/usr/src/app/public
       - ./registry:/usr/src/app/registry
-      - ./containers.:/usr/src/app/containers/:ro
+      - ./containers:/usr/src/app/containers/:ro
       - ./ipsum.toml:/usr/src/app/ipsum.toml:ro
       - ./config.local.toml:/usr/src/app/config.local.toml:ro
       - ./config.toml:/usr/src/app/config.toml:ro
