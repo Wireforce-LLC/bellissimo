@@ -111,15 +111,11 @@ impl<'r> FromRequest<'r> for UserAgent<'r> {
 }
 
 lazy_static! {
-  // Define a static reference to a thread-safe Arc with a
   // default instance of Bots struct
-  pub static ref BOT_DETECTOR: Arc<Bots> = Arc::new(Bots::default());
+  pub static ref BOT_DETECTOR: Bots = Bots::default();
 
-  // Define a static reference to a thread-safe Arc
-  // with a Db instance created from a TSV file
-  pub static ref DATABASE: Arc<Db> = Arc::new(
-    Db::form_tsv(BufReader::new(File::open("containers/ip2asn-v4.tsv").unwrap())).unwrap()
-  );
+  // a Db instance created from a TSV file
+  pub static ref DATABASE: Db = Db::form_tsv(BufReader::new(File::open("containers/ip2asn-v4.tsv").unwrap())).unwrap();
 
   // Define a static reference to a mutex
   // containing a Redis client
@@ -128,9 +124,9 @@ lazy_static! {
       .expect("Unable to create redis client")
   );
 
-  pub static ref UA_PARSER: Mutex<UserAgentParser> = Mutex::new(
-    UserAgentParser::from_bytes(include_bytes!("../../containers/user_agent_parser.bin")).expect("Parser creation failed")
-  );
+  pub static ref UA_PARSER: UserAgentParser = UserAgentParser
+    ::from_bytes(include_bytes!("../../containers/user_agent_parser.bin"))
+    .expect("Parser creation failed");
 
   // Define a static reference to a mutex
   // containing a Redis connection
@@ -142,9 +138,12 @@ lazy_static! {
   );
 
   // Define elastic search client
-  pub static ref ELASTIC: Mutex<Elasticsearch> = Mutex::new(
-    Elasticsearch::new(Transport::single_node(&env::var("ELASTIC_URI").unwrap_or("http://127.0.0.1:9200".to_string()).as_str()).unwrap())
-  );
+  pub static ref ELASTIC: Elasticsearch = Elasticsearch
+    ::new(
+      Transport
+        ::single_node(&env::var("ELASTIC_URI").unwrap_or("http://127.0.0.1:9200".to_string()).as_str())
+        .unwrap()
+    );
 }
 
 
@@ -171,8 +170,6 @@ fn write_info_about_request(
 
       if CONFIG["is_save_requests_in_elastic"].as_bool().unwrap() {
         ELASTIC
-          .lock()
-          .unwrap()
           .index(IndexParts::IndexId("requests", &request_id))
           .body(insert_json_raw.to_owned())
           .send()
@@ -223,7 +220,7 @@ fn async_register_request_info(
     None
   };
 
-  let client = UA_PARSER.lock().unwrap().parse(&user_agent);
+  let client = UA_PARSER.parse(&user_agent);
   
   let insert_data = asn_record::AsnRecord {
     asn_name: match asn_record {
@@ -407,9 +404,7 @@ pub async fn router(
     .expect("Unable to find filter")
     .expect("Filter not found");
 
-  // memory-leak?
-  let asn_database = DATABASE.to_owned();
-  let asn_record = asn_database.lookup(x_real_ip.0.parse().unwrap_or("0.0.0.0".parse().unwrap()));
+  let asn_record = DATABASE.lookup(x_real_ip.0.parse().unwrap_or("0.0.0.0".parse().unwrap()));
 
   let mut filter_break: Option<(Status, (ContentType, String))> = None;
   let mut route_way: Vec<asn_record::RouteWay> = vec![];

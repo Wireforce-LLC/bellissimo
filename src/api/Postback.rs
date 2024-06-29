@@ -35,8 +35,6 @@ async fn register_postback_listener(payload: PostbackPayoutPostback) -> (Status,
       let insert_json_raw = json!(raw_json_as_string);
 
       ELASTIC
-        .lock()
-        .unwrap()
         .index(IndexParts::IndexId("postbacks", &utc_time.to_string()))
         .body(insert_json_raw.to_owned())
         .send()
