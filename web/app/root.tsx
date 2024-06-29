@@ -5,11 +5,9 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useRouteError,
 } from "@remix-run/react";
 import _ from "lodash";
 import { ReactNode } from "react";
-import Navbar, { PageIdEnum } from "~/components/Navbar";
 import stylesheet from "~/tailwind.css?url";
 import { Toaster } from "react-hot-toast";
 
@@ -36,8 +34,8 @@ export function Layout({ children }: { children: ReactNode }) {
               style: {
                 fontSize: 12,
                 border: "1px solid #e6e6e6",
-                padding: "4px 16px",
-                color: "white",
+                padding: "8px 16px",
+                color: "black",
                 borderRadius: 0,
               },
             }}
