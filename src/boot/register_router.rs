@@ -1,6 +1,3 @@
-#[path = "../dto/asn_record.rs"] mod asn_record;
-#[path = "../dto/filter.rs"] mod filter;
-
 use asn_db::{Db, Record};
 use chrono::prelude::*;
 use elasticsearch::IndexParts;
@@ -23,10 +20,9 @@ use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::env;
-use std::time::Instant;
 use serde::{Deserialize, Serialize};
 use crate::config::CONFIG;
-use crate::{filter_kit, guard_kit};
+use crate::{asn_record, filter, filter_kit, guard_kit};
 use crate::main_routes::not_found;
 use crate::{rdr_kit, resource_kit, database::get_database};
 use elasticsearch::{
