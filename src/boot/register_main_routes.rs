@@ -1,11 +1,8 @@
 use std::{collections::HashMap, path::{Path, PathBuf}, sync::Arc};
-
-use chrono::Utc;
 use clap::builder::OsStr;
 use rocket::{fs::NamedFile, http::{ContentType, Status}};
 use serde_json::Value;
-
-use crate::{click::Click, click::ReceiveClick, config::CONFIG, database::get_database, rdr_kit, resource_kit};
+use crate::{config::CONFIG, rdr_kit, resource_kit};
 
 lazy_static! {
     // Define static variables

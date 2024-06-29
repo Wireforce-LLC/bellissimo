@@ -111,10 +111,6 @@ impl<'r> FromRequest<'r> for UserAgent<'r> {
 }
 
 lazy_static! {
-  // Define a static reference to a thread-safe mutex
-  // containing a tuple of two strings
-  pub static ref REQUEST_CACHE_STORAGE: Arc<Mutex<(String, String)>> = Arc::new(Mutex::new((String::new(), String::new())));
-
   // Define a static reference to a thread-safe Arc with a
   // default instance of Bots struct
   pub static ref BOT_DETECTOR: Arc<Bots> = Arc::new(Bots::default());
