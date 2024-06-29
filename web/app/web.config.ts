@@ -81,31 +81,42 @@ export const OPEARTORS = [
 ];
 
 export const DEFAULT_PLUGINS = [
-  { name: "🔥 BotDetect by User Agent", value: "ua::bot" },
+  { name: "🔥 BotDetect by User Agent", value: "ua::bot", operators: ["==", "!="] },
 
-  { name: "🔥 IP", value: "ip" },
-  { name: "🔥 Country by IP", value: "ip::country_code" },
+  { name: "🔥 IP", value: "ip", operators: ["==", "!=", "in", "~"] },
+  { name: "🔥 Country by IP", value: "ip::country_code", operators: ["==", "!=", "in", "~"] },
 
-  { name: "🔥 User Agent", value: "ua" },
+  { name: "🔥 User Agent", value: "ua", operators: ["==", "!=", "in", "~"] },
 
-  { name: "📡 Owner network by ASN", value: "asn::owner" },
-  { name: "📡 Group of ASN", value: "asn::groups" },
-  { name: "📡 Country by ASN", value: "asn::country_code" },
+  { name: "📡 Owner network by ASN", value: "asn::owner", operators: ["==", "!=", "in", "~"] },
+  { name: "📡 Group of ASN", value: "asn::groups", operators: ["in"] },
+  { name: "📡 Country by ASN", value: "asn::country_code", operators: ["==", "!=", "in", "~"] },
 
-  { name: "🛡️ Referrer", value: "referrer" },
-  { name: "🛡️ Domain", value: "domain" },
+  { name: "🕵️ Search Query Key", value: "request::query_bind", operators: ["==", "!="]},
+  { name: "🕵️ DDOS", value: "is_ddos", operators: ["==", "!="]},
+  { name: "🕵️ WebView", value: "is_webview", operators: ["==", "!="]},
+  { name: "🕵️ Referer in spam list", value: "bad_referer", operators: ["==", "!="]},
+  
+  { name: "🎲 Random", value: "random", operators: ["=="]},
+  
+  { name: "👮 IPSUM", value: "traffic::ipsum", operators: ["==", "!="]},
+  { name: "👮 IPSUM FULL", value: "traffic::ipsum_full", operators: ["==", "!="]},
+  
 
-  { name: "🛡️ Tor Traffic", value: "traffic::tor" },
-  { name: "🛡️ Cookies", value: "cookie::string" },
+  { name: "🛡️ Referrer", value: "referrer", operators: ["==", "!=", "in", "~"]},
+  { name: "🛡️ Domain", value: "domain", operators: ["==", "!=", "in", "~"] },
+
+  { name: "🛡️ Tor Traffic", value: "traffic::tor", operators: ["==", "!="] },
+  { name: "🛡️ Cookies", value: "cookie::string", operators: ["==", "!=", "~"] },
   { name: "🛡️ Headers", value: "header::string" },
-  { name: "🛡️ Session ID", value: "session_id" },
-  { name: "🛡️ Accept Language", value: "accept_language" },
+  { name: "🛡️ Session ID", value: "session_id", operators: ["==", "!=", "~"]},
+  { name: "🛡️ Accept Language", value: "accept_language", operators: ["==", "!=", "in", "~"]},
 
-  { name: "📦 User Agent Brand", value: "ua::device::brand" },
-  { name: "📦 User Agent Family", value: "ua::device::family" },
+  { name: "📦 User Agent Brand", value: "ua::device::brand", operators: ["==", "!=", "~"] },
+  { name: "📦 User Agent Family", value: "ua::device::family", operators: ["==", "!=", "~"] },
 
-  { name: "🚥 Clean Traffic", value: "request_guard" },
-  { name: "🔒 ProxyCheck", value: "proxycheck_io" },
+  { name: "🚥 Clean Traffic", value: "request_guard", operators: ["==", "!=", ">", "<", ">=", "<="] },
+  { name: "🔒 ProxyCheck", value: "proxycheck_io", operators: ["==", "!="]},
 
   { name: "🚧 Other", value: "other" },
   { name: "🚧 Unknown", value: "unknown" },
