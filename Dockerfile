@@ -4,6 +4,7 @@ WORKDIR /usr/src/app
 RUN cargo install cargo-chef 
 COPY Cargo.toml Cargo.lock .cargo user_agents config.toml /usr/src/app/
 COPY src/ /usr/src/app/src/
+COPY containers/ /usr/src/app/containers/
 RUN cargo chef prepare  --recipe-path recipe.json
 
 # Cacher
@@ -18,6 +19,7 @@ FROM rust as builder
 WORKDIR /usr/src/app
 COPY Cargo.toml Cargo.lock .cargo user_agents config.toml /usr/src/app/
 COPY src/ /usr/src/app/src/
+COPY containers/ /usr/src/app/containers/
 # Copy over the cached dependencies
 COPY --from=cacher /usr/src/app/target target
 RUN cargo build --release
