@@ -10,6 +10,7 @@ import Input from "~/components/Input";
 import Button from "~/components/Button";
 import webConfig, { ApiPathEnum } from "~/web.config";
 import toast from "react-hot-toast";
+import classNames from "classnames";
 
 export const meta: MetaFunction = () => {
   return [{ title: string("meta.title.files") }];
@@ -20,6 +21,7 @@ export const meta: MetaFunction = () => {
  * @returns The rendered file list page.
  */
 export default function Files() {
+  const [isReady, setReady] = useState(false);
   /**
    * The visibility state of the modal to create a file.
    */
@@ -63,7 +65,7 @@ export default function Files() {
           ),
           error: "Failed to create file",
         }
-      );
+      )
     });
   }, [pwd, name]);
 
@@ -119,8 +121,20 @@ export default function Files() {
         </Modal>
       )}
 
+      <div className={classNames("w-full h-full flex flex-row", {
+        "hidden": isReady
+      })}>
+        
+        <div className="w-[200px] flex-shrink-0 border-r border-r-zinc-200 h-full animate-pulse bg-zinc-100"></div>
+        <div className="w-full h-full animate-pulse bg-zinc-50"></div>
+      </div>
+      
       {/* Render the file editor */}
-      <FileEditorEmbed onChangePwd={setPwd} pwd={pwd} />
+      <div className={classNames("w-full h-full", {
+        "hidden": !isReady
+      })}>
+        <FileEditorEmbed onReady={() => setReady(true)} onChangePwd={setPwd} pwd={pwd} />
+      </div>
     </DashboardLayout>
   );
 }

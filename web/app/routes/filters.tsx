@@ -79,31 +79,6 @@ export default function Filters() {
     [modelFilters, modelFilterName, modelFilterId]
   );
 
-  const onEditFilter = useCallback(
-    (filterRows: FilterRow[], filterId?: string) => {
-      if (filterId == undefined) {
-        return;
-      }
-
-      webConfig.axiosFactory("PRIVATE").then((i) => {
-        let data = new FormData();
-
-        data.append("name", "any name");
-        data.append("filter_id", filterId);
-
-        filterRows?.forEach((filter, index) => {
-          data.append(`conditions[${index}][name]`, filter.name!!);
-          data.append(`conditions[${index}][value]`, filter.value!!);
-          data.append(`conditions[${index}][operator]`, filter.operator!!);
-          data.append(`conditions[${index}][plugin]`, filter.plugin!!);
-          data.append(`conditions[${index}][resource_id]`, filter.resourceId!!);
-        });
-
-        i.put(webConfig.apiEndpointFactory(ApiPathEnum.UpdateFilter), data);
-      });
-    },
-    []
-  );
 
   return (
     <DashboardLayout
@@ -157,11 +132,16 @@ export default function Filters() {
         <Modal
           isBigModal
           title={"Edit filter " + editModelFilterId}
-          onClose={() => setEditModelFilterId(undefined)}
+          onClose={() => {
+            setEditModelFilterId(undefined)
+          }}
         >
           <EditFilterEmbed
             filterId={editModelFilterId}
-            onEditFilter={onEditFilter}
+            onSaved={(rows:  FilterRow[], filterId?: string) => {
+              setEditModelFilterId(undefined);
+              fether();
+            }}
           />
         </Modal>
       )}
@@ -186,7 +166,7 @@ export default function Filters() {
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 16 16"
                     fill="currentColor"
-                    className="size-4 text-gray-400 hover:text-gray-700 hover:bg-gray-200 p-0.5 rounded"
+                    className="size-3.5 text-gray-400 hover:text-blue-800"
                   >
                     <path
                       fillRule="evenodd"

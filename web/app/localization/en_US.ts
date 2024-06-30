@@ -16,6 +16,7 @@ export default {
     title: {
       requests: "Requests",
       files: "Files",
+      resources: "Resources",
       postbacks: "Postbacks",
       dashboard: "Dashboard",
       routes: "Routes",

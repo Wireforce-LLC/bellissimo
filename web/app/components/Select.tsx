@@ -7,8 +7,8 @@ interface Props {
   readonly label?: string;
   readonly isRequired?: boolean;
   readonly isDisabled?: boolean;
-  readonly isForceFillFirstElement?: boolean;
   readonly name?: string;
+  readonly placeholder?: string;
   readonly className?: string;
   readonly onChangeValue?: (it: string | undefined) => void;
   readonly values?: Value[];
@@ -27,15 +27,15 @@ export default function Select({
   onChangeValue,
   value,
   values,
-  isForceFillFirstElement,
-  className
+  className,
+  placeholder
 }: Props) {
   useEffect(() => {
-    if (isForceFillFirstElement) {
+    if (value && _.isArray(values) && !_.isEmpty(values) && values?.find(v => v.value == value) == undefined) {
       onChangeValue?.(values?.[0]?.value);
-    }  
-  }, [isForceFillFirstElement, values]);
-
+    }
+  }, [values, value, onChangeValue]);
+  
   return (
     <div data-role="input-group" className={classNames(className, {"w-full": !className})}>
       {label ? (
@@ -47,15 +47,17 @@ export default function Select({
         name={name}
         required={isRequired}
         disabled={_.isBoolean(isDisabled) ? isDisabled : false}
+        onInput={event => {
+          onChangeValue?.(event.currentTarget.value);
+        }}
         onChange={(event) => {
-          if (onChangeValue) {
-            onChangeValue(event.target.value);
-          }
+          onChangeValue?.(event.target.value);
         }}
         className="w-full h-8 px-3 py-1 text-sm placeholder-gray-400 hover:border-gray-200 focus-within:border-gray-400 border-gray-200 focus:border-gray-500 transition-colors duration-75 border-[0.115em] outline-none focus:outline-none"
       >
+        {placeholder ? <option value={placeholder} disabled selected>{placeholder}</option> : undefined}
         {values?.map((it) => (
-          <option key={it.value} selected={value == it.value} value={it.value}>
+          <option key={it.value} selected={!placeholder && value == it.value} value={it.value}>
             {it.name}
           </option>
         ))}

@@ -77,7 +77,7 @@ export default function Table({ headers, data, onSelectedItem, isNoEmptyState }:
       <tbody>
         {_.isArray(data) &&
           data.map((item, index) => (
-            <tr onClick={() => onSelectedItem?.(index, item)} className="border-b z-0 divide-x divide-zinc-200 border-zinc-200 cursor-pointer hover:bg-gray-100 hover:bg-opacity-25">
+            <tr tabIndex={index} onClick={() => onSelectedItem?.(index, item)} className="border-b z-0 divide-x divide-zinc-200 border-zinc-200 cursor-pointer hover:bg-blue-50 border-x-transparent border-x-2 hover:border-x-blue-500">
               {Object.values(item || []).map((value) =>
                 value ? (
                   <td className="px-3 py-1.5 text-xs font-normal">

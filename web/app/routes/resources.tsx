@@ -79,6 +79,9 @@ export default function Resources() {
           }}
         >
           <EditResourceEmbed
+            onDeletedResource={() => {
+              fether();
+            }}
             onEditResource={(intent) => {
               let data = new FormData();
 
@@ -193,7 +196,7 @@ export default function Resources() {
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 16 16"
                   fill="currentColor"
-                  className="size-4 text-gray-400 hover:text-gray-700 hover:bg-gray-200 p-0.5 rounded"
+                  className="size-3.5 text-gray-400 hover:text-blue-800"
                 >
                   <path
                     fillRule="evenodd"

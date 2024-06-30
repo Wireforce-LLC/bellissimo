@@ -31,6 +31,7 @@ interface File {
 interface Props {
   readonly pwd?: string;
   readonly onChangePwd?: (pwd: string) => void;
+  readonly onReady?: () => void;
 }
 
 interface Tab {
@@ -225,7 +226,7 @@ interface File {
  * @param pwd - The starting path.
  * @returns The rendered file editor embed component.
  */
-export default function FileEditorEmbed({ pwd = "/", onChangePwd }: Props) {
+export default function FileEditorEmbed({ pwd = "/", onChangePwd, onReady }: Props) {
   const [files, setFiles] = useState<File[] | undefined>(undefined);
   const [tabs, setTabs] = useState<Tab[]>([]);
   const [currentPwd, setCurrentPwd] = useState(pwd);
@@ -283,6 +284,7 @@ export default function FileEditorEmbed({ pwd = "/", onChangePwd }: Props) {
         )
           .then((res) => {
             setFiles(res.data.value as File[]);
+            onReady?.()
           })
           .catch((error) => {
             console.error(error);
@@ -296,7 +298,7 @@ export default function FileEditorEmbed({ pwd = "/", onChangePwd }: Props) {
   return (
     <div className="w-full h-full bg-white overflow-hidden flex flex-row">
       {/* Left sidebar */}
-      <div className="w-[200px] h-full divide-y divide-zinc-200 border-r">
+      <div className="w-[200px] flex-shrink-0 h-full divide-y divide-zinc-200 border-r">
         <File
           file={{ path: "..", is_file: false }}
           isSelected={false}

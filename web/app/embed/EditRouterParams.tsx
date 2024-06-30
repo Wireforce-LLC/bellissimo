@@ -10,6 +10,7 @@ import webConfig, { ApiPathEnum } from "~/web.config";
 
 interface Props {
   readonly routeName?: string;
+  readonly startParams: { [key: string]: string };
   readonly onEditResource?: (routeName: string) => void;
 }
 
@@ -23,10 +24,11 @@ interface Props {
  */
 export default function EditRouterParamsEmbed({
   routeName,
+  startParams,
   onEditResource,
 }: Props): JSX.Element {
   // State variables
-  const [params, setParams] = useState<Array<[string, string]>>([]);
+  const [params, setParams] = useState<Array<[string, string]>>(_.toPairs(startParams || {}));
   const [errorString, setErrorString] = useState<string | undefined>();
 
   /**
@@ -103,10 +105,7 @@ export default function EditRouterParamsEmbed({
 
   return (
     <form className="space-y-2 h-full w-full flex flex-col" onSubmit={onSubmit}>
-      {/* Display route name */}
-      <Input label="Route name" value={routeName} isDisabled />
-
-      {/* Display params */}
+       {/* Display params */}
       <div className="w-full h-full space-y-2">
         {params.map((record, index) => (
           <div className="w-full flex flex-row gap-2">
@@ -133,16 +132,16 @@ export default function EditRouterParamsEmbed({
         ))}
 
         {/* Add param */}
-        <Button
-          variant="secondary"
+        <button
+          className="w-full text-[#003049] bg-zinc-100 text-xs font-medium cursor-pointer py-2"
           type="button"
-          onPress={() => {
+          onClick={() => {
             const newParams = params.concat([["", ""]]);
             setParams(newParams);
           }}
         >
           Add param
-        </Button>
+        </button>
       </div>
 
       {/* Display error message */}

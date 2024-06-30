@@ -3,7 +3,10 @@ import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import Button from "~/components/Button";
 import Input from "~/components/Input";
+import Tabs from "~/components/Tabs";
 import webConfig, { ApiPathEnum } from "~/web.config";
+import EditRouterParamsEmbed from "./EditRouterParams";
+import EditFilterEmbed from "./EditFilter";
 
 interface Route {
   readonly name: string;
@@ -11,10 +14,11 @@ interface Route {
   readonly path: string;
   readonly filter_id: string;
   readonly resource_id: string;
+  readonly params: { [key: string]: string };
 }
 
 interface Props {
-  readonly resourceName?: string;
+  readonly routeName?: string;
   readonly onDeleteRoute?: (resourceName: string) => void;
 }
 
@@ -22,31 +26,21 @@ interface Props {
  * The ViewRouteEmbed component is responsible for rendering the details of a route and allowing the user to delete it.
  * It fetches the route data from the server and displays it in a user-friendly format.
  * It also provides a delete button that triggers a request to delete the route when pressed.
- * The component receives the `resourceName` prop which is used to fetch the route data.
+ * The component receives the `routeName` prop which is used to fetch the route data.
  *
  * @param {Props} props - The component props.
  * @param {string} props.resourceName - The name of the resource associated with the route.
  * @returns {JSX.Element} The rendered component.
  */
-export default function ViewRouteEmbed({ resourceName, onDeleteRoute }: Props) {
+export default function ViewRouteEmbed({ routeName, onDeleteRoute }: Props) {
   // State variables
   const [route, setRoute] = useState<Route | undefined>(); // The route data
-  const [openTime] = useState<number>(moment().unix()); // The timestamp of the last time the delete button was pressed
-  const [currentTime, setCurrentTime] = useState<number>(moment().unix()); // The timestamp of the last time the delete button was pressed
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(moment().unix());
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   // Fetch the route data from the server on component mount
   useEffect(() => {
     webConfig.axiosFactory("PRIVATE").then((i) => {
       i.get(
-        webConfig.apiEndpointFactory(ApiPathEnum.Route) + "/" + resourceName
+        webConfig.apiEndpointFactory(ApiPathEnum.Route) + "/" + routeName
       ).then((i) => {
         setRoute(i.data.value as Route);
       });
@@ -55,34 +49,43 @@ export default function ViewRouteEmbed({ resourceName, onDeleteRoute }: Props) {
 
   // Render the component
   return (
-    <div className="flex flex-col gap-4">
-      <Input type="text" label="Name" isDisabled value={route?.name} />
+    <Tabs isDisableBorders isDisablePaddings isFullSize titles={["Overview", "Params", "Filter (*)".replace('*', route?.filter_id || "")]}>
+        <div className="h-full w-full flex flex-col gap-4 p-2">
+          <Input type="text" label="Name" isDisabled value={route?.name} />
 
-      <Input type="text" isDisabled label="Domain" value={route?.domain} />
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              type="text"
+              isDisabled
+              label="Domain"
+              value={route?.domain}
+            />
 
-      <Input type="text" isDisabled label="Path" value={route?.path} />
+            <Input type="text" isDisabled label="Path" value={route?.path} />
+          </div>
 
-      <Input
-        type="text"
-        isDisabled
-        label="Filter ID"
-        value={route?.filter_id}
-      />
+          <Input
+            type="text"
+            isDisabled
+            label="Filter ID"
+            value={route?.filter_id}
+          />
 
-      <Button
-        variant="delete"
-        disabled={3 - (currentTime - openTime) >= 0}
-        onPress={() => route?.name && onDeleteRoute?.(route?.name)}
-      >
-        Delete
-      </Button>
+          <Button
+            variant="delete"
+            onPress={() => route?.name && onDeleteRoute?.(route?.name)}
+          >
+            Delete router
+          </Button>
+        </div>
 
-      {3 - (currentTime - openTime) >= 0 && (
-        <span className="text-xs text-left font-normal text-gray-500">
-          Safe for deletion in {Math.floor((3 - (currentTime - openTime)) / 60)}
-          :{Math.floor((3 - (currentTime - openTime)) % 60)}
-        </span>
-      )}
-    </div>
+        <div className="h-full w-full flex flex-col gap-4 p-2">
+          <EditRouterParamsEmbed routeName={routeName} startParams={route?.params || {}}/>
+        </div>
+
+        <div className="h-full w-full gap-4 p-2">
+          <EditFilterEmbed filterId={route?.filter_id}/>
+        </div>
+      </Tabs>
   );
 }

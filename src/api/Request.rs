@@ -1,8 +1,16 @@
 use std::{collections::{BTreeMap, HashMap}, fs, ops::Add, path::{Path, PathBuf}};
-use chrono::{DateTime, TimeZone, Utc};
-use mongodb::{bson::{doc, document, Document}, options::FindOptions, sync::Collection};
+use chrono::{DateTime, Days, TimeZone, Utc};
+use mongodb::{bson::{bson, doc, document, Document}, options::FindOptions, sync::Collection};
 use rocket::{form::Form, http::{ContentType, Status}, FromForm};
+use serde::{Deserialize, Serialize};
 use crate::{asn_record::{AsnRecord, RouteWay}, database::get_database, domains_by_source::DomainsGroupedBySource, guard_kit::GuardScore};
+
+#[derive(FromForm)]
+#[derive(Serialize, Deserialize, Debug)]
+struct FilterRequests {
+  pub filter_country: Option<String>,
+  pub filter_specific_date: Option<String>,
+}
 
 fn select_requests(document: Document, limit: i64) -> Vec<AsnRecord<'static>> {
   let collection: Collection<AsnRecord> = get_database(String::from("requests"))
@@ -227,9 +235,38 @@ pub fn get_all_guards() -> (Status, (ContentType, String))  {
   );
 }
 
-#[get("/requests/asn/list")]
-pub fn get_all_requests() -> (Status, (ContentType, String))  {
-  let vector = select_requests(doc! {}, 256);
+#[get("/requests/asn/list?<query..>")]
+pub fn get_all_requests(query: FilterRequests) -> (Status, (ContentType, String))  {
+  let mut final_doc = doc! {};
+
+  if query.filter_specific_date.is_some() {
+    let date = query
+      .filter_specific_date
+      .unwrap();
+
+    let date = DateTime::parse_from_str(date.as_str(), "%a, %d %b %Y %H:%M:%S %z").unwrap();
+    let date_2 = date.checked_add_days(Days::new(1)).unwrap();
+
+    let date = doc! {
+      "time": { "$gte": date.timestamp_micros(), "$lte": date_2.timestamp_micros() }
+    };
+
+    final_doc.extend(date);
+  }
+  
+  if query.filter_country.is_some() {
+    let country: String = query.filter_country.unwrap_or("".to_string());
+    let country = doc! {
+      "$or": [
+          {"headers.cf-ipcountry": &country},
+          {"asn_country_code": &country},
+      ]
+    };
+
+    final_doc.extend(country);
+  }
+
+  let vector = select_requests(final_doc, 256);
 
   let value = serde_json::json!({
     "isOk": true,

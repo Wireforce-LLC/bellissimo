@@ -67,10 +67,10 @@ async function getPrivateAxiosInstance() {
 
 export const DEFAULT_FILTER_ROW = {
   name: "",
-  value: "",
+  value: undefined,
   operator: "==",
-  plugin: "",
-  resourceId: "",
+  plugin: undefined,
+  resourceId: undefined,
 };
 
 export const OPERATORS = [

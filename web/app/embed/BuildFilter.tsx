@@ -5,6 +5,7 @@ import Input from "~/components/Input";
 import Select from "~/components/Select";
 import webConfig, { ApiPathEnum, DEFAULT_FILTER_ROW, DEFAULT_PLUGINS, OPERATORS } from "~/web.config";
 import asnGroups from "../../../containers/asn_owners_group.json";
+import humanizeString from "humanize-string";
 
 interface Props {
   readonly onSubmit: (submit: FilterRow[]) => void;
@@ -162,7 +163,7 @@ function RowFilterRecord({
     <div className="flex flex-row justify-between items-top space-x-2 h-14 w-full">
         {/* Label for the filter name */}
         <Input
-          label="Filter name"
+          label="Name"
           // Current value of the filter name
           value={modelFilters[index]?.name}
           // Callback function to handle the change of the filter name
@@ -178,23 +179,25 @@ function RowFilterRecord({
           label="Plugin"
           // Array of values for the plugin Select component
           values={plugins}
+          placeholder="Select plugin"
           // Current value of the plugin Select component
           value={modelFilters[index]?.plugin}
           // Callback function to handle the change of the plugin value
           onChangeValue={(it) => {
             const from = _.clone(modelFilters);
             from[index].plugin = it;
+            if (!from[index].name) {
+              from[index].name = humanizeString(String(it?.replace("::", "-")))
+            }
             setModelFilters(from);
           }}
         />
 
         {/* Select component for the operator */}
         <Select
-          label="Operator"
-          isForceFillFirstElement
-          className="w-[450px]"
+          label="Operator"          className="w-[450px]"
           // Array of values for the operator Select component
-          values={DEFAULT_PLUGINS.find((p) => p.value == modelFilters[index]?.plugin)?.operators || OPERATORS}
+          values={DEFAULT_PLUGINS.find((p) => p.value == modelFilters[index]?.plugin)?.operators}
           // Current value of the operator Select component
           value={modelFilters[index]?.operator}
           // Callback function to handle the change of the operator value
@@ -221,6 +224,7 @@ function RowFilterRecord({
         {/* Select component for the resource */}
         <Select
           label="Resource"
+          placeholder="Select resource"
           // Array of values for the resource Select component
           values={resources?.map((it) => ({
             name: it?.resource_id,
@@ -307,6 +311,17 @@ export default function BuildFilterEmbed({ onSubmit, onSubmitLabel, startFilters
     fether();
   }, []);
 
+  const checkFilterRows = useCallback(() => {
+    let findUndefinedResource = modelFilters.find((it) => it.resourceId === undefined);
+    let findUndefinedPlugin = modelFilters.find((it) => it.plugin === undefined);
+
+    if (findUndefinedResource || findUndefinedPlugin) {
+      return false;
+    }
+
+    return true
+  }, [modelFilters]);
+
   return (
     <div className="w-full h-full absolute top-0 left-0 right-0 bottom-0 flex flex-col overflow-x-auto space-y-4">
       <div className="flex flex-col space-y-4 overflow-y-auto pb-12">
@@ -334,7 +349,9 @@ export default function BuildFilterEmbed({ onSubmit, onSubmitLabel, startFilters
       <div className="bottom-0 absolute left-0 right-0">
         <Button
           onPress={() => {
-            onSubmit(modelFilters);
+            if (checkFilterRows()) {
+              onSubmit(modelFilters);
+            }
           }}
         >
           {onSubmitLabel || "Create"}

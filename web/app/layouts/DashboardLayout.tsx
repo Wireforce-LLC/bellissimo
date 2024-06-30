@@ -1,45 +1,12 @@
 import Navbar, { NavbarModeEnum, PageIdEnum } from "~/components/Navbar";
-import DashboardArea, { Menu, View } from "~/components/DashboardArea";
-import DashboardMenuItem from "~/components/DashboardMenuItem";
-import DashboardMenuHolder from "~/components/DashboardMenuHolder";
-import string from "~/localization/polyglot";
-import DashboardBasicWrapper from "~/components/DashboardBasicWrapper";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import getDatasetDashboardLeftBar from "~/dataset/DashboardLeftBar";
 import webConfig, { ApiPathEnum } from "~/web.config";
 
 import wireforceLogo from "/wireforce-logo.png";
 import rightTopImage from "/top-right-01.png";
-
-function MenuElement(
-  currentLeftActiveBarItem: LeftActiveBarItem | null | undefined
-) {
-  const [items, setItems] = useState<undefined | any[]>(
-    getDatasetDashboardLeftBar(null)
-  );
-
-  useEffect(() => {
-    if (currentLeftActiveBarItem) {
-      setItems(getDatasetDashboardLeftBar(currentLeftActiveBarItem));
-    }
-  }, [currentLeftActiveBarItem]);
-
-  return (
-    <DashboardMenuHolder>
-      {items?.map((item) => (
-        <DashboardMenuItem
-          isActive={item.classname == currentLeftActiveBarItem}
-          key={item.id}
-          href={item.href}
-          priority={item.priority}
-          icon={item.icon}
-          name={item.name}
-          kbd={item.kbd}
-        />
-      ))}
-    </DashboardMenuHolder>
-  );
-}
+import classNames from "classnames";
+import { motion } from "framer-motion";
 
 export enum LeftActiveBarItem {
   FILES = "files",
@@ -48,24 +15,16 @@ export enum LeftActiveBarItem {
   RESOURCES = "resources",
   ASN_RECORDS = "asn-records",
   POSTBACKS = "postbacks",
-
-  // OLD
-  THREADS = "threads",
-  VISITORS = "visitors",
-  EVENTS = "events",
-  TRAFFIC = "traffic",
 }
 
 interface Props {
   readonly children: ReactNode;
-  readonly isHideMenu?: boolean;
   readonly subTitle?: string;
   readonly currentLeftActiveBarItem?: LeftActiveBarItem | null;
 }
 
 export default function DashboardLayout({
   children,
-  isHideMenu,
   currentLeftActiveBarItem,
 }: Props) {
   const [isInternetError, setInternetError] = useState(false);
@@ -91,7 +50,8 @@ export default function DashboardLayout({
       (function (p) {
         return p.toString() === "[object SafariRemoteNotification]";
       })(
-        !window["safari"] ||
+        // @ts-ignore
+        !window["safari"] || // @ts-ignore
           (typeof window["safari"] !== "undefined" && safari?.pushNotification)
       );
 
@@ -138,7 +98,7 @@ export default function DashboardLayout({
       />
 
       {isInternetError && (
-        <div className="flex flex-row items-center justify-start gap-2 fixed bottom-0 left-0 text-white z-50 px-3.5 py-2 text-xs right-0 absolute bg-[#ef233c] font-medium">
+        <motion.div initial={{translateY: 140}} animate={{translateY: 0}} transition={{duration: 0.1}} className="flex flex-row items-center justify-start gap-2 fixed bottom-0 left-0 text-white z-50 px-3.5 py-2 text-xs right-0 absolute bg-[#ef233c] font-medium">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -153,10 +113,39 @@ export default function DashboardLayout({
           </svg>
 
           <span>There are problems with your Internet connection.</span>
-        </div>
+        </motion.div>
       )}
 
-      <DashboardBasicWrapper className="h-full">
+      <main className="w-full h-full bg-red-500 flex flex-row overflow-hidden">
+        <nav className="w-[150px] flex-shrink-0 h-full bg-white border-r border-gray-200">
+          <ul>
+            {
+              getDatasetDashboardLeftBar(currentLeftActiveBarItem || null).map((item) => (
+                <li onClick={() => location.href = item.href} className={classNames(
+                  "w-full px-3.5 py-2.5 cursor-pointer flex flex-row gap-2",
+                  {
+                    "bg-zinc-50 border-r border-r-gray-500 text-black": item.isActive,
+                    "text-zinc-400 hover:text-zinc-500": !item.isActive
+                  }
+                )}>
+                  {item.icon}
+  
+                  <span className={classNames("text-xs", {
+                    "font-medium": item.isActive,
+                    "font-regular": !item.isActive,
+                  })}>{item.name}</span>
+                </li>
+              ))
+            } 
+          </ul>
+        </nav>
+
+        <div className="w-full h-full bg-white overflow-y-auto">
+          {children}
+        </div>
+      </main>
+
+      {/* <DashboardBasicWrapper className="h-full">
         <DashboardArea
           menuEnabled={!isHideMenu}
           nested={[
@@ -172,7 +161,7 @@ export default function DashboardLayout({
               : undefined,
           ]}
         />
-      </DashboardBasicWrapper>
+      </DashboardBasicWrapper> */}
     </div>
   );
 }
