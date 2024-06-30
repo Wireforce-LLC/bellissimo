@@ -107,24 +107,24 @@ services:
       bell-elasticsearch:
        condition: service_healthy
 
-  varnish:
-    image: varnish:stable
-    container_name: varnish
-    volumes:
-      - "./default.vcl:/etc/varnish/default.vcl"
-    # ports:
-    #   - "80:80"
-    tmpfs:
-      - /var/lib/varnish:exec
-    environment:
-      - VARNISH_SIZE=2G  
-    command: "-p default_keep=300"
-    depends_on:
-      - bellissimo-collector
-      - redis
-      - mongo
-      - bellissimo
-      - nginx
+  # varnish:
+  #   image: varnish:stable
+  #   container_name: varnish
+  #   volumes:
+  #     - "./default.vcl:/etc/varnish/default.vcl"
+  #   # ports:
+  #   #   - "80:80"
+  #   tmpfs:
+  #     - /var/lib/varnish:exec
+  #   environment:
+  #     - VARNISH_SIZE=2G  
+  #   command: "-p default_keep=300"
+  #   depends_on:
+  #     - bellissimo-collector
+  #     - redis
+  #     - mongo
+  #     - bellissimo
+  #     - nginx
 
   bellissimo-collector:
     container_name: bell-bg
