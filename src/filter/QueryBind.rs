@@ -8,12 +8,12 @@ pub fn register_filter() {
         |_this: &str, _x_real_ip: &str, _user_agent: &str, raw_headers: HeaderMap, _asn_record: Option<&Record>, filter_value: &str, operator: &str| {
             let query = raw_headers.get_one("request-uri").unwrap_or("");
 
-            if query.is_empty() {
-                return false;
-            }
-
-            if !query.contains("?") {
-                return false;
+            if query.is_empty() || !query.contains("?") {
+                return if operator == "==" { 
+                  false
+                } else {
+                  true
+                };
             }
 
             let query = query.split("?").collect::<Vec<&str>>();
