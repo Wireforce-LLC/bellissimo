@@ -5,15 +5,15 @@ import { useEffect, useState } from "react";
 import Table from "~/components/Table";
 import Tabs from "~/components/Tabs";
 import webConfig, { ApiPathEnum } from "~/web.config"; //@ts-ignore
-import loadable from '@loadable/component';
-const ReactJson = loadable(() => import('react-json-view'));
+import JSONPrettyMon from "react-json-pretty/dist/monikai";
+import JSONPretty from "react-json-pretty";
+import "react-json-pretty/themes/acai.css";
 
 interface Props {
   readonly requestBody?: any;
 }
 
 export default function RequestOverviewEmbed({ requestBody }: Props) {
-  const [tab, setTab] = useState(0);
   const [body] = useState(_.toPairs(flatten(requestBody) || {}));
   const [guardBody, setGuardBody] = useState<any | undefined>();
 
@@ -79,22 +79,29 @@ export default function RequestOverviewEmbed({ requestBody }: Props) {
 
   return (
     <div className="w-full overflow-hidden">
-      <Tabs isDisableBorders isDisablePaddings titles={["Request Overview", "Guard Request", "Request as JSON"]}>
+      <Tabs
+        isDisableBorders
+        isDisablePaddings
+        titles={["Request Overview", "Guard Request", "Request as JSON"]}
+      >
         <div>{overview}</div>
         <div>
-          {
-            (guardBody ? (
-              <Table
-                data={guardBody && _.toPairs(flatten(guardBody))}
-                headers={["Key", "Value"]}
-              />
-            ) : (
-              isEmptyGuard
-            ))
-          }
+          {guardBody ? (
+            <Table
+              data={guardBody && _.toPairs(flatten(guardBody))}
+              headers={["Key", "Value"]}
+            />
+          ) : (
+            isEmptyGuard
+          )}
         </div>
         <div className="p-4">
-          <ReactJson src={requestBody} />
+          <JSONPretty
+            data={requestBody}
+            valueStyle="color: blue;"
+            stringStyle="color: red;"
+            mainStyle="background: white; font-size: 14px"
+          />
         </div>
       </Tabs>
     </div>

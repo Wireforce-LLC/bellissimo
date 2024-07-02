@@ -1,3 +1,5 @@
+import { c } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
+
 const APP_NAME = "Bell";
 
 export default {
@@ -284,6 +286,8 @@ export default {
       resources: "Resources",
       asnRecords: "Requests",
       postbacks: "Postbacks",
+      requests: "Requests",
+      clicks: "Clicks",
 
       createThread: "Create new thread",
       events: "Events",

@@ -33,7 +33,7 @@ export default function Navbar({
           {"w-full z-20 bg-white text-black border-b border-b-zinc-200 h-[40px] md:h-[46px]": !className},
         )}
       >
-        <ul className="h-full md:px-3 hidden md:flex flex-row items-center justify-between">
+        <ul className="h-full md:px-3 flex flex-row items-center justify-between">
           <li onClick={() => {
                 onMenuClick()
               }} className="py-2 px-2 cursor-pointer pt-2.5 items-center  justify-center flex flex-row space-x-2 select-none mr-4">
@@ -73,40 +73,6 @@ export default function Navbar({
             </a>
           </li>
         </ul>
-
-        <div className="mx-auto px-4 container md:hidden flex items-center justify-between h-full">
-          <div className="py-2 pt-2.5 flex flex-row space-x-2 select-none mr-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="w-4 h-4"
-            >
-              <path d="M12.378 1.602a.75.75 0 0 0-.756 0L3 6.632l9 5.25 9-5.25-8.622-5.03ZM21.75 7.93l-9 5.25v9l8.628-5.032a.75.75 0 0 0 .372-.648V7.93ZM11.25 22.18v-9l-9-5.25v8.57a.75.75 0 0 0 .372.648l8.628 5.033Z" />
-            </svg>
-            <span className="-mt-0.5 text-sm font-semibold">Bell</span>
-          </div>
-
-          <button
-            onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}
-            className="cursor-pointer"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-              className="w-6 h-6"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-              />
-            </svg>
-          </button>
-        </div>
       </nav>
     </>
   );

@@ -12,7 +12,6 @@ interface Props {}
 
 export default function ClicksMapTableEmbed({}: Props) {
   const [data, setData] = useState<any[] | undefined>(undefined);
-  const [selectedData, setSelectedData] = useState<any | undefined>(undefined);
 
   useEffect(() => {
     fether();
@@ -35,14 +34,15 @@ export default function ClicksMapTableEmbed({}: Props) {
       data?.flatMap(function (i) {
         return {
           ip: i.ip,
-          country: i.country && <div className="flex items-center justify-start gap-2">
+          last_events: _.size(i.last_events) < 5 ? i.last_events.map(i => i.name).join(", ") : i.last_events.slice(0, 5).map(i => i.name).join(", ") + " and more",
+          country: i.country && <span className="flex items-center justify-start gap-2">
             <span>{i.country}</span>
             <img
               className="size-3"
               alt="United States"
               src={`http://purecatamphetamine.github.io/country-flag-icons/3x2/${i?.country?.toUpperCase()}.svg`}
             />
-          </div>,
+          </span>,
         }
       }),
       ["country"],
@@ -59,19 +59,7 @@ export default function ClicksMapTableEmbed({}: Props) {
     );
   }, [listData]);
 
-  const selectedEvents = useMemo(() => {
-    return data?.find(item => selectedData?.ip == item?.ip)?.last_events || undefined
-  }, [data, selectedData])
-
   return (
-    <div className="grid grid-cols-4 h-full w-full">
-      <div className="col-span-1 h-full overflow-y-scroll">
-        <Table headers={tableHeaders} data={listData} onSelectedItem={(index, item) => setSelectedData(item)} />
-      </div>
-
-      <div className="col-span-3 h-full overflow-y-auto">
-        {selectedData && <Table headers={_.keys(_.first(selectedEvents))} data={selectedEvents} />}
-      </div>
-    </div>
+    <Table headers={tableHeaders} data={listData} />
   );
 }

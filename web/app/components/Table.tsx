@@ -7,6 +7,7 @@ import Card from "./Card";
 
 interface Props {
   readonly headers?: string[];
+  readonly doKey?: (index: number, item: any) => string;
   readonly onSelectedItem?: (index: number, item: any) => void | any;
   readonly isNoEmptyState?: boolean;
   readonly data?:
@@ -32,11 +33,16 @@ export function TableActionButton({ onClick }: { onClick: () => void | any }) {
   );
 }
 
-export default function Table({ headers, data, onSelectedItem, isNoEmptyState }: Props) {
+export default function Table({
+  headers,
+  data,
+  onSelectedItem,
+  isNoEmptyState,
+  doKey
+}: Props) {
   const safeValue = useCallback((value: any) => {
     return value;
   }, []);
-
 
   if (!isNoEmptyState && _.isArray(data) && data.length === 0) {
     return (
@@ -65,7 +71,6 @@ export default function Table({ headers, data, onSelectedItem, isNoEmptyState }:
         <tr className=" border-b  divide-zinc-200 border-zinc-200 sticky top-0 bg-white">
           {headers?.map((text) => (
             <th
-              key={text}
               scope="col"
               className="px-3 py-1.5 text-xs text-black text-left font-medium"
             >
@@ -78,10 +83,16 @@ export default function Table({ headers, data, onSelectedItem, isNoEmptyState }:
       <tbody>
         {_.isArray(data) &&
           data.map((item, index) => (
-            <tr tabIndex={index} onClick={() => onSelectedItem?.(index, item)} className="border-b z-0 divide-zinc-200 border-zinc-200 cursor-pointer hover:bg-blue-50 border-x-transparent border-x-2 hover:border-x-blue-500 transition-colors duration-100">
+            <tr
+              tabIndex={index}
+              data-key={doKey?.(index,item) || index}
+              key={doKey?.(index, item) || index}
+              onClick={() => onSelectedItem?.(index, item)}
+              className="border-b z-0 divide-zinc-200 border-zinc-200 cursor-pointer hover:bg-blue-50 border-x-transparent border-x-2 hover:border-x-blue-500 transition-colors duration-100"
+            >
               {Object.values(item || []).map((value) =>
                 value ? (
-                  <td key={index} className="px-3 py-1.5 text-xs font-normal">
+                  <td className="px-3 py-1.5 text-xs font-normal">
                     {_.isBoolean(value)
                       ? value
                         ? "Yes"
@@ -89,17 +100,19 @@ export default function Table({ headers, data, onSelectedItem, isNoEmptyState }:
                       : safeValue(value)}
                   </td>
                 ) : (
-                  <td key={index} className="px-3 py-1.5 text-xs text-[#adb5bd] text-opacity-75">
+                  <td
+                    className="px-3 py-1.5 text-xs text-[#adb5bd] text-opacity-75"
+                  >
                     <div className="text-wrap w-full block">
-                    <svg
-      viewBox="0 0 1024 1024"
-      fill="currentColor"
-      height="1em"
-      width="1em"
-      className="size-3.5 text-gray-500 hover:text-gray-800"
-    >
-      <path d="M872 474H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h720c4.4 0 8-3.6 8-8v-60c0-4.4-3.6-8-8-8z" />
-    </svg>
+                      <svg
+                        viewBox="0 0 1024 1024"
+                        fill="currentColor"
+                        height="1em"
+                        width="1em"
+                        className="size-3.5 text-gray-500 hover:text-gray-800"
+                      >
+                        <path d="M872 474H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h720c4.4 0 8-3.6 8-8v-60c0-4.4-3.6-8-8-8z" />
+                      </svg>
                     </div>
                   </td>
                 )

@@ -1,12 +1,13 @@
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useCallback, useMemo, useState } from "react";
 import TopTitle from "~/components/TopTitle";
 import DatahubRequests from "./datahub_requests";
 import Navbar from "~/components/Navbar";
-import { MetaFunction } from "@remix-run/react";
+import { MetaFunction, useLocation } from "@remix-run/react";
 import DatahubPostbacks from "./datahub_postbacks";
 import DatahubClicks from "./datahub_clicks";
 import wireforceLogo from "/wireforce-logo.png";
 import rightTopImage from "/top-right-01.png";
+import _ from "lodash";
 
 export const meta: MetaFunction = () => {
   return [
@@ -21,7 +22,30 @@ export const meta: MetaFunction = () => {
 interface Props {}
 
 export default function Datahub() {
-  const [route, setRoute] = useState("home");
+  const [currentPath, setCurrentPathValue] = useState(
+    () => {
+      if (typeof window !== "undefined") {
+        let value = window.location.hash.replace("#", '');
+
+        if (_.isEmpty(value)) {
+          return null;
+        } else {
+          return value;
+        }
+      } else {
+        undefined
+      }
+    }
+  );
+
+  const setCurrentPath = useCallback((value: string|null) => {
+    setCurrentPathValue(value);
+    if (value != null) {
+      location.hash = `#${value}`;
+    } else {
+      location.hash = `#`;
+    }
+  }, []);
 
   const items = useMemo(
     () => [
@@ -49,18 +73,18 @@ export default function Datahub() {
   const registry: { [key: string]: ReactNode } = useMemo(() => {
     return {
       home: (
-        <div className="container mx-auto py-6">
-          <div className="py-6 px-7">
+        <div className="container mx-auto py-2 md:py-4 lg:py-6">
+          <div className="py-2 md:py-4 lg:py-6 px-7">
             <TopTitle
               isLeft
               title="Your Datahub"
               subtitle="Welcome to the Dynamic Data Datahub. All data that Bellissimo will produce at the time of its operation will be located here"
             />
 
-            <div className="grid grid-cols-4 mt-8 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mt-8 gap-4">
               {items.map((item, index) => (
                 <div
-                  onClick={() => setRoute(item.href)}
+                  onClick={() => setCurrentPath(item.href)}
                   className="w-full min-h-12 bg-white py-3 px-4 border border-zinc-50 hover:outline outline-1 outline-offset-2 outline-zinc-700 cursor-pointer"
                 >
                   <h4 className="font-semibold text-sm">{item.name}</h4>
@@ -78,8 +102,16 @@ export default function Datahub() {
   }, []);
 
   const fragment = useMemo(() => {
-    return registry[route] || undefined;
-  }, [route]);
+    if (currentPath === null) {
+      return registry["home"];
+    }
+
+    if (currentPath === undefined) {
+      return undefined;
+    }
+
+    return registry[currentPath] || undefined;
+  }, [currentPath]);
 
   return (
     <div className="bg-zinc-100 h-screen overflow-hidden">
@@ -103,12 +135,17 @@ export default function Datahub() {
             <path d="M13.293 6.293L7.586 12l5.707 5.707 1.414-1.414L10.414 12l4.293-4.293z" />
           </svg>
         }
-        onMenuClick={() => setRoute("home")}
+        onMenuClick={() => {
+          if (currentPath === null) {
+            window.location.href = "/"
+            return;
+          }
+
+          setCurrentPath(null)
+        }}
       />
 
-      <div className="w-full h-full">
-        {fragment}
-      </div>
+      <div className="w-full h-full overflow-y-auto">{fragment}</div>
     </div>
   );
 }

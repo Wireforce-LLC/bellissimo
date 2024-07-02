@@ -17,12 +17,15 @@ export default function DatahubRequests() {
   const [date, setDate] = useState<Moment | undefined>();
   const [modelOverviewData, setModelOverviewData] = useState<any | undefined>();
 
+  const [skip, setSkip] = useState<number>(0);
+  const [limit, setLimit] = useState<number>(24);
+
   const [filterKeys, setFilterKeys] = useState<string[]>([
     // "query",
     // "headers",
-    // "asn_description",
+    "asn_description",
     // "request_id",
-    // "asn_number",
+    "asn_number",
     "is_ua_bot",
     "asn_name",
     // "resource_id",
@@ -31,23 +34,34 @@ export default function DatahubRequests() {
 
   return (
     <div className="w-full h-full bg-white">
-         {modelOverviewData && <Modal title="Overview request" isNoPadding isBigModal onClose={() => setModelOverviewData(undefined)}>
-            <RequestOverviewEmbed requestBody={modelOverviewData} />
-        </Modal>}
+      {modelOverviewData && (
+        <Modal
+          title="Overview request"
+          isNoPadding
+          isBigModal
+          onClose={() => setModelOverviewData(undefined)}
+        >
+          <RequestOverviewEmbed requestBody={modelOverviewData} />
+        </Modal>
+      )}
 
-
-        <EazyModal title="Filter" isVisible={onAppendModal} intent={setOnAppendModal}>
-        
-       
-
-        <FilterRequests 
+      <EazyModal
+        title="Filter"
+        isVisible={onAppendModal}
+        intent={setOnAppendModal}
+      >
+        <FilterRequests
           onChangeDate={setDate}
           onChangeCountry={setCountry}
-          onFilterColumnIntent={() => {}}
-        //   onFilterColumnIntent={() => setIsShowFilterModal(true)} 
+          onSetFilterKeys={setFilterKeys}
+          onSetSkip={setSkip}
+          onSetLimit={setLimit}
+          limit={limit}
+          skip={skip}
+        //   onSetFilterKeys={setFilterKeys}
+          //   onFilterColumnIntent={() => setIsShowFilterModal(true)}
         />
-          
-        </EazyModal>
+      </EazyModal>
       <SubNavbar
         title={string("dashboard.subtitle.requests")}
         createActionLabel="Filter"
@@ -67,14 +81,18 @@ export default function DatahubRequests() {
         }}
       />
 
-      <RequestsTableEmbed
-        date={date}
-        country={country}
-        filterKeys={filterKeys}
-        onSelectedItem={(index, item) => {
-          setModelOverviewData(item);
-        }}
-      />
+      <div className="w-full h-full overflow-auto">
+        <RequestsTableEmbed
+          date={date}
+          country={country}
+          filterKeys={filterKeys}
+          skip={skip}
+          limit={limit}
+          onSelectedItem={(index, item) => {
+            setModelOverviewData(item);
+          }}
+        />
+      </div>
     </div>
   );
 }

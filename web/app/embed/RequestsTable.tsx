@@ -13,6 +13,8 @@ interface Props {
   readonly date?: Moment;
   readonly country?: string;
   readonly filterKeys: string[];
+  readonly skip?: number;
+  readonly limit?: number;
 }
 
 const sorted = (obj: any) => _(obj).toPairs().sortBy(0).fromPairs().value();
@@ -22,11 +24,10 @@ export default function RequestsTableEmbed({
   date,
   country,
   filterKeys,
+  skip,
+  limit,
 }: Props) {
-  const [data, setData] = useState<any[]>([]);
-  const [isShowFilterModal, setIsShowFilterModal] = useState<boolean>(false);
-  // const [country, setCountry] = useState<string | undefined>();
-  // const [date, setDate] = useState<Moment | undefined>();
+  const [data, setData] = useState<any[]|undefined>(undefined);
 
   const tableHeaders: string[] = useMemo(() => {
     return (
@@ -48,6 +49,8 @@ export default function RequestsTableEmbed({
         params: {
           filter_country: country,
           filter_specific_date: date?.format("ddd, DD MMM YYYY HH:mm:ss Z"),
+          skip,
+          limit,
         },
       }).then((res) => {
         if (_.isArray(res.data.value)) {
@@ -57,50 +60,24 @@ export default function RequestsTableEmbed({
         }
       });
     });
-  }, [country, date]);
+  }, [country, date, skip, limit]);
 
   useEffect(() => {
     fether();
-  }, [country, date]);
+  }, [country, date, skip, limit]);
 
-  const editSortedModalContent =
-    // <Modal onClose={() => setIsShowFilterModal(false)} title="Sort and filter">
-    //   {_.toPairs(allFilterKeys).map((i) => {
-    //     return (
-    //       <div
-    //         className="select-none flex py-1 flex-row items-center justify-start gap-2 cursor-pointer"
-    //         onClick={() => {
-    //           if (filterKeys.includes(i[1])) {
-    //             setFilterKeys(filterKeys.filter((x) => x !== i[1]));
-    //           } else {
-    //             setFilterKeys([...filterKeys, i[1]]);
-    //           }
-    //         }}
-    //       >
-    //         <div
-    //           className={classNames({
-    //             "h-2 w-2 rounded-full bg-green-500": !filterKeys.includes(i[1]),
-    //             "h-2 w-2 rounded-full bg-red-500": filterKeys.includes(i[1]),
-    //           })}
-    //         ></div>
-
-    //         <Label>{i[1]}</Label>
-    //       </div>
-    //     );
-    //   })}
-    // </Modal>
-
-    0;
+  const fullData = useMemo(() => data!!, [data]);
 
   return (
     <div className="flex flex-row">
       <div className="w-full">
-        {isShowFilterModal && editSortedModalContent}
-
         <Table
           headers={tableHeaders}
+          doKey={(index, item) => {
+            return fullData[index].request_id || fullData[index].time;
+          }}
           onSelectedItem={(index, item) => {
-            onSelectedItem?.(index, sorted(data[index]));
+            onSelectedItem?.(index, sorted(fullData[index]));
           }}
           data={data?.map((it, index) => {
             const row = {
@@ -159,11 +136,22 @@ export default function RequestsTableEmbed({
                 it.route_way &&
                 (it.route_way.find((it: any) => it.use_this_way)?.name ||
                   undefined),
-              query: it.query
-                ? _.size(it.query) > 5
-                  ? _.size(it.query) + " keys"
-                  : _.keys(it.query).join(", ")
-                : "No",
+              query: it.query ? (
+                _.size(it.query) > 5 ? (
+                  <span>
+                    <span>
+                      {_.keys(it.query).sort().splice(0, 3).join(", ")}
+                    </span>{" "}
+                    <span className="text-zinc-400">
+                      and {" " + (_.size(it.query) - 3 + " keys")}
+                    </span>
+                  </span>
+                ) : (
+                  _.keys(it.query).sort().join(", ")
+                )
+              ) : (
+                "No"
+              ),
 
               asn_country_code: it?.asn_country_code && (
                 <span className="flex items-center flex-row gap-2">

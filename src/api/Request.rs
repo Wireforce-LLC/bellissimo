@@ -10,9 +10,11 @@ use crate::{asn_record::{AsnRecord, RouteWay}, database::get_database, domains_b
 struct FilterRequests {
   pub filter_country: Option<String>,
   pub filter_specific_date: Option<String>,
+  pub limit: Option<i64>,
+  pub skip: Option<u64>,
 }
 
-fn select_requests(document: Document, limit: i64) -> Vec<AsnRecord<'static>> {
+fn select_requests(document: Document, limit: i64, skip: u64) -> Vec<AsnRecord<'static>> {
   let collection: Collection<AsnRecord> = get_database(String::from("requests"))
     .collection("asn_records");
 
@@ -22,7 +24,7 @@ fn select_requests(document: Document, limit: i64) -> Vec<AsnRecord<'static>> {
       FindOptions::builder()
         .sort(doc! { "time": -1 })
         .limit(limit)
-        .skip(0)
+        .skip(skip)
         .build()
     )
     .expect("Failed to find ASN requests");
@@ -50,7 +52,7 @@ pub fn get_requests_summary(query: HashMap<String, String>) -> (Status, (Content
   let mut requests_per_day: HashMap<chrono::DateTime<Utc>, i64> = HashMap::new();
   let mut filter_ways:  HashMap<String, i64> = HashMap::new();
 
-  let vector = select_requests(doc! {}, 100000);
+  let vector = select_requests(doc! {}, 10_000, 0);
 
   for record in vector {
     let date: DateTime<Utc> = Utc.timestamp_micros(record.clone().time).unwrap();
@@ -239,6 +241,22 @@ pub fn get_all_guards() -> (Status, (ContentType, String))  {
 pub fn get_all_requests(query: FilterRequests) -> (Status, (ContentType, String))  {
   let mut final_doc = doc! {};
 
+  if query.limit.is_some() {
+    if query.limit.unwrap() > 500 {
+      return (
+        Status::BadRequest, 
+        (
+          ContentType::JSON,
+          serde_json::json!({
+            "isOk": false,
+            "value": null,
+            "error": "Limit must be less than 500"
+          }).to_string()
+        )
+      )
+    }
+  }
+
   if query.filter_specific_date.is_some() {
     let date = query
       .filter_specific_date
@@ -266,7 +284,11 @@ pub fn get_all_requests(query: FilterRequests) -> (Status, (ContentType, String)
     final_doc.extend(country);
   }
 
-  let vector = select_requests(final_doc, 256);
+  let vector = select_requests(
+    final_doc,
+    query.limit.unwrap_or(24),
+    query.skip.unwrap_or(0),
+  );
 
   let value = serde_json::json!({
     "isOk": true,
@@ -287,7 +309,7 @@ pub fn get_all_requests(query: FilterRequests) -> (Status, (ContentType, String)
 
 #[get("/requests/routes/list")]
 pub fn get_all_routes() -> (Status, (ContentType, String))  {
-  let vector = select_requests(doc! {}, 10_000);
+  let vector = select_requests(doc! {}, 10_000, 0);
 
   let mut route_count: BTreeMap<String, i8> = BTreeMap::new();
 
@@ -338,7 +360,7 @@ pub fn get_all_domains_grouped_by_source(query_selector: PathBuf) -> (Status, (C
     format!("query.{}", query_selector): {
       "$exists": true
     }
-  }, 10000);
+  }, 10_000, 0);
 
   let mut domains_by_source: Vec<DomainsGroupedBySource> = vec![];
 
