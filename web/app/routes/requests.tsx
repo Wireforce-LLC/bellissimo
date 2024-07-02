@@ -38,10 +38,7 @@ export default function Requests() {
   }, []);
 
   return (
-    <DashboardLayout
-      subTitle={string("dashboard.subtitle.asnRecords")}
-      currentLeftActiveBarItem={LeftActiveBarItem.ASN_RECORDS}
-    >
+    <>
       {modalOverviewData && (
         <Modal
           isBigModal
@@ -122,10 +119,6 @@ export default function Requests() {
           </div>
         )} */}
 
-        <RequestsTableEmbed onSelectedItem={(index, item) => {
-          setModalOverviewData(item);
-        }}/>
-
         </div>
 
         <Tabs isDisablePaddings isDisableBorders titles={["By source", "By campaign", "By term", "By medium"]}>
@@ -137,6 +130,6 @@ export default function Requests() {
 
         <UsersTableEmbed/>
       </Tabs>
-    </DashboardLayout>
+    </>
   );
 }

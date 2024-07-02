@@ -84,10 +84,7 @@ export default function Files() {
    * @returns The rendered file list page.
    */
   return (
-    <DashboardLayout
-      subTitle={string("dashboard.subtitle.files")}
-      currentLeftActiveBarItem={LeftActiveBarItem.FILES}
-    >
+    <>
       <SubNavbar
         onCreateAction={() => setIsModalCreateVisible(true)}
         createActionLabel="Create file"
@@ -135,6 +132,6 @@ export default function Files() {
       })}>
         <FileEditorEmbed onReady={() => setReady(true)} onChangePwd={setPwd} pwd={pwd} />
       </div>
-    </DashboardLayout>
+    </>
   );
 }

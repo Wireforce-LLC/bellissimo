@@ -1,4 +1,4 @@
-import Navbar, { NavbarModeEnum, PageIdEnum } from "~/components/Navbar";
+import Navbar from "~/components/Navbar";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import getDatasetDashboardLeftBar from "~/dataset/DashboardLeftBar";
 import webConfig, { ApiPathEnum } from "~/web.config";
@@ -19,29 +19,17 @@ export enum LeftActiveBarItem {
 
 interface Props {
   readonly children: ReactNode;
-  readonly subTitle?: string;
-  readonly currentLeftActiveBarItem?: LeftActiveBarItem | null;
+  readonly onMenuSelected: (it: string) => void
 }
 
 export default function DashboardLayout({
   children,
-  currentLeftActiveBarItem,
+  onMenuSelected
 }: Props) {
   const [isInternetError, setInternetError] = useState(false);
   const [isSafari, setSafari] = useState(false);
-  const [moneyVolume, setMoneyVolume] = useState(0);
-
-  useEffect(() => {
-    webConfig.axiosFactory("PRIVATE").then((data) => {
-      data
-        .get(
-          webConfig.apiEndpointFactory(ApiPathEnum.GetMoneyVolumeByPostbacks)
-        )
-        .then((response) => {
-          setMoneyVolume(response.data.value);
-        });
-    });
-  }, []);
+  const [isMenuOpen, setMenuOpen] = useState(true);
+  const [currentLeftActiveBarItem, setCurrentLeftActiveBarItem] = useState<LeftActiveBarItem>(LeftActiveBarItem.ROUTES);
 
   useEffect(() => {
     // @ts-ignore
@@ -86,15 +74,13 @@ export default function DashboardLayout({
 
       <div className="w-full bg-[#060931] h-[32px] px-4 flex flex-row items-center justify-between">
         <div className="container w-full flex flex-row items-center justify-between">
-          <img src={wireforceLogo} className="h-[28px]" alt="" />
+          <img src={wireforceLogo} className="h-[32px]" alt="" />
           <img src={rightTopImage} className="h-[32px]" alt="" />
         </div>
       </div>
 
       <Navbar
-        mode={NavbarModeEnum.IN_DASHBOARD}
-        currentActivePageId={PageIdEnum.DASHBOARD}
-        moneyVolume={moneyVolume}
+        onMenuClick={() => setMenuOpen(!isMenuOpen)}
       />
 
       {isInternetError && (
@@ -116,16 +102,19 @@ export default function DashboardLayout({
         </motion.div>
       )}
 
-      <main className="w-full h-full bg-red-500 flex flex-row overflow-hidden">
-        <nav className="w-[150px] flex-shrink-0 h-full bg-white border-r border-gray-200">
+      <main className="w-full h-full bg-white flex flex-row overflow-hidden">
+        {isMenuOpen && <motion.nav transition={{duration: 0.1}} className="w-[150px] flex-shrink-0 h-full bg-white border-r border-gray-200">
           <ul>
             {
               getDatasetDashboardLeftBar(currentLeftActiveBarItem || null).map((item) => (
-                <li onClick={() => location.href = item.href} className={classNames(
+                <li onClick={() => {
+                  onMenuSelected(item.href)
+                  setCurrentLeftActiveBarItem(item.classname)
+                }} className={classNames(
                   "w-full px-3.5 py-2.5 cursor-pointer flex flex-row gap-2",
                   {
-                    "bg-zinc-50 border-r border-r-gray-500 text-black": item.isActive,
-                    "text-zinc-400 hover:text-zinc-500": !item.isActive
+                    "bg-blue-50 border-r border-r-blue-500 text-blue-500": item.isActive,
+                    "text-zinc-400 hover:text-blue-500": !item.isActive
                   }
                 )}>
                   {item.icon}
@@ -138,9 +127,9 @@ export default function DashboardLayout({
               ))
             } 
           </ul>
-        </nav>
+        </motion.nav>}
 
-        <div className="w-full h-full bg-white overflow-y-auto">
+        <div className="w-full transition-all h-full bg-white overflow-y-auto">
           {children}
         </div>
       </main>

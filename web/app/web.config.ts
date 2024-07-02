@@ -35,6 +35,7 @@ export enum ApiPathEnum {
   GetAllClicks = "/api/click/list",
   GetAllResourceDrivers = "/api/resource/driver/list",
   GetAllFilterPlugins = "/api/filter/plugin/list",
+  GetMappingClicks = "/api/click/ipMapping",
 }
 
 // API endpoint host

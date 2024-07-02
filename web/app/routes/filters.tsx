@@ -81,10 +81,7 @@ export default function Filters() {
 
 
   return (
-    <DashboardLayout
-      subTitle={string("dashboard.subtitle.filters")}
-      currentLeftActiveBarItem={LeftActiveBarItem.FILTERS}
-    >
+    <>
       {isModalCreateVisible && (
         <Modal
           isBigModal
@@ -178,10 +175,16 @@ export default function Filters() {
                 <span>{it.name || "-"}</span>
               </div>
             ),
-            conditions: it.conditions.length,
+            conditions: it.conditions.length < 5 ? it.conditions.map((it: any) => it.name).join(", ") : <span className="text-zinc-500">{it.conditions.length + " conditions"}</span>,
           };
         })}
       />
-    </DashboardLayout>
+
+      <div className="px-2.5 py-1">
+        <small className="text-zinc-400 text-xs">
+          In table <b>{_.size(data)}</b> records
+        </small>
+      </div>
+    </>
   );
 }

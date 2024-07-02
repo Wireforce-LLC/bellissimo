@@ -67,10 +67,7 @@ export default function Resources() {
   }, []);
 
   return (
-    <DashboardLayout
-      subTitle={string("dashboard.subtitle.resources")}
-      currentLeftActiveBarItem={LeftActiveBarItem.RESOURCES}
-    >
+    <>
       {modalEditResourceId && (
         <Modal
           title="Edit resource"
@@ -209,10 +206,34 @@ export default function Resources() {
               <ToolIconByResourceId resourceId={i.resource_id} />
             </div>
           ),
+          file_path: i.file_path ? <div className="flex flex-row items-center justify-start gap-2">
+            <svg
+      viewBox="0 0 512 512"
+      fill="currentColor"
+      height="1em"
+      width="1em"
+      className="size-3.5 text-gray-400 hover:text-blue-800"
+    >
+      <path
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={48}
+        d="M200.66 352H144a96 96 0 010-192h55.41M312.59 160H368a96 96 0 010 192h-56.66"
+      />
+    </svg>
+    <span className="text-zinc-400 underline">{i.file_path}</span></div> : undefined,
           driver: <DriverBadge driver={i.driver} />,
           raw_content: i.raw_content ? _.take(i.raw_content, 64) : undefined,
         }))}
       />
-    </DashboardLayout>
+
+      <div className="px-2.5 py-1">
+        <small className="text-zinc-400 text-xs">
+          In table <b>{_.size(data)}</b> records
+        </small>
+      </div>
+    </>
   );
 }

@@ -143,6 +143,7 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api_request::get_all_domains_grouped_by_source])
       .mount(http_api_uri_path, routes![api_request::get_all_routes])
       .mount(http_api_uri_path, routes![api_click::get_all_clicks])
+      .mount(http_api_uri_path, routes![api_click::get_ip_mapped_clicks])
 
       .mount(http_api_uri_path, routes![api_postback::get_postback_amount])
 

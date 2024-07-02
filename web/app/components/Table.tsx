@@ -62,11 +62,12 @@ export default function Table({ headers, data, onSelectedItem, isNoEmptyState }:
   return data ? (
     <table className="w-full bg-white">
       <thead>
-        <tr className="bg-gray-300 border-b divide-x divide-zinc-200 border-zinc-200 sticky top-0 bg-white">
+        <tr className=" border-b  divide-zinc-200 border-zinc-200 sticky top-0 bg-white">
           {headers?.map((text) => (
             <th
+              key={text}
               scope="col"
-              className="px-3 py-1.5 text-xs text-black bg-gray-50 text-left font-medium"
+              className="px-3 py-1.5 text-xs text-black text-left font-medium"
             >
               {text}
             </th>
@@ -77,10 +78,10 @@ export default function Table({ headers, data, onSelectedItem, isNoEmptyState }:
       <tbody>
         {_.isArray(data) &&
           data.map((item, index) => (
-            <tr tabIndex={index} onClick={() => onSelectedItem?.(index, item)} className="border-b z-0 divide-x divide-zinc-200 border-zinc-200 cursor-pointer hover:bg-blue-50 border-x-transparent border-x-2 hover:border-x-blue-500">
+            <tr tabIndex={index} onClick={() => onSelectedItem?.(index, item)} className="border-b z-0 divide-zinc-200 border-zinc-200 cursor-pointer hover:bg-blue-50 border-x-transparent border-x-2 hover:border-x-blue-500 transition-colors duration-100">
               {Object.values(item || []).map((value) =>
                 value ? (
-                  <td className="px-3 py-1.5 text-xs font-normal">
+                  <td key={index} className="px-3 py-1.5 text-xs font-normal">
                     {_.isBoolean(value)
                       ? value
                         ? "Yes"
@@ -88,9 +89,17 @@ export default function Table({ headers, data, onSelectedItem, isNoEmptyState }:
                       : safeValue(value)}
                   </td>
                 ) : (
-                  <td className="px-3 py-1.5 text-xs text-[#adb5bd] text-opacity-75">
+                  <td key={index} className="px-3 py-1.5 text-xs text-[#adb5bd] text-opacity-75">
                     <div className="text-wrap w-full block">
-                      {string("const.nonValue")}
+                    <svg
+      viewBox="0 0 1024 1024"
+      fill="currentColor"
+      height="1em"
+      width="1em"
+      className="size-3.5 text-gray-500 hover:text-gray-800"
+    >
+      <path d="M872 474H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h720c4.4 0 8-3.6 8-8v-60c0-4.4-3.6-8-8-8z" />
+    </svg>
                     </div>
                   </td>
                 )
@@ -107,7 +116,7 @@ export default function Table({ headers, data, onSelectedItem, isNoEmptyState }:
       </tbody>
     </table>
   ) : (
-    <div className="w-full bg-white py-12 border-b border-b-gray-100">
+    <div className="w-full bg-white py-12">
       <LoadingActivity text={string("const.loadingData")} />
     </div>
   );

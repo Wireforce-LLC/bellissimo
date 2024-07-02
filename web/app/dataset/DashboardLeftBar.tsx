@@ -17,12 +17,13 @@ export default function getDatasetDashboardLeftBar(
       isActive: currentActivePageId == LeftActiveBarItem.ROUTES,
       icon: (
         <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
+          viewBox="0 0 24 24"
           fill="currentColor"
+          height="1em"
+          width="1em"
           className={classNames(ICON_DEFAULT_CLASSNAME)}
         >
-          <path d="M16.555 5.412a8.028 8.028 0 0 0-3.503-2.81 14.899 14.899 0 0 1 1.663 4.472 8.547 8.547 0 0 0 1.84-1.662ZM13.326 7.825a13.43 13.43 0 0 0-2.413-5.773 8.087 8.087 0 0 0-1.826 0 13.43 13.43 0 0 0-2.413 5.773A8.473 8.473 0 0 0 10 8.5c1.18 0 2.304-.24 3.326-.675ZM6.514 9.376A9.98 9.98 0 0 0 10 10c1.226 0 2.4-.22 3.486-.624a13.54 13.54 0 0 1-.351 3.759A13.54 13.54 0 0 1 10 13.5c-1.079 0-2.128-.127-3.134-.366a13.538 13.538 0 0 1-.352-3.758ZM5.285 7.074a14.9 14.9 0 0 1 1.663-4.471 8.028 8.028 0 0 0-3.503 2.81c.529.638 1.149 1.199 1.84 1.66ZM17.334 6.798a7.973 7.973 0 0 1 .614 4.115 13.47 13.47 0 0 1-3.178 1.72 15.093 15.093 0 0 0 .174-3.939 10.043 10.043 0 0 0 2.39-1.896ZM2.666 6.798a10.042 10.042 0 0 0 2.39 1.896 15.196 15.196 0 0 0 .174 3.94 13.472 13.472 0 0 1-3.178-1.72 7.973 7.973 0 0 1 .615-4.115ZM10 15c.898 0 1.778-.079 2.633-.23a13.473 13.473 0 0 1-1.72 3.178 8.099 8.099 0 0 1-1.826 0 13.47 13.47 0 0 1-1.72-3.178c.855.151 1.735.23 2.633.23ZM14.357 14.357a14.912 14.912 0 0 1-1.305 3.04 8.027 8.027 0 0 0 4.345-4.345c-.953.542-1.971.981-3.04 1.305ZM6.948 17.397a8.027 8.027 0 0 1-4.345-4.345c.953.542 1.971.981 3.04 1.305a14.912 14.912 0 0 0 1.305 3.04Z" />
+          <path d="M9 2v6h2v3H5c-1.11 0-2 .89-2 2v3H1v6h6v-6H5v-3h6v3H9v6h6v-6h-2v-3h6v3h-2v6h6v-6h-2v-3c0-1.11-.89-2-2-2h-6V8h2V2H9z" />
         </svg>
       ),
       kbd: "R",
@@ -37,12 +38,13 @@ export default function getDatasetDashboardLeftBar(
       isActive: currentActivePageId == LeftActiveBarItem.FILTERS,
       icon: (
         <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 16 16"
           fill="currentColor"
+          viewBox="0 0 16 16"
+          height="1em"
+          width="1em"
           className={classNames(ICON_DEFAULT_CLASSNAME)}
         >
-          <path d="M14 2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v2.172a2 2 0 0 0 .586 1.414l2.828 2.828A2 2 0 0 1 6 9.828v4.363a.5.5 0 0 0 .724.447l2.17-1.085A2 2 0 0 0 10 11.763V9.829a2 2 0 0 1 .586-1.414l2.828-2.828A2 2 0 0 0 14 4.172V2Z" />
+          <path d="M6 10.5a.5.5 0 01.5-.5h3a.5.5 0 010 1h-3a.5.5 0 01-.5-.5zm-2-3a.5.5 0 01.5-.5h7a.5.5 0 010 1h-7a.5.5 0 01-.5-.5zm-2-3a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5z" />
         </svg>
       ),
       kbd: "F",
@@ -57,58 +59,117 @@ export default function getDatasetDashboardLeftBar(
       isActive: currentActivePageId == LeftActiveBarItem.RESOURCES,
       icon: (
         <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+          height="1em"
+          width="1em"
           className={classNames(ICON_DEFAULT_CLASSNAME)}
         >
-          <path
-            fillRule="evenodd"
-            d="M2 3a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2Zm0 4.5h16l-.811 7.71a2 2 0 0 1-1.99 1.79H4.802a2 2 0 0 1-1.99-1.79L2 7.5ZM10 9a.75.75 0 0 1 .75.75v2.546l.943-1.048a.75.75 0 1 1 1.114 1.004l-2.25 2.5a.75.75 0 0 1-1.114 0l-2.25-2.5a.75.75 0 1 1 1.114-1.004l.943 1.048V9.75A.75.75 0 0 1 10 9Z"
-            clipRule="evenodd"
-          />
+          <path stroke="none" d="M0 0h24v24H0z" />
+          <path d="M6 17.6l-2-1.1V14M4 10V7.5l2-1.1M10 4.1L12 3l2 1.1M18 6.4l2 1.1V10M20 14v2.5l-2 1.12M14 19.9L12 21l-2-1.1M12 12l2-1.1M18 8.6l2-1.1M12 12v2.5M12 18.5V21M12 12l-2-1.12M6 8.6L4 7.5" />
         </svg>
       ),
       kbd: "E",
     },
 
-    {
-      id: "ecords",
-      classname: LeftActiveBarItem.ASN_RECORDS,
-      priority: 1,
-      name: string("dashboard.menu.asnRecords"),
-      href: "/requests",
-      isActive: currentActivePageId == LeftActiveBarItem.ASN_RECORDS,
-      icon: (
-        <svg
-          className={classNames(ICON_DEFAULT_CLASSNAME)}
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path
-            fillRule="evenodd"
-            d="M13.2 2.24a.75.75 0 0 0 .04 1.06l2.1 1.95H6.75a.75.75 0 0 0 0 1.5h8.59l-2.1 1.95a.75.75 0 1 0 1.02 1.1l3.5-3.25a.75.75 0 0 0 0-1.1l-3.5-3.25a.75.75 0 0 0-1.06.04Zm-6.4 8a.75.75 0 0 0-1.06-.04l-3.5 3.25a.75.75 0 0 0 0 1.1l3.5 3.25a.75.75 0 1 0 1.02-1.1l-2.1-1.95h8.59a.75.75 0 0 0 0-1.5H4.66l2.1-1.95a.75.75 0 0 0 .04-1.06Z"
-            clipRule="evenodd"
-          />
-        </svg>
-      ),
-    },
+    // {
+    //   id: "records",
+    //   classname: LeftActiveBarItem.ASN_RECORDS,
+    //   priority: 1,
+    //   name: string("dashboard.menu.asnRecords"),
+    //   href: "/requests",
+    //   isActive: currentActivePageId == LeftActiveBarItem.ASN_RECORDS,
+    //   icon: (
+    //     <svg
+    //       viewBox="0 0 512 512"
+    //       fill="currentColor"
+    //       height="1em"
+    //       width="1em"
+    //       className={classNames(ICON_DEFAULT_CLASSNAME)}
+    //     >
+    //       <path
+    //         fill="none"
+    //         stroke="currentColor"
+    //         strokeLinecap="round"
+    //         strokeLinejoin="round"
+    //         strokeWidth={32}
+    //         d="M176 96 A48 48 0 0 1 128 144 A48 48 0 0 1 80 96 A48 48 0 0 1 176 96 z"
+    //       />
+    //       <path
+    //         fill="none"
+    //         stroke="currentColor"
+    //         strokeLinecap="round"
+    //         strokeLinejoin="round"
+    //         strokeWidth={32}
+    //         d="M304 416 A48 48 0 0 1 256 464 A48 48 0 0 1 208 416 A48 48 0 0 1 304 416 z"
+    //       />
+    //       <path
+    //         fill="none"
+    //         stroke="currentColor"
+    //         strokeLinecap="round"
+    //         strokeLinejoin="round"
+    //         strokeWidth={32}
+    //         d="M256 256v112"
+    //       />
+    //       <path
+    //         fill="none"
+    //         stroke="currentColor"
+    //         strokeLinecap="round"
+    //         strokeLinejoin="round"
+    //         strokeWidth={32}
+    //         d="M432 96 A48 48 0 0 1 384 144 A48 48 0 0 1 336 96 A48 48 0 0 1 432 96 z"
+    //       />
+    //       <path
+    //         fill="none"
+    //         stroke="currentColor"
+    //         strokeLinecap="round"
+    //         strokeLinejoin="round"
+    //         strokeWidth={32}
+    //         d="M128 144c0 74.67 68.92 112 128 112M384 144c0 74.67-68.92 112-128 112"
+    //       />
+    //     </svg>
+    //   ),
+    // },
 
-    {
-      id: "postbacks",
-      classname: LeftActiveBarItem.POSTBACKS,
-      priority: 1,
-      name: string("dashboard.menu.postbacks"),
-      href: "/postbacks",
-      isActive: currentActivePageId == LeftActiveBarItem.POSTBACKS,
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className={classNames(ICON_DEFAULT_CLASSNAME)}>
-          <path d="M12 2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1h-1ZM6.5 6a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V6ZM2 9a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9Z" />
-        </svg>
-      ),
-      kbd: "P",
-    },
+    // {
+    //   id: "postbacks",
+    //   classname: LeftActiveBarItem.POSTBACKS,
+    //   priority: 1,
+    //   name: string("dashboard.menu.postbacks"),
+    //   href: "/postbacks",
+    //   isActive: currentActivePageId == LeftActiveBarItem.POSTBACKS,
+    //   icon: (
+    //     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className={classNames(ICON_DEFAULT_CLASSNAME)}>
+    //       <path d="M12 2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1h-1ZM6.5 6a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V6ZM2 9a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9Z" />
+    //     </svg>
+    //   ),
+    //   kbd: "P",
+    // },
+
+    // {
+    //   id: "data_hub",
+    //   classname: LeftActiveBarItem.POSTBACKS,
+    //   priority: 1,
+    //   name: string("dashboard.menu.datahub"),
+    //   href: "/datahub",
+    //   isActive: currentActivePageId == LeftActiveBarItem.POSTBACKS,
+    //   icon: (
+    //     <svg
+    //       viewBox="0 0 24 24"
+    //       fill="currentColor"
+    //       height="1em"
+    //       width="1em"
+    //       className={classNames(ICON_DEFAULT_CLASSNAME)}
+    //     >
+    //       <path d="M12 2.604l-.43.283L0 10.459v6.752l6.393 4.184L12 17.725l5.607 3.671L24 17.211v-6.752L12 2.604zm0 .828l5.434 3.556-2.717 1.778L12 10.545l-2.717-1.78-2.717-1.777L12 3.432zM6.39 7.104l5.434 3.556-5.408 3.54-5.434-3.557 5.409-3.54zm11.22 0l5.431 3.554-5.434 3.557-5.433-3.555 5.435-3.556zM.925 10.867l5.379 3.52a.123.08 0 00.027.013v5.647l-5.406-3.54v-5.64zm11.213.115l5.408 3.54v5.664l-5.408-3.54v-5.664z" />
+    //     </svg>
+    //   ),
+    //   kbd: "P",
+    // },
 
     {
       id: "files",
@@ -119,12 +180,18 @@ export default function getDatasetDashboardLeftBar(
       isActive: currentActivePageId == LeftActiveBarItem.FILES,
       icon: (
         <svg
-          className={classNames(ICON_DEFAULT_CLASSNAME)}
-          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
           viewBox="0 0 24 24"
-          fill="currentColor"
+          height="1em"
+          width="1em"
+          className={classNames(ICON_DEFAULT_CLASSNAME)}
         >
-          <path d="M19.5 21a3 3 0 0 0 3-3v-4.5a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3V18a3 3 0 0 0 3 3h15ZM1.5 10.146V6a3 3 0 0 1 3-3h5.379a2.25 2.25 0 0 1 1.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 0 1 3 3v1.146A4.483 4.483 0 0 0 19.5 9h-15a4.483 4.483 0 0 0-3 1.146Z" />
+          <path d="M8 17h12a2 2 0 002-2V9a2 2 0 00-2-2h-3.93a2 2 0 01-1.66-.9l-.82-1.2a2 2 0 00-1.66-.9H8a2 2 0 00-2 2v9c0 1.1.9 2 2 2z" />
+          <path d="M2 8v11c0 1.1.9 2 2 2h14" />
         </svg>
       ),
     },

@@ -26,7 +26,6 @@ export const meta: MetaFunction = () => {
   return [{ title: string("meta.title.routes") }];
 };
 
-const hiddenCols = [""];
 
 export default function Routes() {
   const [data, setData] = useState<any[] | undefined>(undefined);
@@ -66,10 +65,7 @@ export default function Routes() {
 
 
   return (
-    <DashboardLayout
-      subTitle={string("dashboard.subtitle.routes")}
-      currentLeftActiveBarItem={LeftActiveBarItem.ROUTES}
-    >
+    <>
       {isModalOverviewData && (
         <Modal
           isNoPadding
@@ -138,14 +134,14 @@ export default function Routes() {
         headers={
           data &&
           (!_.isEmpty(data)
-            ? _.keys(_.omit(_.first(data), hiddenCols)).map((i) =>
+            ? _.keys(_.first(data)).map((i) =>
                 humanizeString(i).replace("Asn", "ASN")
               )
             : [])
         }
         data={data?.map((it) => ({
           ...it,
-          params: it.params && _.values(it.params).length + " params",
+          params: it.params && _.values(it.params).length < 5 ? _.keys(it.params).join(", "):  <span className="text-zinc-500">{_.values(it.params).length + " params"}</span>,
           name: (
             <div className="flex flex-row items-center w-full justify-start gap-0.5">
               <span
@@ -188,7 +184,7 @@ export default function Routes() {
               </svg>
 
               <a
-                className="hover:underline"
+                className="hover:underline text-blue-500 hover:text-blue-700"
                 href={
                   protocol +
                   "://" +
@@ -206,6 +202,12 @@ export default function Routes() {
           ),
         }))}
       />
-    </DashboardLayout>
+
+      <div className="px-2.5 py-1">
+        <small className="text-zinc-400 text-xs">
+          In table <b>{_.size(data)}</b> records
+        </small>
+      </div>
+    </>
   );
 }

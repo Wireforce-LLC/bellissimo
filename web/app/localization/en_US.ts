@@ -302,6 +302,7 @@ export default {
       resources: "Resources",
       asnRecords: "Requests",
       postbacks: "Analytics",
+      datahub: "Datahub",
 
       threads: "Threads",
       events: "Events",

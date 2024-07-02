@@ -25,7 +25,7 @@ export default function SubNavbar({
           {onCreateAction && (
             <button
               onClick={onCreateAction}
-              className="text-xs flex flex-row items-center gap-1.5 text-[#54b046] px-2 py-1 rounded-sm bg-[#e7f2e9]"
+              className="text-xs flex flex-row items-center gap-1.5 text-[#54b046] px-2 py-1 bg-[#e7f2e9] active:outline outline-1 outline-offset-2 outline-black"
             >
               {createActionIcon || <svg
                 xmlns="http://www.w3.org/2000/svg"

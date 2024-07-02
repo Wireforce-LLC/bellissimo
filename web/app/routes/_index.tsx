@@ -8,6 +8,13 @@ import _ from "lodash";
 import SuccessActivity from "~/components/SuccessActivity";
 import LoadingActivity from "~/components/LoadingActivity";
 import GrayWrapper from "~/components/GrayWrapper";
+import { ReactNode, Suspense, useMemo, useState } from "react";
+import Routes from "./routes";
+import Files from "./files";
+import Filters from "./filters";
+import Postbacks from "./postbacks";
+import Requests from "./requests";
+import Resources from "./resources";
 
 export const meta: MetaFunction = () => {
   return [
@@ -20,11 +27,28 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Dashboard() {
+  const [route, setRoute] = useState("/routes")
+
+  const registry: { [key: string]: ReactNode } = useMemo(() => {
+    return {
+      "/routes": <Routes/>,
+      "/files": <Files/>,
+      "/filters": <Filters/>,
+      "/postbacks": <Postbacks/>,
+      "/requests": <Requests/>,
+      "/resources": <Resources/>,
+    }
+  }, []);
+
+  const fragment = useMemo(() => {
+    return registry[route] || undefined;
+  }, [route]);
+
   return (
-    <DashboardLayout currentLeftActiveBarItem={LeftActiveBarItem.THREADS}>
-      <GrayWrapper className="py-12">
-        <LoadingActivity text="Redirecting" />
-      </GrayWrapper>
+    <DashboardLayout onMenuSelected={setRoute}>
+      <Suspense>
+        {fragment}
+      </Suspense>
     </DashboardLayout>
   );
 }

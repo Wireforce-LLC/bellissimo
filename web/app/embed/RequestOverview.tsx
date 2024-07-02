@@ -4,7 +4,9 @@ import _ from "lodash";
 import { useEffect, useState } from "react";
 import Table from "~/components/Table";
 import Tabs from "~/components/Tabs";
-import webConfig, { ApiPathEnum } from "~/web.config";
+import webConfig, { ApiPathEnum } from "~/web.config"; //@ts-ignore
+import loadable from '@loadable/component';
+const ReactJson = loadable(() => import('react-json-view'));
 
 interface Props {
   readonly requestBody?: any;
@@ -77,7 +79,7 @@ export default function RequestOverviewEmbed({ requestBody }: Props) {
 
   return (
     <div className="w-full overflow-hidden">
-      <Tabs isDisableBorders isDisablePaddings titles={["Request Overview", "Guard Request"]}>
+      <Tabs isDisableBorders isDisablePaddings titles={["Request Overview", "Guard Request", "Request as JSON"]}>
         <div>{overview}</div>
         <div>
           {
@@ -90,6 +92,9 @@ export default function RequestOverviewEmbed({ requestBody }: Props) {
               isEmptyGuard
             ))
           }
+        </div>
+        <div className="p-4">
+          <ReactJson src={requestBody} />
         </div>
       </Tabs>
     </div>

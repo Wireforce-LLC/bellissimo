@@ -13,6 +13,7 @@
   "dependencies": {
     "@codeium/react-code-editor": "^1.0.12",
     "@fnando/sparkline": "^0.3.10",
+    "@loadable/component": "^5.16.4",
     "@monaco-editor/react": "^4.6.0",
     "@remix-run/node": "^2.9.2",
     "@remix-run/react": "^2.9.2",
@@ -48,6 +49,7 @@
     "react-icons": "^5.2.1",
     "react-if": "^4.1.5",
     "react-json-editor-ajrm": "^2.5.14",
+    "react-json-view": "^1.21.3",
     "react-object-view": "^0.3.5",
     "react-prism-editor": "^1.1.2",
     "react-simple-code-editor": "^0.13.1",
