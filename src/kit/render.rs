@@ -104,14 +104,25 @@ fn default_method_webmanifest(resource: Resource, _meta: HashMap<String, String>
   Box::pin(closure)
 }
 
-fn default_method_json_write(resource: Resource, _meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
-  if resource.raw_content.is_none() {
-    return Box::pin(async move {
+fn default_method_json_write(resource: Resource, meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
+  if resource.file_path.is_some() {
+
+    let mut result =
+      fs::read_to_string(resource.file_path.unwrap()).unwrap();
+
+    for key in meta.keys() {
+      result = result.replace(
+        &"{{*}}".replace("*", key).to_string(),
+        meta.get(key).unwrap(),
+      );
+    }
+
+    return Box::pin(async move { 
       (
-        Status::NoContent,
+        Status::Ok,
         (
-          ContentType::Plain,
-          String::new()
+          ContentType::JSON,
+          result
         ),
       )
     });
@@ -122,7 +133,14 @@ fn default_method_json_write(resource: Resource, _meta: HashMap<String, String>)
   let _: serde::de::IgnoredAny = serde_json::from_str(json_raw_string.as_str())
     .expect("Unable to deserialize json");
 
-  let json_raw = json_raw_string.clone().to_string();
+  let mut json_raw = json_raw_string.clone().to_string();
+  
+  for key in meta.keys() {
+    json_raw = json_raw.replace(
+      &"{{*}}".replace("*", key).to_string(),
+      meta.get(key).unwrap(),
+    );
+  }
 
   let closure = async move { 
     (

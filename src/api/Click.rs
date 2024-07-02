@@ -119,7 +119,6 @@ pub fn get_ip_mapped_clicks() -> (Status, (ContentType, String)) {
   let pipeline: Vec<Document> = vec![
     doc! { "$match": { "ip": { "$exists": true }, "time": { "$exists": true } } },
     doc! { "$sort": { "time": -1 } },
-    doc! { "$limit": 500 },
     doc! { "$group": {
         "_id": "$ip",
         "last_actions": { "$push": { "name": "$name", "time": "$time" } }
@@ -141,6 +140,7 @@ pub fn get_ip_mapped_clicks() -> (Status, (ContentType, String)) {
     doc! { "$addFields": {
         "country": { "$first": "$requests" }
     } },
+    doc! { "$limit": 500 },
     doc! { "$project": {
         "ip": "$_id",
         "list": { "$slice": ["$last_actions", 0, 5] },
