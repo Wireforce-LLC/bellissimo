@@ -57,8 +57,8 @@ echo "Do you want to build web of bellissimo? (y/n)"\
 if [ "$answer" != "${answer#[Yy]}" ] ;then
     cd web || exit
 
-    npm install
-    npm run build
+    npm install -force || exit
+    npm run build || exit
 
     cd ..
 fi
