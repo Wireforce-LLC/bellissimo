@@ -51,6 +51,7 @@ export default function DatahubRequests() {
         intent={setOnAppendModal}
       >
         <FilterRequests
+          filterKeys={filterKeys}
           onChangeDate={setDate}
           onChangeCountry={setCountry}
           onSetFilterKeys={setFilterKeys}
