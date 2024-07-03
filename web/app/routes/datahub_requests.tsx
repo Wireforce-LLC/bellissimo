@@ -58,8 +58,6 @@ export default function DatahubRequests() {
           onSetLimit={setLimit}
           limit={limit}
           skip={skip}
-        //   onSetFilterKeys={setFilterKeys}
-          //   onFilterColumnIntent={() => setIsShowFilterModal(true)}
         />
       </EazyModal>
       <SubNavbar

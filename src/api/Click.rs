@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, path::PathBuf};
 
 use chrono::Utc;
 use mongodb::{bson::{doc, Document, Timestamp}, options::FindOptions, sync::Collection};
@@ -111,6 +111,46 @@ pub fn get_all_clicks() -> (Status, (ContentType, String)) {
     )
   )
 }
+
+#[get("/click/list/by/ip/<ip..>")]
+pub fn get_clicks_by_ip(ip: PathBuf) -> (Status, (ContentType, String)) {
+  let ip = ip.into_os_string().into_string().unwrap();
+  let collection: mongodb::sync::Collection<Click> = get_database(String::from("requests")).collection("clicks");
+
+  let mut clicks: Vec<Click> = Vec::new();
+
+  let clicks_find = collection
+    .find(
+      doc! {
+        "ip": ip
+      },
+      FindOptions::builder()
+        .sort(doc! { "time": -1 })
+        .limit(500)
+        .skip(0)
+        .build()
+    )
+    .expect("Failed to find clicks");
+
+  for click in clicks_find {
+    if let Ok(click) = click {
+      clicks.push(click);
+    }
+  }
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      serde_json::json!({
+        "isOk": true,
+        "error": null,
+        "value": clicks
+      }).to_string()
+    )
+  )
+}
+
 
 #[get("/click/ipMapping")]
 pub fn get_ip_mapped_clicks() -> (Status, (ContentType, String)) {

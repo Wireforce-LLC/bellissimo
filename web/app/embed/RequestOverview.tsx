@@ -8,6 +8,7 @@ import webConfig, { ApiPathEnum } from "~/web.config"; //@ts-ignore
 import JSONPrettyMon from "react-json-pretty/dist/monikai";
 import JSONPretty from "react-json-pretty";
 import "react-json-pretty/themes/acai.css";
+import ClicksByIpEmbed from "./ClicksByIp";
 
 interface Props {
   readonly requestBody?: any;
@@ -15,6 +16,7 @@ interface Props {
 
 export default function RequestOverviewEmbed({ requestBody }: Props) {
   const [body] = useState(_.toPairs(flatten(requestBody) || {}));
+  
   const [guardBody, setGuardBody] = useState<any | undefined>();
 
   let overview = (
@@ -82,7 +84,7 @@ export default function RequestOverviewEmbed({ requestBody }: Props) {
       <Tabs
         isDisableBorders
         isDisablePaddings
-        titles={["Request Overview", "Guard Request", "Request as JSON"]}
+        titles={["Request Overview", "Guard Request", "Request as JSON", "Clicks"]}
       >
         <div>{overview}</div>
         <div>
@@ -102,6 +104,9 @@ export default function RequestOverviewEmbed({ requestBody }: Props) {
             stringStyle="color: red;"
             mainStyle="background: white; font-size: 14px"
           />
+        </div>
+        <div>
+          <ClicksByIpEmbed ip={_.get(requestBody, 'headers.cf-connecting-ip')} />
         </div>
       </Tabs>
     </div>

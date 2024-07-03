@@ -10,6 +10,7 @@ export enum ApiPathEnum {
   GetAllUsers = "/api/user/list",
   GetResource = "/api/resource",
   GetAllFiles = "/api/file/list/all",
+  GetListOfClicks = "/api/click/list/by/ip/",
   GetFile = "/api/file/read",
   WriteFile = "/api/file/write",
   Routes = "/api/route/list",
