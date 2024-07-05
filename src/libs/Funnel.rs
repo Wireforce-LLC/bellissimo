@@ -53,7 +53,7 @@ impl Funnel {
         let collection: Collection<Click> = MongoDatabase::use_collection("requests", "clicks");
         let mut sequence_counts: HashMap<Vec<String>, i32> = HashMap::new();
 
-        let start_time: i64 = Duration::days(30).num_seconds();
+        let start_time: i64 = Duration::days(14).num_seconds();
 
         // Агрегация данных по IP-адресу (пользователю)
         let pipeline: Vec<Document> = vec![
@@ -150,7 +150,7 @@ impl Funnel {
         filter: FunnelStandardFilter,
     ) -> Vec<FunnelCountDateRow> {
         let collection: Collection<Click> = MongoDatabase::use_collection("requests", "clicks");
-        let start_time: i64 = Duration::days(30).num_seconds();
+        let start_time: i64 = Duration::days(6).num_seconds();
 
         let mut pipeline = vec![
             doc! {
