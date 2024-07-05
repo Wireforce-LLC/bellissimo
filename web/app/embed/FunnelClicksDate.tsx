@@ -20,6 +20,28 @@ export default function FunnelClicksDate() {
   const [data, setData] = useState<Group[] | undefined>();
   const [tooltip, setTooltip] = useState<any | undefined>();
 
+  const [indexMap] = useState([
+    "bg-orange-100",
+    "bg-orange-200",
+    "bg-orange-300",
+    "bg-orange-400",
+    "bg-orange-500",
+    "bg-orange-600",
+    "bg-orange-700",
+    "bg-orange-800",
+    "bg-orange-900",
+
+    "bg-indigo-100",
+    "bg-indigo-200",
+    "bg-indigo-300",
+    "bg-indigo-400",
+    "bg-indigo-500",
+    "bg-indigo-600",
+    "bg-indigo-700",
+    "bg-indigo-800",
+    "bg-indigo-900",
+  ])
+
   useEffect(() => {
     // Fetch click data using the private API client
     webConfig.axiosFactory("PRIVATE").then((i) => {
@@ -57,9 +79,7 @@ export default function FunnelClicksDate() {
               >
                 <div
                   className={classNames(
-                    `w-full h-4 hover:outline outline-black outline-offset-1 cursor-pointer flex flex-row bg-orange-${
-                      (k + 1) * 100
-                    }`,
+                    `w-full h-4 hover:outline outline-black outline-offset-1 cursor-pointer flex flex-row ${indexMap[k] || 'bg-zinc-200'}`,
                     {
                       "text-white": k > 3,
                       "text-black": k < 3,
