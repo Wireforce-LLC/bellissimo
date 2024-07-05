@@ -152,7 +152,7 @@ impl Funnel {
         let collection: Collection<Click> = MongoDatabase::use_collection("requests", "clicks");
         let start_time: i64 = Duration::days(30).num_seconds();
 
-        let pipeline = vec![
+        let mut pipeline = vec![
             doc! {
                 "$match": {
                     "time": {
@@ -160,9 +160,6 @@ impl Funnel {
                       "$lte": filter.end_time.unwrap_or(click_sdk::Click::now() as u32),
                     }
                 }
-            },
-            doc! {
-                "$limit": filter.limit.unwrap_or(1024),
             },
             doc! {
                 "$skip": filter.skip.unwrap_or(0),
@@ -196,6 +193,9 @@ impl Funnel {
                     "counts": "$counts"
                 }
             },
+            doc! {
+                "$limit": filter.limit.unwrap_or(6),
+            }
         ];
 
         let cursor = collection.aggregate(pipeline, None);

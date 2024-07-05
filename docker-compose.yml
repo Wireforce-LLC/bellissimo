@@ -126,18 +126,18 @@ services:
   #     - bellissimo
   #     - nginx
 
-  bellissimo-collector:
-    container_name: bell-bg
-    restart: always
-    image: bellissimo-bin
-    environment:
-      - REDIS_URI=redis://redis/
-      - MONGO_URI=mongodb://mongo:27017
-    command: '/usr/src/app/target/release/bellissimo --mode=background'
-    depends_on:
-      - bellissimo
-      - redis
-      - mongo
+  # bellissimo-collector:
+  #   container_name: bell-bg
+  #   restart: always
+  #   image: bellissimo-bin
+  #   environment:
+  #     - REDIS_URI=redis://redis/
+  #     - MONGO_URI=mongodb://mongo:27017
+  #   command: '/usr/src/app/target/release/bellissimo --mode=background'
+  #   depends_on:
+  #     - bellissimo
+  #     - redis
+  #     - mongo
 
   nginx:
     restart: always
