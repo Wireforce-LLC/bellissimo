@@ -49,7 +49,7 @@ export default function FunnelClicksDate() {
         (res) => {
           // If the response contains an array of click data, update the state
           if (_.isArray(res.data.value)) {
-            setData(_.take(_.reverse(res.data.value), 6));
+            setData(_.reverse(res.data.value), 6);
           }
         }
       );
