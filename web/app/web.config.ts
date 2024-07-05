@@ -26,6 +26,8 @@ export enum ApiPathEnum {
   GetAllFilesShort = "/api/file/list/short",
   GetMoneyVolumeByPostbacks = "/api/postback/24h-amount",
   GetSummaryRequests = "/api/requests/summary",
+  GetFunnelClicks = "/api/funnel/clicks",
+  GetFunnelClicksDate = "/api/funnel/clicks/date",
 
   CreateRoutes = "/api/route/create",
   CreateResources = "/api/resource/create",

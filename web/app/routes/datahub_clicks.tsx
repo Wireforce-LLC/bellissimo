@@ -11,9 +11,9 @@ import string from "~/localization/polyglot";
 export default function DatahubClicks() {
   const [onAppendModal, setOnAppendModal] = useState(false);
   const [code] = useState(`<script src="/ga.js"></script>`);
-
+  
   return (
-    <div className="w-full h-full bg-white">
+    <div className="w-full h-full">
       <EazyModal
         title="How to send clicks"
         isVisible={onAppendModal}

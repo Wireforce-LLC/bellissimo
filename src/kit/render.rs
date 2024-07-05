@@ -7,6 +7,7 @@ use crate::resource_kit::Resource;
 use chrono::Utc;
 use fastcgi_client::{Client, Params, Request};
 use nanoid::nanoid;
+use paris::info;
 use rocket::http::{ContentType, Status};
 use serde_json::Value;
 use tokio::io;
@@ -30,6 +31,7 @@ fn register_render_method(
   name: &str, 
   function: fn(Resource, HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>>
 ) {
+  info!("Registered render method: {}", name);
   RENDER_METHODS.lock().unwrap().insert(String::from(name), function);
 }
 

@@ -1,8 +1,8 @@
-use crate::{asn_record::AsnRecord, config::CONFIG, database::get_database, dynamic_router::{REDIS, REDIS_CLIENT}, guard_kit::GuardScore, hp_kit, ipsum_kit::{optimize_registry_lists, read_ipsum_config, read_ipsum_registry, search_ip_in_ipsum_registries, search_ip_in_ipsum_registry}};
+use crate::{asn_record::AsnRecord, config::CONFIG, database::get_database, guard_kit::GuardScore, ipsum_kit::{optimize_registry_lists, read_ipsum_config, read_ipsum_registry}};
 
 use std::{fs, thread, time::Duration};
-use get_size::GetSize;
-use mongodb::{bson::{doc, Bson}, sync::Collection};
+use mongodb::{bson::{doc}, sync::Collection};
+use paris::info;
 use serde::Serialize;
 use serde::Deserialize;
 use tokio::task::spawn_blocking;
@@ -147,7 +147,7 @@ pub fn fetch_ipsum() {
     let reg_name = registry.0;
     let reg_url = reg_object["url"].as_str().unwrap();
 
-    println!("Updating registry '{}'", reg_name);
+    info!("Updating registry '{}'", reg_name);
 
     let registry_content = read_ipsum_registry(reg_url);
 
@@ -159,7 +159,7 @@ pub fn fetch_ipsum() {
       format!("{}/{}.list", registry_root, reg_name), 
       registry_content.unwrap()
     ).is_ok() {
-      println!("Registry '{}' updated", reg_name);
+      info!("Registry '{}' updated", reg_name);
     }
   }
 

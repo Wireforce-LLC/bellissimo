@@ -17,6 +17,28 @@ export default {
     "text-green-500",
     "bg-green-50",
     "border-b-green-100",
+
+    "bg-indigo-100",
+    "bg-indigo-200",
+    "bg-indigo-300",
+    "bg-indigo-400",
+    "bg-indigo-500",
+    "bg-indigo-600",
+    "bg-indigo-700",
+    "bg-indigo-800",
+    "bg-indigo-900",
+
+    "bg-orange-100",
+    "bg-orange-200",
+    "bg-orange-300",
+    "bg-orange-400",
+    "bg-orange-500",
+    "bg-orange-600",
+    "bg-orange-700",
+    "bg-orange-800",
+    "bg-orange-900",
+
+    "text-white"
   ],
   darkMode: "selector",
   content: [

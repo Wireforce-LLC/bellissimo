@@ -3,7 +3,6 @@
 #[macro_use] extern crate rocket;
 #[macro_use] extern crate lazy_static;
 
-#[path = "args.rs"] mod args;
 #[path = "database.rs"] mod database;
 
 // Services
@@ -20,6 +19,13 @@
 #[path = "api/User.rs"] mod api_user;
 #[path = "api/Plugin.rs"] mod api_plugin;
 #[path = "api/Click.rs"] mod api_click;
+#[path = "api/Funnel.rs"] mod api_funnel;
+
+// Kit
+#[path = "libs/Funnel.rs"] mod funnel_sdk;
+#[path = "libs/MongoDatabase.rs"] mod mongo_sdk;
+#[path = "libs/Click.rs"] mod click_sdk;
+
 
 // Config Files
 #[path = "config.rs"] mod config;
@@ -29,7 +35,6 @@
 #[path = "kit/resource_kit.rs"] mod resource_kit;
 #[path = "kit/plugin.rs"] mod plugin;
 #[path = "kit/filter.rs"] mod filter_kit;
-#[path = "kit/http_proxy.rs"] mod hp_kit;
 #[path = "kit/guard_score.rs"] mod guard_kit;
 #[path = "kit/ipsum.rs"] mod ipsum_kit;
 
@@ -50,13 +55,11 @@
 #[path = "dto/click.rs"] pub mod click;
 
 use config::CONFIG;
-use ipsum_kit::REGISTRIES;
-use mode::StartupMode;
-use std::{net::IpAddr, time::Instant};
-use colored::Colorize;
+use paris::info;
+use std::net::IpAddr;
 use rocket::{config::Ident, data::Limits, fairing::AdHoc, Config};
 use background_service::register_background_service;
-use args::parse_launched_mode;
+use tokio::task::{self};
 
 /**
  * Now the main.rs is responsible for launching the server
@@ -89,6 +92,7 @@ async fn register_routes_and_attach_server() {
     workers: if http_workers > 0 { http_workers } else { num_cpus::get() }, // num_cpus::get() = default debug
     ident: Ident::try_new(http_ident).unwrap(),
     keep_alive: http_keep_alive,
+    log_level: rocket::config::LogLevel::Off,
 
     ..Config::debug_default()
   };
@@ -130,7 +134,6 @@ async fn register_routes_and_attach_server() {
 
   if is_http_future_api {
     rocket_server = rocket_server
-      .mount(http_api_uri_path, routes![api::get_config])
       .mount(http_api_uri_path, routes![api_plugin::get_all_plugins])
       .mount(http_api_uri_path, routes![api_resource::update_resource_by_id])
       .mount(http_api_uri_path, routes![api_file::create_file])
@@ -145,6 +148,8 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api_click::get_all_clicks])
       .mount(http_api_uri_path, routes![api_click::get_ip_mapped_clicks])
       .mount(http_api_uri_path, routes![api_click::get_clicks_by_ip])
+      .mount(http_api_uri_path, routes![api_funnel::funnel_by_clicks_to_schemas])
+      .mount(http_api_uri_path, routes![api_funnel::funnel_by_date])
 
       .mount(http_api_uri_path, routes![api_postback::get_postback_amount])
 
@@ -188,9 +193,6 @@ async fn register_routes_and_attach_server() {
     .attach(AdHoc::on_liftoff("Liftoff Message", |_| Box::pin(async {
       
     })))
-    // .ignite()
-    // .await
-    // .unwrap()
     .launch()
     .await
     .unwrap();
@@ -199,8 +201,7 @@ async fn register_routes_and_attach_server() {
 
 #[rocket::main]
 async fn main() { 
-  let boot_start_instant: Instant = Instant::now();
-
+ 
   // Banner
   println!("{}", include_str!("../containers/banner.txt"));
   println!("");
@@ -208,64 +209,31 @@ async fn main() {
   println!("Welcome to Bellissimo!");
   println!("");
 
-  let mode = parse_launched_mode();
-
-  println!("Mode of service: {}", mode.to_string().yellow());
-
   // Register Plugins
   plugin::register_plugins();
 
-  // Register default filters
-  register_filters::register_default_filters();
+  task::spawn(async {
+    info!("Starting background service...");
+    register_background_service().await;
+  });
 
-  let elapsed = boot_start_instant.elapsed();
+  task::spawn(async {
+    info!("Starting server...");
 
-  let filters_len = filter_kit::get_all_filters().len();
-  let plugins_len = plugin::get_all_runtime_plugins().len();
+    // Bootstrap FS (file system)
+    bfs::bootstrap_fs().await;
 
-  // Get runtime plugins
-  let plugins: String = plugin::get_all_runtime_plugins()
-    .iter()
-    .map(|plugin: &plugin::PluginRuntimeManifest| plugin.name.clone())
-    .collect::<Vec<String>>()
-    .join(", ");
-
-  // Get runtime filters
-  let filters = filter_kit::get_all_filters()
-    .keys()
-    .map(|filter| filter.clone())
-    .collect::<Vec<String>>()
-    .join(", ");
-
-  match mode {
-    // Server
-    StartupMode::Server => {
-      // Bootstrap FS (file system)
-      bfs::bootstrap_fs().await;
-
-      // Register default render methods
-      rdr_kit::register_default_render_methods();
-      
-      // Bootstrap DB
-      bootstrap_db::register_database_tables();
-
-      let ipsum_registry_count = REGISTRIES.len();
-
-      println!("Bootstrap time: {:.4?}", elapsed);
-      println!("Runtime plugins ({}): {}", plugins_len.to_string().blue(), plugins);
-      println!("Runtime filtes ({}): {}", filters_len.to_string().blue(), filters);
-      println!("Runtime IPSUM registries: {} items", ipsum_registry_count.to_string().blue());
-      println!("");
+    // Register default filters
+    register_filters::register_default_filters();
     
-      register_routes_and_attach_server().await;
-    }
+    // Register default render methods
+    rdr_kit::register_default_render_methods();
 
-    // Background
-    StartupMode::Background => {
-      println!("Bootstrap time: {:.2?}", elapsed);
-      println!("");
+    // Bootstrap DB
+    bootstrap_db::register_database_tables();
 
-      register_background_service().await;
-    }
-  }
+    register_routes_and_attach_server().await;
+  });
+
+  loop {}
 }

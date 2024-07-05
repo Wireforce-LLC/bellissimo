@@ -2,6 +2,7 @@ use crate::{config::CONFIG, plugin};
 
 use std::{collections::HashMap, sync::Mutex};
 use asn_db::Record;
+use paris::info;
 use rocket::http::HeaderMap;
 
 lazy_static! {
@@ -22,6 +23,8 @@ pub fn register_filter(name: &str, function: fn(this: &str, x_real_ip: &str, use
     .lock()
     .unwrap()
     .insert(String::from(name), function);
+
+  info!("Registered filter: {}", name);
 }
 
 

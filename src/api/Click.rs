@@ -1,11 +1,11 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::{path::PathBuf};
 
-use chrono::Utc;
 use mongodb::{bson::{doc, Document, Timestamp}, options::FindOptions, sync::Collection};
-use rocket::{form::Form, http::{ContentType, HeaderMap, Status}, request::{FromRequest, Outcome}, FromForm, Request};
+use rocket::{http::{ContentType, HeaderMap, Status}, request::{FromRequest, Outcome}, Request};
 use serde::{Deserialize, Serialize};
-use crate::{click::Click, database::get_database, dynamic_router::ImplementationError};
+use crate::{click::Click, database::get_database, dynamic_router::ImplementationError, funnel_sdk::Funnel};
 use crate::{click::ReceiveClick};
+use crate::{click_sdk};
 
 struct HeadersMap<'r>(&'r HeaderMap<'r>);
 
@@ -36,12 +36,23 @@ impl<'r> FromRequest<'r> for HeadersMap<'r> {
 
 #[get("/click?<click..>", rank = 2)]
 pub fn click(click: ReceiveClick, raw_headers: HeadersMap<'_>) -> Option<(Status, (ContentType, String))> {
-  let collection: mongodb::sync::Collection<Click> = get_database(String::from("requests")).collection("clicks");
-
   let ip = raw_headers.0
     .get_one("cf-connecting-ip")
     .or_else(|| raw_headers.0.get_one("x-real-ip"))
     .or_else(|| raw_headers.0.get_one("x-forwarded-for"));
+
+
+  if click.name.is_none() {
+    return Some(
+      (
+        Status::BadRequest,
+        (
+          ContentType::HTML,
+          "BadRequest".to_string()
+        )
+      )
+    )  
+  }
 
   if ip.is_none() {
     return Some(
@@ -55,15 +66,11 @@ pub fn click(click: ReceiveClick, raw_headers: HeadersMap<'_>) -> Option<(Status
     )
   }
 
-  let click = Click {
-    time: Utc::now().timestamp(),
-    ip: ip.unwrap().to_string(),
-    cursor_x: click.cursor_x,
-    cursor_y: click.cursor_y,
-    name: click.name
-  };
-
-  collection.insert_one(click, None).unwrap();
+  click_sdk::Click::click(
+    ip.unwrap(),
+    &click.name.unwrap(),
+    (click.cursor_x.unwrap_or(0), click.cursor_y.unwrap_or(0))
+  );
 
   return Some(
     (

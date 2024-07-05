@@ -8,6 +8,7 @@ import DatahubClicks from "./datahub_clicks";
 import wireforceLogo from "/wireforce-logo.png";
 import rightTopImage from "/top-right-01.png";
 import _ from "lodash";
+import Funnels from "./datahub_funnels";
 
 export const meta: MetaFunction = () => {
   return [
@@ -66,6 +67,12 @@ export default function Datahub() {
         description: "All registred clicks. All clicks will be stored here.",
         href: "clicks",
       },
+      {
+        name: "Funnels",
+        description:
+          "Bellissimo creates funnels based on data from your requests. All funnels will be stored here.",
+        href: "funnels",
+      }
     ],
     []
   );
@@ -98,6 +105,7 @@ export default function Datahub() {
       requests: <DatahubRequests />,
       postbacks: <DatahubPostbacks />,
       clicks: <DatahubClicks />,
+      funnels: <Funnels />
     };
   }, []);
 

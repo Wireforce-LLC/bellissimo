@@ -196,24 +196,3 @@ pub mod standard_http_error {
     )
   }
 }
-
-#[get("/config")]
-pub fn get_config() -> (Status, (ContentType, String)) {
-  let mut config: HashMap<String, String> = HashMap::new();
-
-  for (key, value) in CONFIG.iter() {
-    config.insert(key.to_string(), value.to_string());
-  }
-
-  return (
-    Status::Ok, 
-    (
-      ContentType::JSON,
-      serde_json::json!({
-        "isOk": true,
-        "error": null,
-        "value": config
-      }).to_string()
-    )
-  )
-}

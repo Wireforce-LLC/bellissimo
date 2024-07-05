@@ -1,5 +1,6 @@
 use std::{collections::HashMap, fs, path::Path, sync::{Mutex, Once}, vec};
 use colored::Colorize;
+use paris::info;
 use serde::Serialize;
 use v8::CreateParams;
 use crate::config::CONFIG;
@@ -35,10 +36,6 @@ impl Clone for PluginRuntimeManifest {
         attach_at: self.attach_at.clone(),
       }
   }
-}
-
-struct Context {
-  pub d: String
 }
 
 lazy_static! {
@@ -198,53 +195,11 @@ pub fn register_plugins() {
   });
 
   for plugin in get_plugins_configs() {
+    info!("Registering plugin: {}", &plugin.name);
+
     PLUGINS_RUNTIME
       .lock()
       .unwrap()
       .push(plugin);
   }
-
-  // if CONFIG["is_plugins_enabled"].as_bool().unwrap() {
-  //   for plugin in PLUGINS_MANIFESTS.iter() {
-  //     let name = plugin.0;
-  //     let plugin_manifest = plugin.1.as_table().unwrap();
-      
-  //     if name == "example" {
-  //       continue;
-  //     }
-      
-  //     println!("{}", name);  
-  //     println!("{}", plugin_manifest);  
-  //   }
-
-  //   // let path = Path::new(CONFIG["dir_plugins"].as_str().unwrap());
-
-  //   // for entry in path.read_dir().expect("read_dir call failed") {
-  //   //   if let Ok(entry) = entry {
-  //   //     let p = fs::canonicalize(entry.path()).unwrap();
-       
-  //   //     // let raw = fs::read_to_string(p).unwrap();
-
-  //   //     // let mut map: HashMap<String, String> = HashMap::new();
-        
-  //   //     // map.insert(String::from("data1"), String::from("data_var"));
-  //   //     // map.insert(String::from("data2"), String::from("data_var"));
-
-  //   //     // let out = call_it_plugin(
-  //   //     //   raw.as_str(),
-  //   //     //   map
-  //   //     // );
-
-  //   //     let manifest = PluginManifest {
-  //   //       name: String::from(p.as_path().file_name().unwrap().to_str().unwrap()),
-  //   //       absolute_path: String::from(p.to_str().unwrap()),
-  //   //     };
-
-  //   //     PLUGINS.lock().unwrap().insert(
-  //   //       String::from(""),
-  //   //       manifest
-  //   //     );
-  //   //   }
-  //   // }
-  // }
 }
