@@ -195,6 +195,11 @@ impl Funnel {
             },
             doc! {
                 "$limit": filter.limit.unwrap_or(6),
+            },
+            doc! {
+                "$sort": {
+                  "date": -1
+                }
             }
         ];
 
