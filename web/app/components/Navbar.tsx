@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import classNames from "classnames";
-import { Link as HLink } from "@remix-run/react";
 import _ from "lodash";
-import ButtonSecondary from "./ButtonSecondary";
 
 interface ItemDto {
   readonly name: string;
@@ -14,14 +12,15 @@ interface Props {
   readonly className?: string;
   readonly onMenuClick: () => void;
   readonly menuIcon?: React.ReactNode;
+  readonly isShowDatasetButton?: boolean;
 }
-
 
 
 export default function Navbar({
   className,
   menuIcon,
-  onMenuClick
+  onMenuClick,
+  isShowDatasetButton = true
 }: Props) {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -57,7 +56,7 @@ export default function Navbar({
           </li>
 
 
-          <li>
+          {isShowDatasetButton && <li>
             <a href="/datahub" className="text-xs flex flex-row items-center justify-normal gap-2 bg-zinc-50 border border-zinc-100 py-1 px-2 outline-1 outline-offset-2 hover:outline">
               <svg
                 viewBox="0 0 24 24"
@@ -71,7 +70,7 @@ export default function Navbar({
           
               <span>DataHub</span>
             </a>
-          </li>
+          </li>}
         </ul>
       </nav>
     </>

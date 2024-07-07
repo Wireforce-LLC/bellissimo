@@ -13,6 +13,29 @@ pub struct MongoDatabase {}
 
 impl MongoDatabase {
     /**
+     * Creates collections with the specified names.
+     * 
+     * This function creates collections with the specified names
+     * in the specified database.
+     *
+     * @param {Array} collections - The names of the collections to create.
+     * @param {String} database - The name of the database to create the collections in.
+     */
+    pub fn create_collections(collections: Vec<(&str, &str)>) {
+        for collection in collections {
+            let database = MongoDatabase::use_database(collection.1);
+            
+            unsafe {
+                database
+                    .create_collection(collection.0, None)
+                    .unwrap_unchecked()
+            }
+        }
+    }
+} 
+
+impl MongoDatabase {
+    /**
      * Retrieves the client options for
      * connecting to the MongoDB server.
      * 

@@ -15,7 +15,7 @@ export default function FirstRecordPlease({
 }: Props) {
   return (
     isVisible && (
-      <div className="text-center flex flex-col items-center py-8 bg-white border-b border-gray-200">
+      <div className="text-center flex flex-col items-center py-8 bg-white">
         <div className="mx-auto mb-4 select-none">{icon}</div>
 
         <h1 className="text-lg font-bold w-96">{title}</h1>

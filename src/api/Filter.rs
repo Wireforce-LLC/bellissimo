@@ -1,7 +1,7 @@
-use std::{path::{Path, PathBuf}};
-use mongodb::{bson::{doc, document}, options::FindOptions, sync::Collection};
-use rocket::{form::Form, http::{ContentType, Status}, FromForm};
-use crate::{api::{standard_http_error, trivial_checkpoint, CreateFilter}, database::get_database, dynamic_router::Route, filter::{Condition, Filter}, filter_kit::get_all_registred_filters_names, resource::Resource};
+use std::path::PathBuf;
+use mongodb::{bson::doc, sync::Collection};
+use rocket::{form::Form, http::{ContentType, Status}};
+use crate::{api::{standard_http_error, trivial_checkpoint, CreateFilter}, database::get_database,  filter::{Condition, Filter}, filter_kit::get_all_registred_filters_names};
 
 #[post("/filter/create", data = "<input>")]
 pub fn create_new_filter(input: Form<CreateFilter>) -> (Status, (ContentType, String)) {

@@ -276,7 +276,7 @@ fn create_meta_dataset_for_template(
   meta.insert("utc-time".to_string(), Utc::now().to_string());
 
   meta.insert("nanoid".to_string(), nanoid!(16));
-  meta.insert("is_bellisimo".to_string(), "true".to_string());
+  meta.insert("is-bellisimo".to_string(), "true".to_string());
 
   meta.insert("domain".to_string(), domain.unwrap_or("localhost").to_string());
   

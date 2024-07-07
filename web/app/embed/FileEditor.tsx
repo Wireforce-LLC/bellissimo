@@ -1,12 +1,5 @@
 import _ from "lodash";
 import {
-  Editor,
-  Monaco,
-  MonacoDiffEditor,
-  useMonaco,
-} from "@monaco-editor/react";
-import {
-  KeyboardEventHandler,
   useCallback,
   useEffect,
   useRef,
@@ -14,14 +7,13 @@ import {
 } from "react";
 import toast from "react-hot-toast";
 import webConfig, { ApiPathEnum } from "~/web.config";
-import { M } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
-import BigInput from "~/components/BigInput";
-import Select from "~/components/Select";
 import classNames from "classnames";
 import manWithIdea from "/man_with_idea.jpg";
 import Tabs from "~/components/Tabs";
-import MonacoEditorEmbed from "./MonacoEditor";
 import FileEditorSignleFileEmbed from "./FileEditorSignleFile";
+import EventEmitter from "eventemitter3";
+
+export const $emitter = new EventEmitter();
 
 interface File {
   readonly path: string;
@@ -134,6 +126,18 @@ function FileIcon({ file }: { file: File }) {
     );
   }
 
+  if (file.path.endsWith("scenario")) {
+    return (
+      <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="size-3 fill-indigo-500"
+    >
+      <path d="M.258 4.142c-.579-.646-.12-1.672.747-1.672h14.139l-8.191 9.155L.258 4.142zM19.744 6.86l-3.629-4.056a1.002 1.002 0 00-.368-.257L7.289 12 .258 19.858c-.578.646-.12 1.672.748 1.672h5.613L19.744 6.86zm4 4.471l-1.695-1.895-1.97-2.201L7.289 21.53h8.079c.285 0 .557-.122.748-.334l5.934-6.632 1.695-1.895c.34-.381.34-.957-.001-1.338z" />
+    </svg>
+    )
+  }
+
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -236,6 +240,12 @@ export default function FileEditorEmbed({ pwd = "/", onChangePwd, onReady }: Pro
 
   const editorRef = useRef<HTMLDivElement | null>(null);
 
+  useEffect(() => {
+    $emitter.on("doRefreshFileList", function () {
+      fether();
+    });
+  }, []);
+
   /**
    * Creates a tab for the given path.
    * @param path - The path of the tab.
@@ -285,13 +295,7 @@ export default function FileEditorEmbed({ pwd = "/", onChangePwd, onReady }: Pro
           .then((res) => {
             setFiles(res.data.value as File[]);
             onReady?.()
-          })
-          .catch((error) => {
-            console.error(error);
           });
-      })
-      .catch((error) => {
-        console.error(error);
       });
   }, [currentPwd]);
 
@@ -302,7 +306,7 @@ export default function FileEditorEmbed({ pwd = "/", onChangePwd, onReady }: Pro
         <File
           file={{ path: "..", is_file: false }}
           isSelected={false}
-          setCurrentPwd={(it) => {
+          setCurrentPwd={() => {
             let lastPath = _.last(pwdHistory);
 
             setPwdHistory(_.dropRight(pwdHistory, 1));

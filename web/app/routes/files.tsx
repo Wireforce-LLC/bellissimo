@@ -3,7 +3,7 @@ import _, { set } from "lodash";
 import SubNavbar from "~/components/SubNavbar";
 import DashboardLayout, { LeftActiveBarItem } from "~/layouts/DashboardLayout";
 import string from "~/localization/polyglot";
-import FileEditorEmbed from "~/embed/FileEditor";
+import FileEditorEmbed, { $emitter as $fileEmitter } from "~/embed/FileEditor";
 import { useCallback, useEffect, useState } from "react";
 import Modal from "~/components/Modal";
 import Input from "~/components/Input";
@@ -11,6 +11,7 @@ import Button from "~/components/Button";
 import webConfig, { ApiPathEnum } from "~/web.config";
 import toast from "react-hot-toast";
 import classNames from "classnames";
+import DocsBar from "~/embed/DocsBar";
 
 export const meta: MetaFunction = () => {
   return [{ title: string("meta.title.files") }];
@@ -65,7 +66,9 @@ export default function Files() {
           ),
           error: "Failed to create file",
         }
-      )
+      ).then(() => {
+        $fileEmitter.emit("doRefreshFileList");
+      });
     });
   }, [pwd, name]);
 
@@ -118,19 +121,33 @@ export default function Files() {
         </Modal>
       )}
 
-      <div className={classNames("w-full h-full flex flex-row", {
-        "hidden": isReady
-      })}>
-        
+      <div
+        className={classNames("w-full h-full flex flex-row", {
+          hidden: isReady,
+        })}
+      >
         <div className="w-[200px] flex-shrink-0 border-r border-r-zinc-200 h-full animate-pulse bg-zinc-100"></div>
         <div className="w-full h-full animate-pulse bg-zinc-50"></div>
       </div>
-      
+
       {/* Render the file editor */}
-      <div className={classNames("w-full h-full", {
-        "hidden": !isReady
-      })}>
-        <FileEditorEmbed onReady={() => setReady(true)} onChangePwd={setPwd} pwd={pwd} />
+      <div
+        style={{ height: "calc(100vh - 38px - 45px - 32px)" }}
+        className={classNames("w-full flex flex-row overflow-hidden", {
+          hidden: !isReady,
+        })}
+      >
+        <div className="h-full w-full">
+          <FileEditorEmbed
+            onReady={() => setReady(true)}
+            onChangePwd={setPwd}
+            pwd={pwd}
+          />
+        </div>
+
+        <div className="h-full w-[300px] border-l border-l-zinc-200">
+          <DocsBar id="how_edit_files" />
+        </div>
       </div>
     </>
   );

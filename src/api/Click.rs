@@ -1,11 +1,10 @@
-use std::{path::PathBuf};
-
-use mongodb::{bson::{doc, Document, Timestamp}, options::FindOptions, sync::Collection};
+use std::path::PathBuf;
+use mongodb::{bson::{doc, Document}, options::FindOptions};
 use rocket::{http::{ContentType, HeaderMap, Status}, request::{FromRequest, Outcome}, Request};
 use serde::{Deserialize, Serialize};
-use crate::{click::Click, database::get_database, dynamic_router::ImplementationError, funnel_sdk::Funnel};
-use crate::{click::ReceiveClick};
-use crate::{click_sdk};
+use crate::{click::Click, database::get_database, dynamic_router::ImplementationError};
+use crate::click::ReceiveClick;
+use crate::click_sdk;
 
 struct HeadersMap<'r>(&'r HeaderMap<'r>);
 
@@ -34,13 +33,13 @@ impl<'r> FromRequest<'r> for HeadersMap<'r> {
     }
 }
 
+#[warn(private_interfaces)]
 #[get("/click?<click..>", rank = 2)]
-pub fn click(click: ReceiveClick, raw_headers: HeadersMap<'_>) -> Option<(Status, (ContentType, String))> {
+pub async fn click(click: ReceiveClick, raw_headers: HeadersMap<'_>) -> Option<(Status, (ContentType, String))> {
   let ip = raw_headers.0
     .get_one("cf-connecting-ip")
     .or_else(|| raw_headers.0.get_one("x-real-ip"))
-    .or_else(|| raw_headers.0.get_one("x-forwarded-for"));
-
+    .or_else(|| raw_headers.0.get_one("x-forwarded-for"));    
 
   if click.name.is_none() {
     return Some(
@@ -66,11 +65,16 @@ pub fn click(click: ReceiveClick, raw_headers: HeadersMap<'_>) -> Option<(Status
     )
   }
 
+  let name = click.name.unwrap();
+  let ip = ip.unwrap();
+
   click_sdk::Click::click(
-    ip.unwrap(),
-    &click.name.unwrap(),
+    ip,
+    &name,
     (click.cursor_x.unwrap_or(0), click.cursor_y.unwrap_or(0))
   );
+
+  click_sdk::Click::do_user_event(&name, ip, None).await;
 
   return Some(
     (

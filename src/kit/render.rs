@@ -268,7 +268,7 @@ fn default_method_php(resource: Resource, meta: HashMap<String, String>) -> Pin<
         .server_name("bellissimo");
 
       // Fetch fastcgi server(php-fpm) response.
-      let output = client.execute_once(Request::new(params, &mut io::empty())).await.unwrap();
+      let output: fastcgi_client::Response = client.execute_once(Request::new(params, &mut io::empty())).await.unwrap();
 
       // "Content-type: text/html; charset=UTF-8\r\n\r\nhello"
       let stdout = String::from_utf8(output.stdout.unwrap()).unwrap();

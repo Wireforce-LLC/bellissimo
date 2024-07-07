@@ -31,6 +31,9 @@ pub async fn bootstrap_fs() {
   unsafe {
     fs::create_dir(format!("{}/objects", CONFIG["http_server_serve_path"].as_str().unwrap())).unwrap_unchecked();
     fs::create_dir(format!("{}/plugins", CONFIG["http_server_serve_path"].as_str().unwrap())).unwrap_unchecked();
+    fs::create_dir(format!("{}/scenario", CONFIG["http_server_serve_path"].as_str().unwrap())).unwrap_unchecked();
+    fs::create_dir(format!("{}/scenario/events", CONFIG["http_server_serve_path"].as_str().unwrap())).unwrap_unchecked();
+    fs::create_dir(format!("{}/scenario/automations", CONFIG["http_server_serve_path"].as_str().unwrap())).unwrap_unchecked();
   }
 
   let is_pugins_dir = Path::new(CONFIG["dir_plugins"].as_str().unwrap()).is_dir();

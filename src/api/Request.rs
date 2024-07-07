@@ -1,13 +1,13 @@
-use std::{collections::{BTreeMap, HashMap}, fs, ops::Add, path::{Path, PathBuf}};
+use std::{collections::{BTreeMap, HashMap}, path::PathBuf};
 use chrono::{DateTime, Days, TimeZone, Utc};
-use mongodb::{bson::{bson, doc, document, Document}, options::FindOptions, sync::Collection};
-use rocket::{form::Form, http::{ContentType, Status}, FromForm};
+use mongodb::{bson::{doc, Document}, options::FindOptions, sync::Collection};
+use rocket::{http::{ContentType, Status}, FromForm};
 use serde::{Deserialize, Serialize};
-use crate::{asn_record::{AsnRecord, RouteWay}, database::get_database, domains_by_source::DomainsGroupedBySource, guard_kit::GuardScore};
+use crate::{asn_record::{AsnRecord, RouteWay}, database::get_database, domains_by_source::DomainsGroupedBySource, guard_kit::GuardScore, requests_sdk};
 
 #[derive(FromForm)]
 #[derive(Serialize, Deserialize, Debug)]
-struct FilterRequests {
+pub struct FilterRequests {
   pub filter_country: Option<String>,
   pub filter_specific_date: Option<String>,
   pub limit: Option<i64>,
@@ -407,3 +407,53 @@ pub fn get_all_domains_grouped_by_source(query_selector: PathBuf) -> (Status, (C
     )
   );
 }
+
+#[get("/requests/merge/<field>/<ip>")]
+pub fn get_request_by_ip(field: String, ip: String) -> (Status, (ContentType, String)) {
+  if field != "query" && field != "headers" {
+    return (
+      Status::BadRequest,
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "value": null,
+          "error": "Invalid request. Field must be either 'query' or 'headers'"
+        }).to_string()
+      )
+    )
+  }
+
+  let vector = requests_sdk::Request::aggregate_requests_by_key(&ip, &field);
+
+  if vector.is_none() {
+    return (
+      Status::Ok, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": true,
+          "value": null,
+          "error": "No requests found"
+        }).to_string()
+      )
+    )
+  }
+
+  let value = serde_json::json!({
+    "isOk": true,
+    "value": vector,
+    "error": null
+  });
+
+  let result = value.to_string();
+
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      result
+    )
+  );
+}
+  

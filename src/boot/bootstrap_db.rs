@@ -1,4 +1,4 @@
-use crate::database::get_database;
+use crate::mongo_sdk::MongoDatabase;
 
 /**
  * Bootstrap the database
@@ -6,23 +6,14 @@ use crate::database::get_database;
  * Create the asn_records collection
  */
 pub fn register_database_tables() {
-  get_database(String::from("routes"))
-    .create_collection("routes", None)
-    .expect("Unable to create collection");
-
-  get_database(String::from("resources"))
-    .create_collection("resources", None)
-    .expect("Unable to create collection");
-
-  get_database(String::from("requests"))
-    .create_collection("requests", None)
-    .expect("Unable to create collection");
-
-  get_database(String::from("requests"))
-    .create_collection("asn_records", None)
-    .expect("Unable to create collection");
-
-  get_database(String::from("requests"))
-    .create_collection("guard", None)
-    .expect("Unable to create collection");
+  MongoDatabase::create_collections(
+    vec! [
+      ("routes", "routes"),
+      ("resources", "resources"),
+      ("requests", "requests"),
+      ("requests", "asn_records"),
+      ("requests", "guard"),
+      ("scenario", "logs"),
+    ]
+  )
 }

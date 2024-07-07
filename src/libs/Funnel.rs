@@ -1,14 +1,11 @@
+use crate::{click::Click, click_sdk, mongo_sdk::MongoDatabase};
+use chrono::Duration;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use chrono::Duration;
 use mongodb::{
     bson::{doc, Document},
     sync::Collection,
-};
-use serde::{Deserialize, Serialize};
-
-use crate::{
-    api_funnel::funnel_by_clicks_to_schemas, click::Click, click_sdk, mongo_sdk::MongoDatabase,
 };
 
 #[derive(FromForm)]
@@ -36,7 +33,7 @@ pub struct FunnelRow {
 #[derive(Default, Serialize, Deserialize)]
 pub struct FunnelCountDateIterRow {
     pub name: String,
-    pub count: i32
+    pub count: i32,
 }
 
 #[derive(Default, Serialize, Deserialize)]
@@ -55,7 +52,6 @@ impl Funnel {
 
         let start_time: i64 = Duration::days(14).num_seconds();
 
-        // Агрегация данных по IP-адресу (пользователю)
         let pipeline: Vec<Document> = vec![
             doc! {
                 "$match": {
@@ -146,13 +142,11 @@ impl Funnel {
         return result;
     }
 
-    pub fn funnel_by_date(
-        filter: FunnelStandardFilter,
-    ) -> Vec<FunnelCountDateRow> {
+    pub fn funnel_by_date(filter: FunnelStandardFilter) -> Vec<FunnelCountDateRow> {
         let collection: Collection<Click> = MongoDatabase::use_collection("requests", "clicks");
         let start_time: i64 = Duration::days(6).num_seconds();
 
-        let mut pipeline = vec![
+        let pipeline = vec![
             doc! {
                 "$match": {
                     "time": {
@@ -200,11 +194,11 @@ impl Funnel {
                 "$sort": {
                   "date": -1
                 }
-            }
+            },
         ];
 
         let cursor = collection.aggregate(pipeline, None);
-        
+
         let mut cursor = cursor.unwrap();
         let mut counts: Vec<FunnelCountDateRow> = Vec::new();
 
@@ -223,7 +217,7 @@ impl Funnel {
                 .into_iter()
                 .filter_map(|x| {
                     let x = x.as_document().unwrap();
-                    
+
                     if x.get("name").is_none() || x.get("count").is_none() {
                         return None;
                     }
@@ -241,7 +235,7 @@ impl Funnel {
 
                     let record = FunnelCountDateIterRow {
                         name: name.to_string(),
-                        count: count
+                        count: count,
                     };
 
                     Some(record)
@@ -250,7 +244,7 @@ impl Funnel {
 
             counts.push(FunnelCountDateRow {
                 date: result.get("date").unwrap().as_str().unwrap().to_string(),
-                counts: iters
+                counts: iters,
             });
         }
 

@@ -1,5 +1,4 @@
 use crate::{database::get_database, dynamic_router, postback_payout_postback::PostbackPayoutPostback};
-
 use dynamic_router::ELASTIC;
 use elasticsearch::IndexParts;
 use mongodb::{bson::doc, options::FindOptions, sync::Collection};

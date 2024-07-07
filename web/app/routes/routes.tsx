@@ -21,16 +21,15 @@ import routerImage from "/router.png";
 import BigInput from "~/components/BigInput";
 import EditRouterParamsEmbed from "~/embed/EditRouterParams";
 import CreateRouteEmbed from "~/embed/CreateRoute";
+import DocsBar from "~/embed/DocsBar";
 
 export const meta: MetaFunction = () => {
   return [{ title: string("meta.title.routes") }];
 };
 
-
 export default function Routes() {
   const [data, setData] = useState<any[] | undefined>(undefined);
   const [isModalCreateVisible, setIsModalCreateVisible] = useState(false);
-
 
   const [host, setHost] = useState<string | undefined>();
   const [protocol, setProtocol] = useState<string | undefined>("http");
@@ -54,15 +53,12 @@ export default function Routes() {
     });
   }, []);
 
- 
-
   // useEffect(() => {
   //   if (filters && resources) {
   //     setModelFilterId(filters[0]?.value);
   //     setModelResourceId(resources[0]?.value);
   //   }
   // }, [filters, resources]);
-
 
   return (
     <>
@@ -71,7 +67,7 @@ export default function Routes() {
           isNoPadding
           isBigModal
           onClose={() => {
-            setModalOverviewData(undefined)
+            setModalOverviewData(undefined);
             fether();
           }}
           title="Overview route"
@@ -110,10 +106,12 @@ export default function Routes() {
             setIsModalCreateVisible(false);
           }}
         >
-          <CreateRouteEmbed onRouterCreated={() => {
-            setIsModalCreateVisible(false);
-            fether()
-          }}/>
+          <CreateRouteEmbed
+            onRouterCreated={() => {
+              setIsModalCreateVisible(false);
+              fether();
+            }}
+          />
         </Modal>
       )}
 
@@ -129,84 +127,99 @@ export default function Routes() {
         icon={<img className="h-20" src={routerImage} alt="Server image" />}
       />
 
-      <Table
-        isNoEmptyState
-        headers={
-          data &&
-          (!_.isEmpty(data)
-            ? _.keys(_.first(data)).map((i) =>
-                humanizeString(i).replace("Asn", "ASN")
-              )
-            : [])
-        }
-        data={data?.map((it) => ({
-          ...it,
-          params: it.params && _.values(it.params).length < 5 ? _.keys(it.params).join(", "):  <span className="text-zinc-500">{_.values(it.params).length + " params"}</span>,
-          name: (
-            <div className="flex flex-row items-center w-full justify-start gap-0.5">
-              <span
-                className="cursor-pointer"
-                onClick={() => {
-                  setModalOverviewData(it.name);
-                }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
-                  className="size-3.5 text-gray-400 hover:text-blue-800"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M11.013 2.513a1.75 1.75 0 0 1 2.475 2.474L6.226 12.25a2.751 2.751 0 0 1-.892.596l-2.047.848a.75.75 0 0 1-.98-.98l.848-2.047a2.75 2.75 0 0 1 .596-.892l7.262-7.261Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </span>
+      <div className="w-full h-full flex flex-row overflow-hidden">
+        <div className="h-full w-full">
+          <Table
+            isNoEmptyState
+            headers={
+              data &&
+              (!_.isEmpty(data)
+                ? _.keys(_.first(data)).map((i) =>
+                    humanizeString(i).replace("Asn", "ASN")
+                  )
+                : [])
+            }
+            data={data?.map((it) => ({
+              ...it,
+              params:
+                it.params && _.values(it.params).length < 5 ? (
+                  _.keys(it.params).join(", ")
+                ) : (
+                  <span className="text-zinc-500">
+                    {_.values(it.params).length + " params"}
+                  </span>
+                ),
+              name: (
+                <div className="flex flex-row items-center w-full justify-start gap-0.5">
+                  <span
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setModalOverviewData(it.name);
+                    }}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 16 16"
+                      fill="currentColor"
+                      className="size-3.5 text-gray-400 hover:text-blue-800"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M11.013 2.513a1.75 1.75 0 0 1 2.475 2.474L6.226 12.25a2.751 2.751 0 0 1-.892.596l-2.047.848a.75.75 0 0 1-.98-.98l.848-2.047a2.75 2.75 0 0 1 .596-.892l7.262-7.261Z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </span>
 
-              <span className="ml-2">{it.name || "-"}</span>
-            </div>
-          ),
-          path: (
-            <div className="flex flex-row gap-1.5 items-center">
-              <svg
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-                height="1em"
-                width="1em"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" />
-                <path d="M11 7H6a2 2 0 00-2 2v9a2 2 0 002 2h9a2 2 0 002-2v-5M10 14L20 4M15 4h5v5" />
-              </svg>
+                  <span className="ml-2">{it.name || "-"}</span>
+                </div>
+              ),
+              path: (
+                <div className="flex flex-row gap-1.5 items-center">
+                  <svg
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                    height="1em"
+                    width="1em"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" />
+                    <path d="M11 7H6a2 2 0 00-2 2v9a2 2 0 002 2h9a2 2 0 002-2v-5M10 14L20 4M15 4h5v5" />
+                  </svg>
 
-              <a
-                className="hover:underline text-blue-500 hover:text-blue-700"
-                href={
-                  protocol +
-                  "://" +
-                  (it.domain || host).replace(" ", "") +
-                  it.path
-                }
-                target="_blank"
-              >
-                {protocol +
-                  "://" +
-                  (it.domain || host).replace(" ", "") +
-                  it.path}
-              </a>
-            </div>
-          ),
-        }))}
-      />
+                  <a
+                    className="hover:underline text-blue-500 hover:text-blue-700"
+                    href={
+                      protocol +
+                      "://" +
+                      (it.domain || host).replace(" ", "") +
+                      it.path
+                    }
+                    target="_blank"
+                  >
+                    {protocol +
+                      "://" +
+                      (it.domain || host).replace(" ", "") +
+                      it.path}
+                  </a>
+                </div>
+              ),
+            }))}
+          />
 
-      <div className="px-2.5 py-1">
-        <small className="text-zinc-400 text-xs">
-          In table <b>{_.size(data)}</b> records
-        </small>
+          <div className="px-2.5 py-1">
+            <small className="text-zinc-400 text-xs">
+              In table <b>{_.size(data)}</b> records
+            </small>
+          </div>
+        </div>
+
+        <div className="h-full w-[300px] border-l border-l-zinc-200">
+          <DocsBar id="how_to_work_routers" />
+        </div>
       </div>
     </>
   );

@@ -1,6 +1,6 @@
-use std::{path::{Path, PathBuf}};
-use mongodb::{bson::{doc, document}, options::FindOptions, sync::Collection};
-use rocket::{form::Form, http::{ContentType, Status}, FromForm};
+use std::path::PathBuf;
+use mongodb::{bson::doc, sync::Collection};
+use rocket::{form::Form, http::{ContentType, Status}};
 use crate::{api::{standard_http_error, trivial_checkpoint}, database::get_database, dynamic_router::Route};
 
 use crate::api::CreateRoute;

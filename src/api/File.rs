@@ -1,9 +1,7 @@
-use std::{collections::HashMap, fs, path::{Path, PathBuf}};
-use chrono::{DateTime, TimeZone, Utc};
-use mongodb::{bson::{doc, document}, options::FindOptions, sync::Collection};
+use std::{fs, path::Path};
 use rocket::{form::Form, http::{ContentType, Status}, FromForm};
 use serde::{Deserialize, Serialize};
-use crate::{asn_record::{AsnRecord, RouteWay}, config::CONFIG, create_file::CreateFile, database::get_database, guard_kit::GuardScore};
+use crate::{config::CONFIG, create_file::CreateFile};
 use glob::glob;
 
 #[derive(FromForm)]
@@ -95,6 +93,20 @@ pub fn create_file(input: Form<CreateFile>) -> (Status, (ContentType, String)) {
         serde_json::json!({
           "isOk": false,
           "error": "File must be a JS file",
+          "value": null
+        }).to_string()
+      )
+    ) 
+  }
+
+  if path.contains("/scenario/") && !path.ends_with(".php") {
+    return (
+      Status::BadRequest, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "File must be a PHP scenario file",
           "value": null
         }).to_string()
       )

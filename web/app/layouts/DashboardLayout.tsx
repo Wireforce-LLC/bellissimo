@@ -19,17 +19,23 @@ export enum LeftActiveBarItem {
 
 interface Props {
   readonly children: ReactNode;
+  readonly currentPath?: string,
   readonly onMenuSelected: (it: string) => void
 }
 
 export default function DashboardLayout({
   children,
-  onMenuSelected
+  onMenuSelected,
+  currentPath
 }: Props) {
   const [isInternetError, setInternetError] = useState(false);
   const [isSafari, setSafari] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(true);
-  const [currentLeftActiveBarItem, setCurrentLeftActiveBarItem] = useState<LeftActiveBarItem>(LeftActiveBarItem.ROUTES);
+  const [currentLeftActiveBarItem, setCurrentLeftActiveBarItem] = useState<LeftActiveBarItem|undefined>();
+
+  useEffect(() => {
+    setCurrentLeftActiveBarItem(currentPath?.replace("/", "") as LeftActiveBarItem.ROUTES);
+  }, [currentPath]);
 
   useEffect(() => {
     // @ts-ignore

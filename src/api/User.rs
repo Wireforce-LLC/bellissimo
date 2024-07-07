@@ -1,9 +1,7 @@
 
-use std::{collections::HashMap, fs, path::{Path, PathBuf}};
-use chrono::{DateTime, TimeZone, Utc};
-use mongodb::{bson::{doc, document}, options::FindOptions, sync::Collection};
-use rocket::{form::Form, http::{ContentType, Status}, FromForm};
-use crate::{asn_record::{AsnRecord, RouteWay}, background_service::User, database::get_database, guard_kit::GuardScore};
+use mongodb::sync::Collection;
+use rocket::http::{ContentType, Status};
+use crate::{background_service::User, database::get_database};
 
 #[get("/user/list")]
 pub fn get_users() -> (Status, (ContentType, String)) {

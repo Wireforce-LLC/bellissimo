@@ -25,6 +25,9 @@
 #[path = "libs/Funnel.rs"] mod funnel_sdk;
 #[path = "libs/MongoDatabase.rs"] mod mongo_sdk;
 #[path = "libs/Click.rs"] mod click_sdk;
+#[path = "libs/Scenario.rs"] mod scenario_sdk;
+#[path = "libs/System.rs"] mod system;
+#[path = "libs/Requests.rs"] mod requests_sdk;
 
 
 // Config Files
@@ -56,7 +59,8 @@
 
 use config::CONFIG;
 use paris::info;
-use std::net::IpAddr;
+use scenario_sdk::Scenario;
+use std::{collections::HashMap, net::IpAddr};
 use rocket::{config::Ident, data::Limits, fairing::AdHoc, Config};
 use background_service::register_background_service;
 use tokio::task::{self};
@@ -150,6 +154,7 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api_click::get_clicks_by_ip])
       .mount(http_api_uri_path, routes![api_funnel::funnel_by_clicks_to_schemas])
       .mount(http_api_uri_path, routes![api_funnel::funnel_by_date])
+      .mount(http_api_uri_path, routes![api_request::get_request_by_ip])
 
       .mount(http_api_uri_path, routes![api_postback::get_postback_amount])
 
@@ -214,6 +219,7 @@ async fn main() {
 
   task::spawn(async {
     info!("Starting background service...");
+    Scenario::execute_once("main", HashMap::new()).await;
     register_background_service().await;
   });
 

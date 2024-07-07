@@ -1,9 +1,8 @@
 use rocket::http::{ContentType, Status};
-
 use crate::funnel_sdk::{Funnel, FunnelByClicksFilter, FunnelStandardFilter};
 
 #[derive(FromForm)]
-struct FunnelClicksQuery {
+pub struct FunnelClicksQuery {
     pub start_time: Option<u32>,
     pub end_time: Option<u32>,
     pub limit: Option<u32>,
@@ -12,7 +11,7 @@ struct FunnelClicksQuery {
 }
 
 #[derive(FromForm)]
-struct FunnelClicksDateQuery {
+pub struct FunnelClicksDateQuery {
     pub start_time: Option<u32>,
     pub end_time: Option<u32>,
     pub limit: Option<u32>,

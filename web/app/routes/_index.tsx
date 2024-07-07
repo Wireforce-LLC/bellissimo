@@ -3,7 +3,7 @@ import {
 } from "@remix-run/node";
 import DashboardLayout from "~/layouts/DashboardLayout";
 import _ from "lodash";
-import { ReactNode, Suspense, useMemo, useState } from "react";
+import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
 import Routes from "./routes";
 import Files from "./files";
 import Filters from "./filters";
@@ -20,7 +20,32 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Dashboard() {
-  const [route, setRoute] = useState("/routes")
+  // const [route, setRoute] = useState("/routes")
+  const [currentPath, setCurrentPathValue] = useState(
+    () => {
+      if (typeof window !== "undefined") {
+        let value = window.location.hash.replace("#", '');
+
+        if (_.isEmpty(value)) {
+          return null;
+        } else {
+          return value;
+        }
+      } else {
+        undefined
+      }
+    }
+  );
+
+  const setCurrentPath = useCallback((value: string|null) => {
+    setCurrentPathValue(value);
+    if (value != null) {
+      location.hash = `#${value}`;
+    } else {
+      location.hash = `#`;
+    }
+  }, []);
+
 
   const registry: { [key: string]: ReactNode } = useMemo(() => {
     return {
@@ -32,11 +57,15 @@ export default function Dashboard() {
   }, []);
 
   const fragment = useMemo(() => {
-    return registry[route] || undefined;
-  }, [route]);
+    if (currentPath == null) {
+      return registry["/routes"];
+    }
+
+    return registry[currentPath] || undefined;
+  }, [currentPath]);
 
   return (
-    <DashboardLayout onMenuSelected={setRoute}>
+    <DashboardLayout currentPath={currentPath || undefined} onMenuSelected={setCurrentPath}>
       <Suspense>
         {fragment}
       </Suspense>
