@@ -302,6 +302,7 @@ export default {
     menu: {
       files: "Files",
       routes: "Routes",
+      scenario: "Scenario",
       filters: "Filters",
       resources: "Resources",
       asnRecords: "Requests",

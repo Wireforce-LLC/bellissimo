@@ -317,6 +317,20 @@ pub fn get_all_files(
 ) -> (Status, (ContentType, String))  {
   let uri = path.path.unwrap_or("/".to_string());
 
+  if uri.trim() == "" {  
+    return (
+      Status::BadRequest, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Invalid path",
+          "value": null
+        }).to_string()
+      )
+    )
+  }
+
   if uri.contains("..") {
     return (
       Status::NotFound, 

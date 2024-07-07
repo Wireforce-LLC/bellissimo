@@ -1,5 +1,5 @@
 import DocsLayout from "~/layouts/DocsLayout";
-import { useLoaderData, useLocation, useParams } from "@remix-run/react";
+import { Link, useLoaderData, useLocation, useParams } from "@remix-run/react";
 import { json, LoaderFunctionArgs } from "@remix-run/node"; // or cloudflare/deno
 import fs from "node:fs";
 import path from "node:path";
@@ -63,7 +63,7 @@ export default function Docs() {
             },
             a: {
                 component: ({ children, ...props }) => (
-                  <a {...props}>{children}</a>
+                  <Link className="text-[#3078b4] hover:underline" to={props.href} prefetch="intent">{children}</Link>
                 ),
                 props: {
                   className: "underline text-blue-500",

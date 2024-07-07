@@ -20,6 +20,7 @@
 #[path = "api/Plugin.rs"] mod api_plugin;
 #[path = "api/Click.rs"] mod api_click;
 #[path = "api/Funnel.rs"] mod api_funnel;
+#[path = "api/Scenario.rs"] mod api_scenario;
 
 // Kit
 #[path = "libs/Funnel.rs"] mod funnel_sdk;
@@ -155,6 +156,7 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api_funnel::funnel_by_clicks_to_schemas])
       .mount(http_api_uri_path, routes![api_funnel::funnel_by_date])
       .mount(http_api_uri_path, routes![api_request::get_request_by_ip])
+      .mount(http_api_uri_path, routes![api_scenario::get_scenario_logs])
 
       .mount(http_api_uri_path, routes![api_postback::get_postback_amount])
 
@@ -219,7 +221,6 @@ async fn main() {
 
   task::spawn(async {
     info!("Starting background service...");
-    Scenario::execute_once("main", HashMap::new()).await;
     register_background_service().await;
   });
 

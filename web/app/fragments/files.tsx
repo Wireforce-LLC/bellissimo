@@ -13,9 +13,6 @@ import toast from "react-hot-toast";
 import classNames from "classnames";
 import DocsBar from "~/embed/DocsBar";
 
-export const meta: MetaFunction = () => {
-  return [{ title: string("meta.title.files") }];
-};
 
 /**
  * Represents a file list page.
@@ -138,6 +135,16 @@ export default function Files() {
         })}
       >
         <div className="h-full w-full">
+          { pwd?.includes("scenario/events") && <div className="border-b border-zinc-200 px-3 py-2">
+            <p className="text-xs">
+              <span className="font-medium">Scenario</span> 
+              {" - "}
+              <span className="text-zinc-500">
+                scripts in this folder automatically become executable files for the system. This means that any call to an event (click) named N will call the N.php file in that folder. <i>Please note that case is important.</i>
+              </span>
+            </p>
+          </div> }
+
           <FileEditorEmbed
             onReady={() => setReady(true)}
             onChangePwd={setPwd}

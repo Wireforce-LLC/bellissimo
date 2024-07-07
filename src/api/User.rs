@@ -3,6 +3,10 @@ use mongodb::sync::Collection;
 use rocket::http::{ContentType, Status};
 use crate::{background_service::User, database::get_database};
 
+/**
+ * Get all users
+ * @return List of users
+ */
 #[get("/user/list")]
 pub fn get_users() -> (Status, (ContentType, String)) {
   let collection: Collection<User> = get_database(String::from("classification")).collection("users");

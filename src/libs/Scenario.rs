@@ -4,6 +4,7 @@ use std::{collections::HashMap, env};
 use chrono::Utc;
 use fastcgi_client::{Client, Params, Request};
 use mongodb::bson::doc;
+use mongodb::options::{FindOptions};
 use serde::{Serialize, Deserialize};
 use tokio::net::TcpStream;
 use tokio::io::{self};
@@ -44,6 +45,35 @@ impl Scenario {
       .unwrap();
 
     return;
+  }
+
+  /**
+   * Retrieves the execution logs for a scenario from a MongoDB 
+   * collection named "logs" in the "scenario" database
+   *
+   * @param limit - The maximum number of logs to retrieve.
+   * @param skip - The number of logs to skip.
+   * @return Vec<ScenarioLog> - The retrieved logs.
+   */
+  pub fn get_logs(limit: i64, skip: u64) -> Vec<ScenarioLog> {
+    let collection = MongoDatabase::use_collection::<ScenarioLog>("scenario", "logs");
+
+    let logs: Vec<ScenarioLog> = collection
+      .find(doc! {
+
+      }, FindOptions::builder()
+        .limit(limit)
+        .skip(skip)
+        .sort(doc! {
+          "time": -1
+        })
+        .build()
+      )
+      .expect("Unable to find logs")
+      .map(|res| res.unwrap().into())
+      .collect();
+
+    return logs;
   }
 
   pub async fn execute_once(name: &str, args: HashMap<String, String>) -> Option<String> {

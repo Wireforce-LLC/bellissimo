@@ -1,13 +1,4 @@
-import Navbar from "~/components/Navbar";
-import fs from 'fs';
-import { ReactNode, useCallback, useEffect, useState } from "react";
-import getDatasetDashboardLeftBar from "~/dataset/DashboardLeftBar";
-import webConfig, { ApiPathEnum } from "~/web.config";
-
-import wireforceLogo from "/wireforce-logo.png";
-import rightTopImage from "/top-right-01.png";
-import classNames from "classnames";
-import { motion } from "framer-motion";
+import { ReactNode } from "react";
 
 interface Props {
   readonly children: ReactNode;

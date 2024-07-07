@@ -1,6 +1,5 @@
 import axios from "axios";
 import production from "./production";
-import axiosRetry from "axios-retry";
 
 export enum ApiPathEnum {
   Ping = "/ping",
@@ -39,6 +38,8 @@ export enum ApiPathEnum {
   GetAllResourceDrivers = "/api/resource/driver/list",
   GetAllFilterPlugins = "/api/filter/plugin/list",
   GetMappingClicks = "/api/click/ipMapping",
+
+  GetAllScenarioLogs = "/api/scenario/logs/list",
 }
 
 // API endpoint host
@@ -59,11 +60,6 @@ async function getPrivateAxiosInstance() {
   let _axios = axios.create({
     baseURL: "/",
     headers: {},
-  });
-
-  axiosRetry(_axios, {
-    retries: 3,
-    retryDelay: axiosRetry.exponentialDelay,
   });
 
   return _axios;

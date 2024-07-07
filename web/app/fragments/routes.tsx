@@ -120,15 +120,15 @@ export default function Routes() {
         onCreateAction={() => setIsModalCreateVisible(true)}
       />
 
-      <FirstRecordPlease
-        title="Create router"
-        text="Create your first router to route traffic from different domains, different paths. Create and manage full-fledged routers"
-        isVisible={_.isEmpty(data) && _.isArray(data)}
-        icon={<img className="h-20" src={routerImage} alt="Server image" />}
-      />
-
       <div className="w-full h-full flex flex-row overflow-hidden">
         <div className="h-full w-full">
+          <FirstRecordPlease
+            title="Create router"
+            text="Create your first router to route traffic from different domains, different paths. Create and manage full-fledged routers"
+            isVisible={_.isEmpty(data) && _.isArray(data)}
+            icon={<img className="h-20" src={routerImage} alt="Server image" />}
+          />
+
           <Table
             isNoEmptyState
             headers={

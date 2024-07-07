@@ -4,10 +4,11 @@ import {
 import DashboardLayout from "~/layouts/DashboardLayout";
 import _ from "lodash";
 import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
-import Routes from "./routes";
-import Files from "./files";
-import Filters from "./filters";
-import Resources from "./resources";
+import Routes from "../fragments/routes";
+import Files from "../fragments/files";
+import Filters from "../fragments/filters";
+import Resources from "../fragments/resources";
+import Scenario from "~/fragments/scenario";
 
 export const meta: MetaFunction = () => {
   return [
@@ -53,6 +54,7 @@ export default function Dashboard() {
       "/files": <Files/>,
       "/filters": <Filters/>,
       "/resources": <Resources/>,
+      "/scenario": <Scenario/>
     }
   }, []);
 

@@ -1,14 +1,14 @@
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import TopTitle from "~/components/TopTitle";
-import DatahubRequests from "./datahub_requests";
+import DatahubRequests from "../fragments/datahub_requests";
 import Navbar from "~/components/Navbar";
-import { MetaFunction, useLocation } from "@remix-run/react";
-import DatahubPostbacks from "./datahub_postbacks";
-import DatahubClicks from "./datahub_clicks";
+import { MetaFunction } from "@remix-run/react";
+import DatahubPostbacks from "../fragments/datahub_postbacks";
+import DatahubClicks from "../fragments/datahub_clicks";
 import wireforceLogo from "/wireforce-logo.png";
 import rightTopImage from "/top-right-01.png";
 import _ from "lodash";
-import Funnels from "./datahub_funnels";
+import Funnels from "../fragments/datahub_funnels";
 
 export const meta: MetaFunction = () => {
   return [
