@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use chrono::{Duration, Utc};
 use mongodb::bson::{doc, Bson};
 
 use crate::asn_record::AsnRecord;
@@ -7,15 +8,17 @@ use crate::asn_record::AsnRecord;
 pub struct Request {}
 
 impl Request {
-    pub fn aggregate_requests_by_header(ip: &str) -> Option<HashMap<String, String>> {
-        Self::aggregate_requests_by_key(ip, "headers")
+    pub fn aggregate_requests_by_header(ip: &str, window_days: i64) -> Option<HashMap<String, String>> {
+        Self::aggregate_requests_by_key(ip, "headers", window_days)
     }
 
-    pub fn aggregate_requests_by_query(ip: &str) -> Option<HashMap<String, String>> {
-        Self::aggregate_requests_by_key(ip, "query")
+    pub fn aggregate_requests_by_query(ip: &str, window_days: i64) -> Option<HashMap<String, String>> {
+        Self::aggregate_requests_by_key(ip, "query", window_days)
     }
 
-    pub fn aggregate_requests_by_key(ip: &str, key: &str) -> Option<HashMap<String, String>> {
+    pub fn aggregate_requests_by_key(ip: &str, key: &str, window_days: i64) -> Option<HashMap<String, String>> {
+        let start_time: i64 = Duration::days(window_days).num_seconds();
+
         let mut result = HashMap::new();
         let collection =
             crate::mongo_sdk::MongoDatabase::use_collection::<AsnRecord>("requests", "asn_records");
@@ -23,7 +26,11 @@ impl Request {
         let pipeline = vec![
             doc! {
                 "$match": doc! {
-                    "headers.cf-connecting-ip": ip
+                    "headers.cf-connecting-ip": ip,
+                    "time": {
+                      "$gte": Utc::now().timestamp() - start_time,
+                      "$lte": Utc::now().timestamp()
+                    }
                 }
             },
             doc! {

@@ -424,7 +424,7 @@ pub fn get_request_by_ip(field: String, ip: String) -> (Status, (ContentType, St
     )
   }
 
-  let vector = requests_sdk::Request::aggregate_requests_by_key(&ip, &field);
+  let vector = requests_sdk::Request::aggregate_requests_by_key(&ip, &field, 3);
 
   if vector.is_none() {
     return (
