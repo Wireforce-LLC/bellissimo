@@ -17,7 +17,7 @@ impl Request {
     }
 
     pub fn aggregate_requests_by_key(ip: &str, key: &str, window_days: i64) -> Option<HashMap<String, String>> {
-        let start_time: i64 = Duration::days(window_days).num_microseconds();
+        let start_time: i64 = Duration::days(window_days).num_microseconds().unwrap();
 
         let mut result = HashMap::new();
         let collection =
