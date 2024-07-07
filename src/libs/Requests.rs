@@ -18,7 +18,7 @@ impl Request {
     pub fn aggregate_requests_by_key(ip: &str, key: &str) -> Option<HashMap<String, String>> {
         let mut result = HashMap::new();
         let collection =
-            crate::mongo_sdk::MongoDatabase::use_collection::<AsnRecord>("requests", "requests");
+            crate::mongo_sdk::MongoDatabase::use_collection::<AsnRecord>("requests", "asn_records");
 
         let pipeline = vec![
             doc! {
