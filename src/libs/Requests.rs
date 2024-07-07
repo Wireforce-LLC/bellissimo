@@ -27,6 +27,10 @@ impl Request {
             doc! {
                 "$match": doc! {
                     "headers.cf-connecting-ip": ip,
+                }
+            },
+            doc! {
+                "$match": doc! {
                     "time": {
                       "$gte": Utc::now().timestamp() - start_time,
                       "$lte": Utc::now().timestamp()
