@@ -17,7 +17,7 @@ impl Request {
     }
 
     pub fn aggregate_requests_by_key(ip: &str, key: &str, window_days: i64) -> Option<HashMap<String, String>> {
-        let start_time: i64 = Duration::days(window_days).num_seconds();
+        let start_time: i64 = Duration::days(window_days).num_microseconds();
 
         let mut result = HashMap::new();
         let collection =
@@ -32,8 +32,8 @@ impl Request {
             doc! {
                 "$match": doc! {
                     "time": {
-                      "$gte": Utc::now().timestamp() - start_time,
-                      "$lte": Utc::now().timestamp()
+                      "$gte": Utc::now().timestamp_micros() - start_time,
+                      "$lte": Utc::now().timestamp_micros()
                     }
                 }
             },
