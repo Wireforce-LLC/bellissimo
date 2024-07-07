@@ -61,6 +61,7 @@ services:
     image: 'bitnami/php-fpm:latest'
     volumes:
       - ./public:/usr/src/app/public
+      - ./containers:/usr/src/app/containers
  
   bell-elasticsearch:
     restart: always
