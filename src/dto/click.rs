@@ -18,4 +18,5 @@ pub struct ReceiveClick {
     pub cursor_x: Option<i64>,
     pub cursor_y: Option<i64>,
     pub name: Option<String>,
+    pub namespace: Option<String>,
 }

@@ -21,7 +21,7 @@ impl Click {
         return Utc::now().timestamp();
     }
 
-    pub async fn do_user_event(name: &str, ip: &str, cursor: Option<CursorPosition>) {
+    pub async fn do_user_event(name: &str, ip: &str, cursor: Option<CursorPosition>, namespace: &str) {
         let mut params = HashMap::new();
 
         if let Some(cursor) = cursor {
@@ -32,6 +32,7 @@ impl Click {
         params.insert("ip".to_string(), ip.to_string());
         params.insert("name".to_string(), name.to_string());
         params.insert("time".to_string(), Click::now().to_string());
+        params.insert("namespace".to_string(), namespace.to_string());
 
         Scenario::execute_once(name, params.to_owned()).await;   
     }

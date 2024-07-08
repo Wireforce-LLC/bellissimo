@@ -67,6 +67,7 @@ pub async fn click(click: ReceiveClick, raw_headers: HeadersMap<'_>) -> Option<(
 
   let name = click.name.unwrap();
   let ip = ip.unwrap();
+  let namespace = click.namespace.unwrap_or("main".to_string());
 
   click_sdk::Click::click(
     ip,
@@ -74,7 +75,12 @@ pub async fn click(click: ReceiveClick, raw_headers: HeadersMap<'_>) -> Option<(
     (click.cursor_x.unwrap_or(0), click.cursor_y.unwrap_or(0))
   );
 
-  click_sdk::Click::do_user_event(&name, ip, None).await;
+  click_sdk::Click::do_user_event(
+    &name, 
+    ip,
+    None,
+    &namespace
+  ).await;
 
   return Some(
     (
