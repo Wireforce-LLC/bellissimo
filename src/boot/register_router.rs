@@ -1,18 +1,12 @@
 use asn_db::{Db, Record};
-use chrono::prelude::*;
-use elasticsearch::IndexParts;
 use isbot::Bots;
 use mongodb::bson::doc;
 use mongodb::options::FindOneOptions;
 use mongodb::sync::Collection;
-use nanoid::nanoid;
 use redis::Connection;
 use rocket::http::{ContentType, HeaderMap, Status};
 use rocket::request::{FromRequest, Outcome};
 use rocket::Request;
-use serde_json::json;
-use tokio::runtime::Handle;
-use tokio::task;
 use uaparser::{Parser, UserAgentParser};
 use std::collections::HashMap;
 use std::fs::File;
@@ -22,12 +16,25 @@ use std::sync::{Mutex};
 use std::env;
 use serde::{Deserialize, Serialize};
 use crate::config::CONFIG;
+use crate::mongo_sdk::MongoDatabase;
+use crate::resource_kit::Resource;
+use crate::statistica_sdk::{Converter, Statistica};
 use crate::{asn_record, filter, filter_kit, guard_kit};
 use crate::main_routes::not_found;
 use crate::{rdr_kit, resource_kit, database::get_database};
 use elasticsearch::{
   Elasticsearch, http::transport::Transport,
 };
+
+struct RouterBody<'a> {
+  x_real_ip: XRealIp<'a>,
+  user_agent: UserAgent<'a>,
+  router: PathBuf,
+  raw_headers: HeadersMap<'a>,
+  query: HashMap<String, String>,
+  http_method: Option<String>,
+  data: Option<String>
+}
 
 pub struct XRealIp<'r>(&'r str);
 pub struct UserAgent<'r>(&'r str);
@@ -147,39 +154,6 @@ lazy_static! {
 }
 
 
-fn write_info_about_request(
-  request_id: &str,
-  insert_data: &asn_record::AsnRecord
-) {
-  task::block_in_place(move || {
-    Handle::current().block_on(async move {
-      let collection: Collection<asn_record::AsnRecord> =
-        get_database(String::from("requests"))
-        .collection("asn_records");
-
-      let insert_json_raw = json!(insert_data);
-
-      if CONFIG["is_save_requests_in_mongodb"].as_bool().unwrap() {
-        collection
-          .insert_one(
-            insert_data,
-            None,
-          )
-          .unwrap();
-      }
-
-      if CONFIG["is_save_requests_in_elastic"].as_bool().unwrap() {
-        ELASTIC
-          .index(IndexParts::IndexId("requests", &request_id))
-          .body(insert_json_raw.to_owned())
-          .send()
-          .await
-          .unwrap();
-      }
-    })
-  });
-}
-
 fn async_register_request_info(
   asn_record: Option<&Record>,
   raw_headers: HeaderMap,
@@ -189,131 +163,22 @@ fn async_register_request_info(
   route_name: Option<String>,
   resource_id: Option<String>,
 ) -> String {
-  let now = Utc::now();
-  let mut headers: HashMap<String, String> = HashMap::new();
-
-  for raw_header in raw_headers.iter() {
-    headers.insert(
-      raw_header.name().to_string(),
-      raw_header.value().to_string(),
-    );
-  }
-  
-  let request_id = if raw_headers.get_one("request-id").is_some() { 
-    raw_headers.get_one("request-id").unwrap().to_string()
-  } else {
-    nanoid!()
-  };
-  
-  let is_allow_write_record = raw_headers
-    .get_one("cf-ipcountry")
-    .is_some() && 
-      CONFIG["use_cloudflare_data_priority"]
-        .as_bool()
-        .unwrap();
-      
-  let cuntry_code = if is_allow_write_record {
-    Some(raw_headers.get_one("cf-ipcountry").unwrap().to_string().to_uppercase())
-  } else if asn_record.is_some() { 
-    Some(asn_record.unwrap().country.clone().to_uppercase())
-  } else { 
-    None
-  };
-
-  let client = UA_PARSER.parse(&user_agent);
-  
-  let insert_data = asn_record::AsnRecord {
-    asn_name: match asn_record {
-      Some(asn_record) => Some(asn_record.owner.to_owned()),
-
-      _ => None
-    },
-
-    asn_number: match asn_record {
-      Some(asn_record) => Some(asn_record.as_number.to_owned()),
-
-      _ => None
-    },
-
-    asn_country_code: cuntry_code.clone(),
-    asn_description: Some(String::new()),
-    request_id: request_id.to_string(),
-    time: now.timestamp_micros(),
-    is_ua_bot: Some(BOT_DETECTOR.is_bot(user_agent.as_str())),
-    headers: Some(headers.clone()),
-    query: Some(query),
-    route_way: route_way,
-    route_name: route_name,
-    resource_id: resource_id,
-    user_agent_client: Some(client)
-  };
-  
-  write_info_about_request(&request_id, &insert_data);
+  let (request_id, request) = Converter::convert_params_to_asn_record_struct(
+    &user_agent, 
+    asn_record, 
+    raw_headers, 
+    query,
+    route_way, 
+    route_name, 
+    resource_id
+  );
+ 
+  Statistica::register_request(
+    &request_id,
+    &request,
+  );
 
   return request_id;
-}
-
-fn create_meta_dataset_for_template(
-  client_ip: &str,
-  domain: Option<&str>,
-  user_agent: &str,
-  raw_headers: HeaderMap,
-  query: HashMap<String, String>,
-  resource: &resource_kit::Resource
-) -> HashMap<String, String> {
-  let mut meta = HashMap::new();
-  let time = Utc::now().timestamp_micros();
-
-  meta.insert("time".to_string(), time.to_string());
-  meta.insert("hello_rust".to_string(), "Rust".to_string());
-  // meta.insert("public".to_string(), CONFIG["http_server_serve_uri_path"].as_str().unwrap().to_string());
-  // meta.insert("static".to_string(), CONFIG["http_server_serve_uri_path"].as_str().unwrap().to_string());
-  
-  meta.insert("ip".to_string(), client_ip.to_string());
-  meta.insert("client-ip".to_string(), client_ip.to_string());
-
-  meta.insert("user-agent".to_string(), user_agent.to_string());
-  meta.insert("utc-time".to_string(), Utc::now().to_string());
-
-  meta.insert("nanoid".to_string(), nanoid!(16));
-  meta.insert("is-bellisimo".to_string(), "true".to_string());
-
-  meta.insert("domain".to_string(), domain.unwrap_or("localhost").to_string());
-  
-  if resource.file_path.is_some() {
-    let root = resource.file_path.clone().unwrap();
-    let root = Path::new(&root);
-    let root = root.parent().unwrap();
-    let root = root.to_str().unwrap().split('/').collect::<Vec<&str>>();
-    
-    let pwd = Path::new(CONFIG["http_server_serve_uri_path"].as_str().unwrap());
-
-    meta.insert("pwd".to_string(), pwd.as_os_str().to_str().unwrap().to_string());
-
-    let public = pwd
-      .join(root.last().unwrap())
-      .into_os_string()
-      .into_string()
-      .unwrap();
-
-    meta.insert("public".to_string(), public.clone());
-    meta.insert("static".to_string(), public.clone());
-  }  
-
-  if CONFIG["ext_apply_http_query"].as_bool().unwrap() &&  !query.is_empty() {  
-    query.iter().for_each(|(k, v)| {
-      meta.insert(k.to_string(), v.to_string());
-    });
-  }
-
-
-  if CONFIG["ext_apply_http_headers"].as_bool().unwrap() && !raw_headers.is_empty() {
-    for h in raw_headers.iter() {
-      meta.insert("http-header-".to_string() + h.name().to_string().to_lowercase().as_str(), h.value().to_string());
-    }  
-  }
-  
-  return meta;
 }
 
 fn receive_path(router: PathBuf) -> String {
@@ -369,18 +234,81 @@ fn get_router_by_path_and_domain(
   return find_result;
 }
 
+#[post("/<router..>?<query..>", rank=15, data="<data>")]
+pub async fn router_post(
+  x_real_ip: XRealIp<'_>,
+  user_agent: UserAgent<'_>,
+  router: PathBuf,
+  raw_headers: HeadersMap<'_>,
+  query: HashMap<String, String>,
+  data: String,
+) -> Option<(Status, (ContentType, String))> {
+  return router_caller(
+    RouterBody {
+      x_real_ip,
+      user_agent,
+      router,
+      raw_headers,
+      query,
+      http_method: Some(String::from("POST")),
+      data: Some(data)
+    }
+  ).await;
+}
+
+#[post("/<router..>?<query..>", rank=15, data="<data>")]
+pub async fn router_put(
+  x_real_ip: XRealIp<'_>,
+  user_agent: UserAgent<'_>,
+  router: PathBuf,
+  raw_headers: HeadersMap<'_>,
+  query: HashMap<String, String>,
+  data: String,
+) -> Option<(Status, (ContentType, String))> {
+  return router_caller(
+    RouterBody {
+      x_real_ip,
+      user_agent,
+      router,
+      raw_headers,
+      query,
+      http_method: Some(String::from("PUT")),
+      data: Some(data)
+    }
+  ).await;
+}
+
 #[get("/<router..>?<query..>", rank=15)]
-pub async fn router(
+pub async fn router_get(
   x_real_ip: XRealIp<'_>,
   user_agent: UserAgent<'_>,
   router: PathBuf,
   raw_headers: HeadersMap<'_>,
   query: HashMap<String, String>,
 ) -> Option<(Status, (ContentType, String))> {
-  let path_as_string = receive_path(router);
-  let domain = raw_headers.0.get_one("host");
+  return router_caller(
+    RouterBody {
+      x_real_ip,
+      user_agent,
+      router,
+      raw_headers,
+      query,
+      http_method: Some(String::from("GET")),
+      data: None,
+    }
+  ).await;
+}
+
+async fn router_caller(
+  body: RouterBody<'_>,
+) -> Option<(Status, (ContentType, String))> {
+  let path_as_string = receive_path(body.router);
+  let domain = body.raw_headers.0.get_one("host");
   let find_result = get_router_by_path_and_domain(&path_as_string, domain);
-  
+  let request_method = body.http_method.unwrap_or("GET".to_string());
+
+  let collection = MongoDatabase::use_collection::<filter::Filter>("filters", "filters");
+
   if find_result.is_none() {
     return Some(not_found());
   }
@@ -390,9 +318,6 @@ pub async fn router(
   if route.resource_id.is_none() || route.filter_id.is_none() {
     return Some(not_found());
   }
-
-  let collection: Collection<filter::Filter> =
-    get_database(String::from("filters")).collection("filters");
 
   let filter = collection
     .find_one(
@@ -404,9 +329,9 @@ pub async fn router(
     .expect("Unable to find filter")
     .expect("Filter not found");
 
-  let asn_record = DATABASE.lookup(x_real_ip.0.parse().unwrap_or("0.0.0.0".parse().unwrap()));
+  let asn_record = DATABASE.lookup(body.x_real_ip.0.parse().unwrap_or("0.0.0.0".parse().unwrap()));
 
-  let mut filter_break: Option<(Status, (ContentType, String))> = None;
+  let mut filter_break: Option<Resource> = None;
   let mut route_way: Vec<asn_record::RouteWay> = vec![];
 
   // Filter
@@ -425,9 +350,9 @@ pub async fn router(
 
     let result = plugin(
       &condition.plugin,
-      &x_real_ip.0.to_owned(),
-      &user_agent.0.to_owned(),
-      raw_headers.0.to_owned(),
+      &body.x_real_ip.0.to_owned(),
+      &body.user_agent.0.to_owned(),
+      body.raw_headers.0.to_owned(),
       asn_record,
       &condition.value.as_str(),
       &condition.operator.as_str()
@@ -440,25 +365,10 @@ pub async fn router(
 
     route_way.push(way);
 
+    // if filter break
     if result {
-      let mut meta = create_meta_dataset_for_template(
-        &x_real_ip.0.to_owned(),
-        domain,
-        &user_agent.0.to_owned(),
-        raw_headers.0.to_owned(),
-        query.clone(),
-        &resource
-      );
-
-      if route.params.is_some() {
-        let params = route.params.clone().unwrap();
-        meta.extend(params);
-      }
-
-      let closure = rdr_kit::render_resource_for_http(resource, meta);
-      let out = closure.await;
-     
-      filter_break = Some(out);
+      filter_break = Some(resource);
+      // filter_break = Some(out);
 
       break 'filter;
     }
@@ -478,21 +388,43 @@ pub async fn router(
 
   let request_id = async_register_request_info(
     asn_record,
-    raw_headers.0.to_owned(),
-    user_agent.0.to_owned(),
-    query.clone(),
+    body.raw_headers.0.to_owned(),
+    body.user_agent.0.to_owned(),
+    body.query.clone(),
     Some(route_way),
     Some(route.name),
     register_resource_id,
   );
 
+  let mut meta = Converter::convert_params_to_meta_for_request(
+    &body.x_real_ip.0.to_owned(),
+    domain,
+    &body.user_agent.0.to_owned(),
+    body.raw_headers.0.to_owned(),
+    body.query.clone()
+  );
+
+  meta.insert(
+    "http-method".to_string(), 
+    request_method.clone()
+  );
+
+  if body.data.is_some() {
+    meta.insert("http-body".to_string(), body.data.unwrap());
+  }
+
+  if route.params.is_some() {
+    let params = route.params.clone().unwrap();
+    meta.extend(params);
+  }
+
   if asn_record.is_some() {
     let score = guard_kit::rate_traffic(
       guard_kit::TrafficRequest {
         asn_record: asn_record.unwrap().to_owned(),
-        ip: x_real_ip.0.to_owned(),
-        user_agent: user_agent.0.to_owned(),
-        headers: raw_headers.0.to_owned(),
+        ip: body.x_real_ip.0.to_owned(),
+        user_agent: body.user_agent.0.to_owned(),
+        headers: body.raw_headers.0.to_owned(),
         request_id: Some(request_id),
         resource_id: None
       }
@@ -509,25 +441,27 @@ pub async fn router(
   }
 
   if filter_break.is_some() {
-    return Some(filter_break.unwrap());
+    let resource = filter_break.unwrap();
+    let files_link_meta = Converter::convert_params_to_meta_file_links(&resource);
+
+    meta.extend(files_link_meta);
+
+    let closure = rdr_kit::render_resource_for_http(
+      resource, 
+      meta
+    );
+
+    let out = closure.await;
+  
+    return Some(out);
   }
   
   let resource_id = route.resource_id.unwrap();
-    let resource = resource_kit::require_resource(resource_id.as_str());
+  let resource = resource_kit::require_resource(resource_id.as_str());
 
-    let mut meta: HashMap<String, String> = create_meta_dataset_for_template(
-      &x_real_ip.0.to_owned(),
-      domain,
-      &user_agent.0.to_owned(),
-      raw_headers.0.to_owned(),
-      query.clone(),
-      &resource
-    );
+  let files_link_meta = Converter::convert_params_to_meta_file_links(&resource);
 
-    if route.params.is_some() {
-      let params = route.params.clone().unwrap();
-      meta.extend(params);
-    }
+  meta.extend(files_link_meta);
 
-    return Some(rdr_kit::render_resource_for_http(resource, meta).await);
+  return Some(rdr_kit::render_resource_for_http(resource, meta).await);
 }

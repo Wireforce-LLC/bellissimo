@@ -57,9 +57,24 @@ export default function Scenario() {
                 // icon={<img className="h-20" src={routerImage} alt="Server image" />}
               />
 
-              {/* {JSON.stringify(logs)} */}
+              <div className="px-4 py-2">
+                <ol className="relative border-s border-gray-200 dark:border-gray-700">
+                  {logs?.map((log) => (
+                    <li className="mb-2 ms-4">
+                      <div className="absolute w-3 h-3 bg-gray-200 rounded-full mt-1.5 -start-1.5 border border-white"></div>
+                      <time className="mb-1 select-none text-xs font-normal leading-none text-gray-400">
+                      {moment(log.time * 1000).format("DD.MM.YYYY HH:mm:ss")}
+                      </time>
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {log.event_name}
+                      </h3>
+                      {/* <a href="#" className="select-none text-xs text-blue-500">Open more</a> */}
+                    </li>
+                  ))}
+                </ol>
+              </div>
 
-              {logs &&
+              {/* {logs &&
                 logs.length > 0 &&
                 logs.map((log) => (
                   <div
@@ -88,7 +103,7 @@ export default function Scenario() {
                       {log.result}
                     </span>
                   </div>
-                ))}
+                ))} */}
 
               <SafeWhiteSpace />
             </div>

@@ -7,5 +7,4 @@ installGlobals();
 
 export default defineConfig({
   plugins: [remix(), tsconfigPaths()],
-
 });

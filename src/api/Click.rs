@@ -33,7 +33,6 @@ impl<'r> FromRequest<'r> for HeadersMap<'r> {
     }
 }
 
-#[warn(private_interfaces)]
 #[get("/click?<click..>", rank = 2)]
 pub async fn click(click: ReceiveClick, raw_headers: HeadersMap<'_>) -> Option<(Status, (ContentType, String))> {
   let ip = raw_headers.0

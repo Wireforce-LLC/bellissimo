@@ -44,3 +44,4 @@ log = "0.4.21"
 get-size = "0.1.4"
 css-minify = "0.3.1"
 paris = {version = "1.5.15", features = ["macros", "timestamps"]}
+futures = "0.3.30"

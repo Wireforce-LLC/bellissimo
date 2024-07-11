@@ -51,6 +51,12 @@ export default function Datahub() {
   const items = useMemo(
     () => [
       {
+        name: "Explorer",
+        description:
+          "Bellissimo creates funnels based on data from your requests. All funnels will be stored here.",
+        href: "explorer",
+      },
+      {
         name: "Requests",
         description:
           "All HTTP requests made to existing resources in Bellissimo.",
@@ -72,7 +78,13 @@ export default function Datahub() {
         description:
           "Bellissimo creates funnels based on data from your requests. All funnels will be stored here.",
         href: "funnels",
-      }
+      },
+      {
+        name: "Datasets",
+        description:
+          "Bellissimo creates funnels based on data from your requests. All funnels will be stored here.",
+        href: "datasets",
+      },
     ],
     []
   );

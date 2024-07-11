@@ -21,6 +21,7 @@
 #[path = "api/Click.rs"] mod api_click;
 #[path = "api/Funnel.rs"] mod api_funnel;
 #[path = "api/Scenario.rs"] mod api_scenario;
+#[path = "api/Dataset.rs"] mod api_dataset;
 
 // Kit
 #[path = "libs/Funnel.rs"] mod funnel_sdk;
@@ -29,6 +30,9 @@
 #[path = "libs/Scenario.rs"] mod scenario_sdk;
 #[path = "libs/System.rs"] mod system;
 #[path = "libs/Requests.rs"] mod requests_sdk;
+#[path = "libs/Statistica.rs"] mod statistica_sdk;
+#[path = "libs/Router.rs"] mod router_sdk;
+#[path = "libs/Dataset.rs"] mod dataset_sdk;
 
 
 // Config Files
@@ -60,7 +64,6 @@
 
 use config::CONFIG;
 use paris::info;
-use scenario_sdk::Scenario;
 use std::{collections::HashMap, net::IpAddr};
 use rocket::{config::Ident, data::Limits, fairing::AdHoc, Config};
 use background_service::register_background_service;
@@ -157,6 +160,10 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api_funnel::funnel_by_date])
       .mount(http_api_uri_path, routes![api_request::get_request_by_ip])
       .mount(http_api_uri_path, routes![api_scenario::get_scenario_logs])
+      .mount(http_api_uri_path, routes![api_dataset::create_dataset])
+      .mount(http_api_uri_path, routes![api_dataset::get_dataset_data_by_id])
+      .mount(http_api_uri_path, routes![api_dataset::get_all_datasets])
+      .mount(http_api_uri_path, routes![api_dataset::write_data_into_dataset])
 
       .mount(http_api_uri_path, routes![api_postback::get_postback_amount])
 
@@ -192,7 +199,8 @@ async fn register_routes_and_attach_server() {
 
 
   if is_http_future_main_router {
-    rocket_server = rocket_server.mount(http_base_route_uri_path, routes![dynamic_router::router]);
+    rocket_server = rocket_server.mount(http_base_route_uri_path, routes![dynamic_router::router_get]);
+    rocket_server = rocket_server.mount(http_base_route_uri_path, routes![dynamic_router::router_post]);
     rocket_server = rocket_server.mount(http_base_route_uri_path, routes![main_routes::object_get]);
   }
 

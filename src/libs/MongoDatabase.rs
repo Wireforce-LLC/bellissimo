@@ -32,6 +32,39 @@ impl MongoDatabase {
             }
         }
     }
+
+    /**
+     * Checks if a collection exists in the specified database.
+     * 
+     * This function checks if a collection with the specified name exists in the specified database.
+     *
+     * @param collection the collection to check
+     * @param database the database
+     */
+    pub fn collection_exists(collection: &str, database: &str) -> bool {
+        let database = MongoDatabase::use_database(database);
+        let collection_names = database.list_collection_names(None).unwrap();
+        
+        collection_names.contains(&collection.to_string())
+    }
+
+    /**
+     * Retrieves the database with the specified name.
+     * 
+     * This function fetches the MongoDB database object based on the provided name.
+     * @param name the name of the database
+     */
+    pub fn get_collection_names(database: &str) -> Vec<String> {
+        let database = MongoDatabase::use_database(database);
+        let collection_names = database.list_collection_names(None).unwrap();
+
+        let result: Vec<String> = collection_names
+            .iter()
+            .map(|name| name.to_string())
+            .collect();
+
+        result    
+    }
 } 
 
 impl MongoDatabase {

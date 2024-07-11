@@ -21,3 +21,4 @@ Each router contains parameters that can be set using a meta field. These parame
 
 ## Usage
 Once you have set up your routers, Bellissimo will automatically direct incoming traffic to the specified paths based on the URL. This allows you to create custom routing within your application and provide a seamless user experience.
+

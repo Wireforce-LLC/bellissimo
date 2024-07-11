@@ -3,10 +3,10 @@ use crate::config::CONFIG;
 use crate::main_routes::not_found;
 use crate::plugin;
 use crate::resource_kit::Resource;
+use futures::executor; 
 
 use chrono::Utc;
 use fastcgi_client::{Client, Params, Request};
-use nanoid::nanoid;
 use paris::info;
 use rocket::http::{ContentType, Status};
 use serde_json::Value;
@@ -14,12 +14,14 @@ use tokio::io;
 use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
+use std::str::FromStr;
 use std::{env, fs};
 use std::path::Path;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex, RwLock};
 use tokio::net::TcpStream;
 use css_minify::optimizations::{Minifier, Level};
 
+// PHP-FPM connection array and render methods
 lazy_static! {
   pub static ref RENDER_METHODS: Mutex<
     HashMap<String, fn(Resource, HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>>>
@@ -203,10 +205,10 @@ fn default_method_http_status_page(resource: Resource, _meta: HashMap<String, St
 }
 
 fn default_method_php(resource: Resource, meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
-  let php_fpm_host = env::var("PHP_FPM_HOST").unwrap_or("localhost".to_string());
-  let php_fpm_port = env::var("PHP_FPM_PORT").unwrap_or("9000".to_string()).parse::<u16>().unwrap();
-
   let closure = async move {
+    let host = env::var("PHP_FPM_HOST").unwrap_or("localhost".to_string());
+    let port = env::var("PHP_FPM_PORT").unwrap_or("9000".to_string()).parse::<u16>().unwrap();
+
     if resource.raw_content.is_some() {
       if CONFIG["is_allow_debug_throw"].as_bool().unwrap() {
         return (
@@ -239,49 +241,110 @@ fn default_method_php(resource: Resource, meta: HashMap<String, String>) -> Pin<
     let path = Path::new(&template_uri_raw);
     
     if path.exists() {
-      let script_name = "index.php";
+      let script_name = &path
+        .file_name()
+        .unwrap()
+        .to_str()
+        .unwrap_or("index.php")
+        .to_string();
 
+      // I KILL YOU AND YOUR FAMALY
       let stream = TcpStream::connect((
-        php_fpm_host.as_str(),
-        php_fpm_port
+        host,
+        port
       )).await.unwrap();
 
-      let client = Client::new(stream);
+      let client = Client::new(stream);  
 
       let query_string_from_meta = meta
         .iter()
+        .filter(|p| !p.0.starts_with("http-header-"))
+        .filter(|p| p.0 != "http-method")
+        .filter(|p| p.0 != "http-body")
         .map(|(k, v)| format!("{}={}", k, v))
         .collect::<Vec<String>>()
         .join("&");
 
+      let default_method_key = "http-method".to_string();
+      let default_method_value = "get".to_string();
+
+      let method = meta
+        .iter()
+        .find(|p| p.0 == "http-method")
+        .unwrap_or((&default_method_key, &default_method_value));
+
       // Fastcgi params, please reference to nginx-php-fpm config.
-      let params = Params::default()
-        .request_method("GET")
-        // .script_name(path.file_name().unwrap().to_str().unwrap())
+      let mut params = Params::default()
+        .request_method(method.1.to_uppercase())
         .script_filename(template_uri_raw)
         .request_uri(script_name)
         .document_uri(script_name)
-        .remote_addr("127.0.0.1")
-        .server_addr("127.0.0.1")
         .server_port(80)
         .query_string(query_string_from_meta)
         .server_name("bellissimo");
 
+      params.insert("BELLISIIMO".into(), "In quale altro modo?".into());
+      params.insert("SERVER_SIGNATURE".into(), "bellissimo-php-fpm".into());
+
+      if meta.contains_key("http-body") {
+        params.insert("REQUEST_BODY".into(), meta.get("http-body").unwrap().to_string().into());
+      }
+
+      // Set headers from meta.
+      for (k, v) in meta.iter() {
+        if k.starts_with("http-header-") {
+          let header_name = k.replace("http-header-", "").to_lowercase();
+          params.insert(format!("HTTP_{}", header_name.to_uppercase().replace("-", "_")).into(), v.into());
+        }
+      }
+
       // Fetch fastcgi server(php-fpm) response.
-      let output: fastcgi_client::Response = client.execute_once(Request::new(params, &mut io::empty())).await.unwrap();
+      let output = {
+        client.execute_once(Request::new(params, &mut io::empty())).await.unwrap()
+      };
 
       // "Content-type: text/html; charset=UTF-8\r\n\r\nhello"
       let stdout = String::from_utf8(output.stdout.unwrap()).unwrap();
 
-      let (_, stdout) = stdout
+      let (headers_raw, stdout) = stdout
         .trim_start()
         .split_once("\r\n\r\n")
         .unwrap();
 
+      let headers: Vec<Vec<&str>> = headers_raw
+        .split("\n")
+        .map(|s| s.trim())
+        .map(|f| f.split(": ").collect::<Vec<&str>>())
+        .collect();
+
+      let content_type_header = headers
+        .iter()
+        .find(|h| h[0].to_lowercase() == "content-type");
+
+
+      // content type can has '; charset=UTF-8'. replace it
+      let content_type = if content_type_header.is_some() {
+        let content_type = content_type_header.unwrap()[1];
+        
+        if content_type.contains(";") {
+          let raw = content_type.split(";").collect::<Vec<&str>>()[0];
+
+          ContentType::from_str(raw).unwrap_or_else(
+            |_e| ContentType::HTML
+          )
+        } else {
+          ContentType::from_str(content_type).unwrap_or_else(
+            |_e| ContentType::HTML
+          )
+        }
+      } else {
+        ContentType::HTML
+      };
+
       return (
         Status::Ok,
         (
-          ContentType::HTML,
+          content_type,
           String::from(stdout)
         )
       );
