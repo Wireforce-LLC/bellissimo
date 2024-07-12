@@ -66,7 +66,7 @@ pub fn create_dataset(data: String) -> (Status, (ContentType, String)) {
   }
 
   // special case
-  if !name.chars().all(|c| (c.is_alphanumeric() || c == '_') && c.is_lowercase()) {
+  if !name.chars().all(|c| ((c.is_alphanumeric()  && c.is_lowercase()) || c == '_')) {
     return (
       Status::BadRequest, 
       (
