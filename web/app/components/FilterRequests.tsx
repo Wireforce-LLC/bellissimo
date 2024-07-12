@@ -17,6 +17,22 @@ interface Props {
   readonly limit?: number;
 }
 
+/**
+ * @description
+ * Filter requests component. It has a few input fields: country, date, skip and limit.
+ * Also, it has a few buttons with request fields which can be used to filter requests.
+ * 
+ * @param onChangeCountry - callback which is called when country is changed.
+ * @param onChangeDate - callback which is called when date is changed.
+ * @param onSetSkip - callback which is called when skip is changed.
+ * @param onSetLimit - callback which is called when limit is changed.
+ * @param onSetFilterKeys - callback which is called when filter keys are changed.
+ * @param filterKeys - current filter keys.
+ * @param skip - current skip.
+ * @param limit - current limit.
+ * 
+ * @returns React component with input fields and buttons.
+ */
 export default function FilterRequests({
   skip,
   limit,
@@ -30,16 +46,13 @@ export default function FilterRequests({
   const [country, setCountry] = useState<string | undefined>();
   const [date, setDate] = useState<string | undefined>();
 
-  //  // "query",
-  //   // "headers",
-  //   "asn_description",
-  //   // "request_id",
-  //   "asn_number",
-  //   "is_ua_bot",
-  //   "asn_name",
-  //   // "resource_id",
-  //   "user_agent_client",
-
+  /**
+   * @description
+   * Filter array. Each item in this array is an object with name, key and value.
+   * Name is a string which is displayed on the button.
+   * Key is a string which is used to filter requests.
+   * Value is a boolean which is used to determine if the key should be used to filter requests.
+   */
   const [filter, setFitler] = useState<any[]>(() => [
     {name: "ASN Name", key: "asn_name", value: null},
     {name: "Time", key: "time", value: null},
@@ -63,6 +76,12 @@ export default function FilterRequests({
     onSetFilterKeys?.(filter.filter(it => !it.value).map(it => it.key));
   }, [filter])
 
+  /**
+   * @description
+   * List of countries. Each item in this list is an object with value and name.
+   * Value is a country code.
+   * Name is a string which is displayed on the select.
+   */
   const countriesList = useMemo(() => {
     const list = _.toPairs(countries).map((item) => {
       return {

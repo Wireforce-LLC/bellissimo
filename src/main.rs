@@ -22,6 +22,7 @@
 #[path = "api/Funnel.rs"] mod api_funnel;
 #[path = "api/Scenario.rs"] mod api_scenario;
 #[path = "api/Dataset.rs"] mod api_dataset;
+#[path = "api/Explorer.rs"] mod api_explorer;
 
 // Kit
 #[path = "libs/Funnel.rs"] mod funnel_sdk;
@@ -139,6 +140,7 @@ async fn register_routes_and_attach_server() {
 
   rocket_server = rocket_server.mount("/", routes![api_click::click]);
   rocket_server = rocket_server.mount("/", routes![main_routes::click_lib]);
+  rocket_server = rocket_server.mount("/", routes![main_routes::dataset_lib]);
 
   if is_http_future_api {
     rocket_server = rocket_server
@@ -164,8 +166,12 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api_dataset::get_dataset_data_by_id])
       .mount(http_api_uri_path, routes![api_dataset::get_all_datasets])
       .mount(http_api_uri_path, routes![api_dataset::write_data_into_dataset])
-
       .mount(http_api_uri_path, routes![api_postback::get_postback_amount])
+      .mount(http_api_uri_path, routes![api_explorer::explore_dataset])
+      .mount(http_api_uri_path, routes![api_explorer::create_template])
+      .mount(http_api_uri_path, routes![api_explorer::list_templates])
+      .mount(http_api_uri_path, routes![api_explorer::get_collections])
+      .mount(http_api_uri_path, routes![api_explorer::get_datasets])
 
       .mount(http_api_uri_path, routes![api_file::get_all_files])
       .mount(http_api_uri_path, routes![api_file::get_file])

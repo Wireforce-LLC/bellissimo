@@ -282,6 +282,7 @@ export default {
 
     subtitle: {
       routes: "Routes",
+      datasets: "Datasets",
       filters: "Filters",
       resources: "Resources",
       asnRecords: "Requests",

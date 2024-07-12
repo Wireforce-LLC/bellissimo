@@ -9,6 +9,8 @@ import wireforceLogo from "/wireforce-logo.png";
 import rightTopImage from "/top-right-01.png";
 import _ from "lodash";
 import Funnels from "../fragments/datahub_funnels";
+import DatahubExplorer from "../fragments/datahub_explorer";
+import DatahubDatasets from "~/fragments/datahub_datasets";
 
 export const meta: MetaFunction = () => {
   return [
@@ -52,8 +54,7 @@ export default function Datahub() {
     () => [
       {
         name: "Explorer",
-        description:
-          "Bellissimo creates funnels based on data from your requests. All funnels will be stored here.",
+        description: "You can create complex requests for hard analytic",
         href: "explorer",
       },
       {
@@ -81,8 +82,7 @@ export default function Datahub() {
       },
       {
         name: "Datasets",
-        description:
-          "Bellissimo creates funnels based on data from your requests. All funnels will be stored here.",
+        description: "Store for your datasets/user-data",
         href: "datasets",
       },
     ],
@@ -117,7 +117,9 @@ export default function Datahub() {
       requests: <DatahubRequests />,
       postbacks: <DatahubPostbacks />,
       clicks: <DatahubClicks />,
-      funnels: <Funnels />
+      funnels: <Funnels />,
+      explorer: <DatahubExplorer />,
+      datasets: <DatahubDatasets />
     };
   }, []);
 

@@ -88,11 +88,11 @@ export default function Docs() {
       <pre >
         {tokens.map((line, i) => (
           <div key={i} {...getLineProps({ line })} className="w-full flex flex-row space-x-2 bg-transparent">
-            <div className="w-[24px] flex-shrink-0 border-r border-r-gray-200">{i + 1}</div>
+            <div className="w-[24px] flex-shrink-0 border-r border-r-gray-200 select-none text-gray-500">{i + 1}</div>
             <span className="w-full whitespace-pre-line">
-            {line.map((token, key) => (
-              <span key={key} {...getTokenProps({ token })} />
-            ))}
+              {line.map((token, key) => (
+                <span key={key} {...getTokenProps({ token })} className="whitespace-pre" />
+              ))}
             </span>
           </div>
         ))}

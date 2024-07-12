@@ -21,8 +21,25 @@ impl Dataset {
         MongoDatabase::get_collection_names("datasets")
     }
 
+    pub fn size_of_dataset(dataset: &str) -> u64 {
+        MongoDatabase::use_collection::<HashMap<String, serde_json::Value>>("datasets", dataset)
+           .count_documents(None, None)
+           .expect("Failed to get dataset size")
+    }
+
+    /**
+     * Gets the last document of the specified type.
+     * @param name
+     * @return
+     */
+    pub fn last_document_of_type(name: &str) -> Option<HashMap<String, serde_json::Value>> {
+        MongoDatabase::use_collection::<HashMap<String, serde_json::Value>>("datasets", name)
+           .find_one(None, None)
+           .expect("Failed to get last document")
+    }
+
     pub fn is_dataset(name: &str) -> bool {
-        MongoDatabase::collection_exists("datasets", name)
+        MongoDatabase::collection_exists(name, "datasets")
     }
 
     pub fn create_dataset(name: &str) -> Result<(), &str> {
@@ -34,7 +51,13 @@ impl Dataset {
             return Result::Err("Dataset name cannot contain spaces");
         }
 
-        MongoDatabase::create_collections(vec![(name, "datasets")]);
+        let result = MongoDatabase
+            ::use_database("datasets")
+            .create_collection(&name, None);
+
+        if result.is_err() {
+            return Result::Err("Failed to create dataset");
+        }
 
         return Ok(())
     }

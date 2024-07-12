@@ -41,7 +41,16 @@ pub async fn object_get(object: PathBuf) -> Option<(Status, (ContentType, String
 
 #[get("/ga.js", rank = 1)]
 pub async fn click_lib() -> Option<(Status, (ContentType, String))> {
-  let ref_content: &str = include_str!("../../containers/click-lib.js");
+  let ref_content: &str = include_str!("../../containers/Javascript/click-lib.js");
+
+  let content = ref_content.to_owned();
+
+  return Some((Status::Ok, (ContentType::JavaScript, content)));
+}
+
+#[get("/ds.js", rank = 1)]
+pub async fn dataset_lib() -> Option<(Status, (ContentType, String))> {
+  let ref_content: &str = include_str!("../../containers/Javascript/dataset-lib.js");
 
   let content = ref_content.to_owned();
 

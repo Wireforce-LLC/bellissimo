@@ -6,9 +6,10 @@ interface Props {
   readonly onChangeContent?: (content: string) => void;
   readonly startContent?: string;
   readonly language?: string;
+  readonly isHiddenRightBar?: boolean;
 }
 
-export default function MonacoEditorEmbed({ startContent,language, onIntentSave, onChangeContent }: Props) {
+export default function MonacoEditorEmbed({ startContent,language, isHiddenRightBar, onIntentSave, onChangeContent }: Props) {
   const [content, setContent] = useState<string>(startContent || '');
 
   const keydownHandler = (e: KeyboardEvent) => {
@@ -25,6 +26,10 @@ export default function MonacoEditorEmbed({ startContent,language, onIntentSave,
       document.removeEventListener("keydown", keydownHandler);
     };
   }, [content]);
+
+  useEffect(() => {
+    setContent(startContent || '');
+  }, [startContent]);
 
   const editorRef = useRef<HTMLDivElement | null>(null);
 
@@ -43,7 +48,7 @@ export default function MonacoEditorEmbed({ startContent,language, onIntentSave,
           tabSize: 2,
           fontSize: 14,
           minimap: {
-            enabled: true,
+            enabled: isHiddenRightBar ? false : true,
           },
           scrollBeyondLastLine: true,
           folding: true,
@@ -54,6 +59,7 @@ export default function MonacoEditorEmbed({ startContent,language, onIntentSave,
             horizontal: "hidden",
           },
           renderLineHighlight: "all",
+          autoIndent: true,
         }}
         onChange={(text) => {
           onChangeContent?.(String(text))

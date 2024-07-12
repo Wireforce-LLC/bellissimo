@@ -7,7 +7,14 @@ interface Props {
   readonly eventGrouped?: any[];
 }
 
+/**
+ * Component for displaying grouped events in a card format.
+ * 
+ * @param eventGrouped - An array containing grouped events data.
+ * @returns JSX element representing the SharedCardEventsGroup component.
+ */
 export default function SharedCardEventsGroup({ eventGrouped }: Props) {
+  // Array of colors for event progress bars
   const colors = [
     "#f44336",
     "#E91E63",
@@ -50,16 +57,19 @@ export default function SharedCardEventsGroup({ eventGrouped }: Props) {
     >
       {_.take(_.toPairs(eventGrouped), 8)?.map((event, index) => (
         <div className="w-full flex flex-row gap-2 justify-center place-items-center">
+          {/* Display the event name */}
           <span className="text-gray-600 text-xs m-0 line-clamp-none">
             {event[0]}
           </span>
 
+          {/* Render the progress bar for the event */}
           <ProgressMini
             bgColor={colors[index]}
             value={event[1].countEvents}
             progress={event[1].percentOfOthers}
           />
 
+          {/* Show a pulse animation if the event percentage is over 50% */}
           {event[1].percentOfOthers > 50 && (
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -68,9 +78,9 @@ export default function SharedCardEventsGroup({ eventGrouped }: Props) {
               className="w-3 h-3 text-lime-500 animate-pulse"
             >
               <path
-                fill-rule="evenodd"
+                fillRule="evenodd"
                 d="M9.58 1.077a.75.75 0 0 1 .405.82L9.165 6h4.085a.75.75 0 0 1 .567 1.241l-6.5 7.5a.75.75 0 0 1-1.302-.638L6.835 10H2.75a.75.75 0 0 1-.567-1.241l6.5-7.5a.75.75 0 0 1 .897-.182Z"
-                clip-rule="evenodd"
+                clipRule="evenodd"
               />
             </svg>
           )}

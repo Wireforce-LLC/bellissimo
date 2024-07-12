@@ -104,4 +104,38 @@ impl MongoDatabase {
     pub fn use_collection<T>(database: &str, collection: &str) -> mongodb::sync::Collection<T> {
         return DATABASE_CLIENT.database(&database).collection::<T>(&collection);
     }
+
+    /**
+     * Retrieves the names of all databases.
+     * @return
+     */
+    pub fn get_databases() -> Vec<String> {
+        let databases = DATABASE_CLIENT
+            .list_database_names(None, None)
+            .unwrap();
+
+        let result: Vec<String> = databases
+            .iter()
+            .map(|name| name.to_string())
+            .collect();
+
+        result
+    }
+
+    /**
+     * Creates collections with the specified names.
+     * @param names
+     * @return
+     */
+    pub fn get_collections(database: &str) -> Vec<String> {
+        let database = MongoDatabase::use_database(database);
+        let collection_names = database.list_collection_names(None).unwrap();
+
+        let result: Vec<String> = collection_names
+            .iter()
+            .map(|name| name.to_string())
+            .collect();
+
+        result
+    }
 }

@@ -1,15 +1,24 @@
-
 use std::collections::HashMap;
-
-use mongodb::{bson::doc, sync::Collection};
+use chrono::Utc;
+use mongodb::bson::doc;
 use rocket::http::{ContentType, Status};
-use crate::{background_service::User, database::get_database, dataset_sdk::{Dataset, DatasetCursorFilter}};
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use crate::dataset_sdk::{Dataset, DatasetCursorFilter};
 
 #[derive(FromForm)]
 pub struct DatasetSelectFilter {
   pub limit: Option<i64>,
   pub skip: Option<u64>
 }
+
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct DatasetInfo {
+  pub name: String,
+  pub size_of_dataset: u64,
+}
+
 
 #[post("/dataset/create", data="<data>")]
 pub fn create_dataset(data: String) -> (Status, (ContentType, String)) {
@@ -30,6 +39,46 @@ pub fn create_dataset(data: String) -> (Status, (ContentType, String)) {
 
   let name = data.get("name").unwrap();
 
+  if name.is_empty() {
+    return (
+      Status::BadRequest, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Dataset name cannot be empty"
+        }).to_string()
+      )
+    )
+  }
+
+  if name.contains(" ") {
+    return (
+      Status::BadRequest, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Dataset name cannot contain spaces"
+        }).to_string()
+      )
+    )
+  }
+
+  // special case
+  if !name.chars().all(|c| (c.is_alphanumeric() || c == '_') && c.is_lowercase()) {
+    return (
+      Status::BadRequest, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": "Dataset name can only contain alphanumeric characters and underscores and only lowercase"
+        }).to_string()
+      )
+    )
+  }
+
   if Dataset::is_dataset(&name) {
     return (
       Status::Conflict, 
@@ -44,14 +93,23 @@ pub fn create_dataset(data: String) -> (Status, (ContentType, String)) {
     )
   }
 
-  Dataset::create_dataset(&name);
+  let _ = Dataset::create_dataset(&name);
 
   return (Status::Created, (ContentType::JSON, String::new()));
 }
 
-#[get("/dataset/list")]
+#[get("/dataset/list", rank = 3)]
 pub fn get_all_datasets() -> (Status, (ContentType, String)) {
+  let mut result = Vec::new();
+
   let datasets = Dataset::get_datasets_list();
+
+  for dataset in datasets {
+    result.push(DatasetInfo {
+      size_of_dataset: Dataset::size_of_dataset(&dataset),
+      name: dataset,
+    });
+  }
 
   return (
     Status::Ok, 
@@ -60,12 +118,12 @@ pub fn get_all_datasets() -> (Status, (ContentType, String)) {
       serde_json::json!({
         "isOk": true,
         "error": null,
-        "value": datasets
+        "value": result
       }).to_string()
     )
   );
 }
-
+ 
 #[post("/dataset/write/<dataset_name>", data="<data>")]
 pub fn write_data_into_dataset(dataset_name: String, data: String) -> (Status, (ContentType, String)) {
   if !Dataset::is_dataset(&dataset_name) {
@@ -86,6 +144,10 @@ pub fn write_data_into_dataset(dataset_name: String, data: String) -> (Status, (
 
   match data {
     Ok(data) => {
+      let mut data: HashMap<String, serde_json::Value> = data;
+
+      data.insert("time".to_string(), Value::from(Utc::now().timestamp_micros()));
+
       let result = Dataset::insert_into_dataset(&dataset_name, data);
 
       match result {
@@ -116,9 +178,8 @@ pub fn write_data_into_dataset(dataset_name: String, data: String) -> (Status, (
     }
   }
 }
-
-
-#[get("/dataset/<dataset_name>?<dataset_select_filter..>")]
+ 
+#[get("/dataset/<dataset_name>?<dataset_select_filter..>", rank = 4)]
 pub fn get_dataset_data_by_id(dataset_name: String, dataset_select_filter: DatasetSelectFilter) -> (Status, (ContentType, String)) {
   let data = Dataset::get_dataset_data(&dataset_name, doc! {}, DatasetCursorFilter {
     limit: dataset_select_filter.limit.unwrap_or(32),

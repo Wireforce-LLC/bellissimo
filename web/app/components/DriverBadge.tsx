@@ -7,13 +7,7 @@ interface Props {
   readonly driver?: string;
 }
 
-/**
- * Renders a driver badge based on the provided driver value.
- *
- * @param props - The component props.
- * @param props.driver - The driver value (string).
- * @returns The rendered driver badge.
- */
+
 export default function DriverBadge({ driver }: Props): JSX.Element {
   if (driver == undefined) {
     return (

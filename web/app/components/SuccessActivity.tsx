@@ -5,6 +5,13 @@ interface Props {
   readonly className?: string;
 }
 
+/**
+ * Component for displaying a success activity.
+ * 
+ * @param text - The text to display in the success activity.
+ * @param className - The CSS class name for styling purposes.
+ * @returns JSX element representing the SuccessActivity component.
+ */
 export default function SuccessActivity({ text, className }: Props) {
   return (
     <div

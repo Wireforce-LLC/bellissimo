@@ -5,14 +5,29 @@ interface Props {
   readonly className?: string;
   readonly type?: string;
   readonly placeholder?: string;
-  readonly value?: string;
+  readonly isDisabled?: boolean;
   readonly label?: string;
   readonly isRequired?: boolean;
-  readonly isDisabled?: boolean;
   readonly name?: string;
-  readonly onChangeValue?: (it: string | undefined) => void;
+  readonly onChangeValue?: (value: string) => void;
+  readonly value?: string;
 }
 
+/**
+ * Renders an input field with an optional label.
+ *
+ * @param {InputProps} props - The component props.
+ * @param {string} [props.className] - Additional CSS class for styling.
+ * @param {string} [props.type] - The input type.
+ * @param {string} [props.placeholder] - The placeholder text.
+ * @param {boolean} [props.isDisabled] - Whether the input is disabled.
+ * @param {string} [props.label] - The label text.
+ * @param {boolean} [props.isRequired] - Whether the input is required.
+ * @param {string} [props.name] - The input name.
+ * @param {(value: string) => void} [props.onChangeValue] - The callback function called when the input value changes.
+ * @param {string} [props.value] - The input value.
+ * @returns {JSX.Element} The rendered input field.
+ */
 export default function Input({
   className,
   type,
@@ -23,7 +38,7 @@ export default function Input({
   name,
   onChangeValue,
   value,
-}: Props) {
+}: Props): JSX.Element {
   return (
     <div data-role="input-group" className="w-full">
       {label ? (
@@ -42,8 +57,6 @@ export default function Input({
           }
         }}
         placeholder={placeholder}
-        // className="w-full px-3 py-1 border border-black outline-none focus:outline-none"
-        // className="w-full rounded-lg px-3 py-1 font-medium text-sm placeholder-gray-400 hover:border-gray-400 focus-within:border-gray-400 border-gray-300 focus:border-black transition-colors duration-75 border-2 outline-none focus:outline-none"
         className={classNames(
           "w-full h-8 px-3 py-1 disabled:text-gray-400 text-sm placeholder-gray-400 hover:border-gray-200 focus-within:border-gray-400 border-gray-200 focus:border-gray-500 transition-colors duration-75 border-[0.115em] outline-none focus:outline-none",
           className
