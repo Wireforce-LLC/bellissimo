@@ -68,6 +68,10 @@ export default function Select({
         onInput={event => {
           onChangeValue?.(event.currentTarget.value);
         }}
+        style={{
+          "WebkitAppearance": "none",
+          // "-webkit-appearance": "none",
+        }}
         onChange={(event) => {
           onChangeValue?.(event.target.value);
         }}
