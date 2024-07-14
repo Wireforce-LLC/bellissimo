@@ -289,6 +289,7 @@ export default {
       postbacks: "Postbacks",
       requests: "Requests",
       clicks: "Clicks",
+      scenario: "Scenario",
 
       createThread: "Create new thread",
       events: "Events",
@@ -315,6 +316,7 @@ export default {
       routers: "Routers",
       visitors: "Visitors",
       traffic: "Traffic",
+      adsManager: "AdsManager",
     },
   },
 };

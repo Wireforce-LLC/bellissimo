@@ -59,7 +59,7 @@ export default function Modal({
           "bg-white border max-h-[80%] overflow-y-hidden block border-black",
           {
             "w-[80%] h-[80%]": isBigModal,
-            "md:max-w-[70%] min-w-[100px] md:min-w-[300px] lg:min-w-[40%]":
+            "md:max-w-[90%] md:min-w-[60%] min-w-[80%] lg:min-w-[40%]":
               !isBigModal,
           }
         )}

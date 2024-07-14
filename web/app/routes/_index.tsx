@@ -9,6 +9,7 @@ import Files from "../fragments/files";
 import Filters from "../fragments/filters";
 import Resources from "../fragments/resources";
 import Scenario from "~/fragments/scenario";
+import AdsManager from "~/fragments/ads_manager";
 
 export const meta: MetaFunction = () => {
   return [
@@ -54,7 +55,8 @@ export default function Dashboard() {
       "/files": <Files/>,
       "/filters": <Filters/>,
       "/resources": <Resources/>,
-      "/scenario": <Scenario/>
+      "/scenario": <Scenario/>,
+      "/adsmanager": <AdsManager/>
     }
   }, []);
 

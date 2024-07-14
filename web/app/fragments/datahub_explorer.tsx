@@ -272,7 +272,7 @@ export default function DatahubExplorer() {
               headers={tableHeaders}
               data={flattenRequestedData.map((it) => ({
                 ...it,
-                time:
+                time: it.time && (
                   moment(it.time).format("DD.MM.YYYY") ==
                   moment().format("DD.MM.YYYY") ? (
                     <>
@@ -285,7 +285,8 @@ export default function DatahubExplorer() {
                     </>
                   ) : (
                     <span>{moment(it.time).format("DD.MM.YYYY HH:mm:ss")}</span>
-                  ),
+                  )
+                ),
               }))}
             />
           </div>

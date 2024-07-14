@@ -11,7 +11,23 @@
             font-family: serif;
             text-align: center;
             background-color: #fff;
+            color: black;
         }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: black;
+                color: white;
+            }
+        }
+
+        @media (prefers-color-scheme: light) {
+            body {
+                background-color: white;
+                color: black;
+            }
+        }
+
 
         h1 {
             margin: 14px;

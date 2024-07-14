@@ -8,12 +8,12 @@ use crate::click_sdk;
 
 struct HeadersMap<'r>(&'r HeaderMap<'r>);
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 struct Event {
   pub name: String
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 struct ClickGroupped {
   pub last_events: Vec<Event>,
   pub ip: String,

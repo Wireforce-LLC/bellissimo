@@ -1,4 +1,11 @@
-#![allow(dead_code)]
+use std::alloc::System;
+
+#[global_allocator]
+static ALLOCATOR: System = System;
+
+
+// #![allow(dead_code)]
+
 
 #[macro_use] extern crate rocket;
 #[macro_use] extern crate lazy_static;
@@ -23,6 +30,7 @@
 #[path = "api/Scenario.rs"] mod api_scenario;
 #[path = "api/Dataset.rs"] mod api_dataset;
 #[path = "api/Explorer.rs"] mod api_explorer;
+#[path = "api/AdManager.rs"] mod api_ad_manager;
 
 // Kit
 #[path = "libs/Funnel.rs"] mod funnel_sdk;
@@ -34,6 +42,7 @@
 #[path = "libs/Statistica.rs"] mod statistica_sdk;
 #[path = "libs/Router.rs"] mod router_sdk;
 #[path = "libs/Dataset.rs"] mod dataset_sdk;
+#[path = "libs/AdCampaignManager.rs"] mod ad_campaign_manager;
 
 
 // Config Files
@@ -172,6 +181,8 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api_explorer::list_templates])
       .mount(http_api_uri_path, routes![api_explorer::get_collections])
       .mount(http_api_uri_path, routes![api_explorer::get_datasets])
+      .mount(http_api_uri_path, routes![api_ad_manager::create_campaign])
+      .mount(http_api_uri_path, routes![api_ad_manager::list_campaigns])
 
       .mount(http_api_uri_path, routes![api_file::get_all_files])
       .mount(http_api_uri_path, routes![api_file::get_file])

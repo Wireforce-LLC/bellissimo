@@ -34,6 +34,8 @@ export enum ApiPathEnum {
   GetAllDatabasesList = "/api/explorer/databases/list",
   GetAllCollectionsList = "/api/explorer/collections/list",
   GetAllDatasetsList = "/api/dataset/list",
+  GetAdsManagerCampaignsList = "/api/adsmanager/campaigns/list",
+  CreateAdsManagerCampaign = "/api/adsmanager/create",
 
   CreateRoutes = "/api/route/create",
   CreateResources = "/api/resource/create",
