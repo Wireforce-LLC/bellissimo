@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use mongodb::{bson::{doc, Document}, options::FindOptions};
 use rocket::{http::{ContentType, HeaderMap, Status}, request::{FromRequest, Outcome}, Request};
 use serde::{Deserialize, Serialize};
-use crate::{click::Click, database::get_database, dynamic_router::ImplementationError};
+use crate::{click::Click, dynamic_router::ImplementationError, mongo_sdk::MongoDatabase};
 use crate::click::ReceiveClick;
 use crate::click_sdk;
 
@@ -94,7 +94,7 @@ pub async fn click(click: ReceiveClick, raw_headers: HeadersMap<'_>) -> Option<(
 
 #[get("/click/list")]
 pub fn get_all_clicks() -> (Status, (ContentType, String)) {
-  let collection: mongodb::sync::Collection<Click> = get_database(String::from("requests")).collection("clicks");
+  let collection = MongoDatabase::use_clicks_collection();
 
   let mut clicks: Vec<Click> = Vec::new();
 
@@ -131,7 +131,7 @@ pub fn get_all_clicks() -> (Status, (ContentType, String)) {
 #[get("/click/list/by/ip/<ip..>")]
 pub fn get_clicks_by_ip(ip: PathBuf) -> (Status, (ContentType, String)) {
   let ip = ip.into_os_string().into_string().unwrap();
-  let collection: mongodb::sync::Collection<Click> = get_database(String::from("requests")).collection("clicks");
+  let collection = MongoDatabase::use_clicks_collection();
 
   let mut clicks: Vec<Click> = Vec::new();
 
@@ -170,7 +170,7 @@ pub fn get_clicks_by_ip(ip: PathBuf) -> (Status, (ContentType, String)) {
 
 #[get("/click/ipMapping")]
 pub fn get_ip_mapped_clicks() -> (Status, (ContentType, String)) {
-  let collection: mongodb::sync::Collection<Click> = get_database(String::from("requests")).collection("clicks");
+  let collection = MongoDatabase::use_clicks_collection();
 
   let pipeline: Vec<Document> = vec![
     doc! { "$match": { "ip": { "$exists": true }, "time": { "$exists": true } } },

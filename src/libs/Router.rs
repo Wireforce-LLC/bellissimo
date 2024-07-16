@@ -119,6 +119,7 @@ impl Converter {
     
       let client = UA_PARSER.parse(&user_agent);
       let record = AsnRecord {
+        http_method: None,
         asn_name: match asn_record {
           Some(asn_record) => Some(asn_record.owner.to_owned()),
     

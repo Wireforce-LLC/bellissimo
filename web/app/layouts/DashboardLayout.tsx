@@ -1,12 +1,10 @@
 import Navbar from "~/components/Navbar";
-import { ReactNode, useCallback, useEffect, useState } from "react";
-import webConfig, { ApiPathEnum } from "~/web.config";
-
-import wireforceLogo from "/wireforce-logo.png";
-import rightTopImage from "/top-right-01.png";
 import classNames from "classnames";
-import { motion } from "framer-motion";
+import rightTopImage from "/top-right-01.png";
 import string from "~/localization/polyglot";
+import wireforceLogo from "/wireforce-logo.png";
+import { motion } from "framer-motion";
+import { ReactNode, useCallback, useEffect, useState } from "react";
 
 export enum LeftActiveBarItem {
   FILES = "files",
@@ -16,7 +14,14 @@ export enum LeftActiveBarItem {
   ASN_RECORDS = "asn-records",
   POSTBACKS = "postbacks",
   SCENARIO = "scenario",
-  ADS_MANAGER = "adsmanager"
+  ADS_MANAGER = "adsmanager",
+  DATAHUB = "datahub",
+  DATAHUB_EXPLORER = "datahub/explorer",
+  DATAHUB_REQUESTS = "datahub/requests",
+  DATAHUB_POSTBACKS = "datahub/postbacks",
+  DATAHUB_CLICKS = "datahub/clicks",
+  DATAHUB_FUNNELS = "datahub/funnels",
+  DATAHUB_DATASETS = "datahub/datasets",
 }
 
 interface Props {
@@ -32,7 +37,6 @@ export default function DashboardLayout({
 }: Props) {
   const ICON_DEFAULT_CLASSNAME = 'w-4 h-4';
   
-  const [isInternetError, setInternetError] = useState(false);
   const [isSafari, setSafari] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(true);
   const [currentLeftActiveBarItem, setCurrentLeftActiveBarItem] = useState<LeftActiveBarItem|undefined>();
@@ -169,7 +173,94 @@ const getDashboardLeftBarItem = useCallback((currentActivePageId: LeftActiveBarI
         <path d="M791.453 350c38.667 92 61 178 67 258s-7 126.667-39 140c-18.667 8-39 7-61-3s-43.667-23.333-65-40-54.333-30.333-99-41c-44.667-10.667-94.333-13.333-149-8-18.667 2.667-32.667 9-42 19-9.333 10-11.333 22.333-6 37 14.667 37.333 30 73.333 46 108 2.667 6.667 10.667 14 24 22s21.333 14.667 24 20c9.333 22.667 2 38-22 46a1347.833 1347.833 0 01-102 40c-20 6.667-38-7.333-54-42-21.333-50.667-40.667-94.667-58-132-4-8-15.333-13.667-34-17s-34-13.667-46-31c-20 6.667-32.667 11.333-38 14-22.667 8-47.333 4-74-12s-44.667-36-54-60c-10.667-21.333-12.333-47.667-5-79s21.667-51.667 43-61c84-34.667 155-70.667 213-108s99.333-71.667 124-103 44.333-62 59-92c14.667-30 23-56 25-78s7-41.667 15-59 20-29.333 36-36c32-13.333 75.333 10 130 70s102 136 142 228m-28 300c5.333-2.667 8.667-15.333 10-38 1.333-22.667-2.333-55.333-11-98s-22.333-85.333-41-128c-18.667-44-41-85-67-123s-48.333-66-67-84-30.667-25.667-36-23c-5.333 2.667-8.667 16.667-10 42-1.333 25.333 2 60.333 10 105s21.333 89 40 133 41.333 83.667 68 119 49.333 60.667 68 76c18.667 15.333 30.667 21.667 36 19" />
       </svg>
       )
-    }
+    },
+
+    {
+      id: "datahub-exlorer",
+      classname: LeftActiveBarItem.DATAHUB_EXPLORER,
+      priority: 1,
+      name: string("dashboard.menu.datahub.explorer"),
+      href: "/datahub/explorer",
+      isActive: currentActivePageId == LeftActiveBarItem.DATAHUB_EXPLORER,
+      icon: (
+        <svg
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        height="1em"
+        width="1em"
+        className={classNames(ICON_DEFAULT_CLASSNAME)}
+      >
+        <path d="M9 9h6v6H9m-2 2h10V7H7m8-2h2V3h-2m0 18h2v-2h-2m4-2h2v-2h-2m0-6h2V7h-2m0 14a2 2 0 002-2h-2m0-6h2v-2h-2m-8 10h2v-2h-2M9 3H7v2h2M3 17h2v-2H3m2 6v-2H3a2 2 0 002 2M19 3v2h2a2 2 0 00-2-2m-6 0h-2v2h2M3 9h2V7H3m4 14h2v-2H7m-4-6h2v-2H3m0-6h2V3a2 2 0 00-2 2z" />
+      </svg>
+      )
+    },
+
+    {
+      id: "datahub-requests",
+      classname: LeftActiveBarItem.DATAHUB_REQUESTS,
+      priority: 1,
+      name: string("dashboard.menu.datahub.requests"),
+      href: "/datahub/requests",
+      isActive: currentActivePageId == LeftActiveBarItem.DATAHUB_REQUESTS,
+      icon: (
+        <svg
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        viewBox="0 0 24 24"
+        height="1em"
+        width="1em"
+        className={classNames(ICON_DEFAULT_CLASSNAME)}
+      >
+        <path d="M21 18 A3 3 0 0 1 18 21 A3 3 0 0 1 15 18 A3 3 0 0 1 21 18 z" />
+        <path d="M9 6 A3 3 0 0 1 6 9 A3 3 0 0 1 3 6 A3 3 0 0 1 9 6 z" />
+        <path d="M13 6h3a2 2 0 012 2v7M6 9v12" />
+      </svg>
+      )
+    },
+
+    {
+      id: "datahub-funnels",
+      classname: LeftActiveBarItem.DATAHUB_FUNNELS,
+      priority: 1,
+      name: string("dashboard.menu.datahub.funnels"),
+      href: "/datahub/funnels",
+      isActive: currentActivePageId == LeftActiveBarItem.DATAHUB_FUNNELS,
+      icon: (
+        <svg
+        viewBox="0 0 1024 1024"
+        fill="currentColor"
+        height="1em"
+        width="1em"
+        className={classNames(ICON_DEFAULT_CLASSNAME)}
+      >
+        <path d="M336.7 586h350.6l84.9-148H251.8zm543.4-432H143.9c-24.5 0-39.8 26.7-27.5 48L215 374h594l98.7-172c12.2-21.3-3.1-48-27.6-48zM349 838c0 17.7 14.2 32 31.8 32h262.4c17.6 0 31.8-14.3 31.8-32V650H349v188z" />
+      </svg>
+      )
+    },
+
+    {
+      id: "datahub-datasets",
+      classname: LeftActiveBarItem.DATAHUB_DATASETS,
+      priority: 1,
+      name: string("dashboard.menu.datahub.datasets"),
+      href: "/datahub/datasets",
+      isActive: currentActivePageId == LeftActiveBarItem.DATAHUB_DATASETS,
+      icon: (
+        <svg
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        height="1em"
+        width="1em"
+        className={classNames(ICON_DEFAULT_CLASSNAME)}
+      >
+        <path d="M12 3C8.59 3 5.69 4.07 4.54 5.57l5.25 5.25c.71.11 1.43.18 2.21.18 4.42 0 8-1.79 8-4s-3.58-4-8-4M3.92 7.08L2.5 8.5 5 11H0v2h5l-2.5 2.5 1.42 1.42L8.84 12M20 9c0 2.21-3.58 4-8 4-.66 0-1.3-.05-1.91-.13l-2.47 2.47c1.26.41 2.76.66 4.38.66 4.42 0 8-1.79 8-4m0 2c0 2.21-3.58 4-8 4-2.28 0-4.33-.5-5.79-1.25l-1.68 1.68C5.68 19.93 8.59 21 12 21c4.42 0 8-1.79 8-4" />
+      </svg>
+      )
+    },
+  
   ];
   
   return list;
@@ -194,28 +285,6 @@ const getDashboardLeftBarItem = useCallback((currentActivePageId: LeftActiveBarI
     setSafari(isSafari);
   }, []);
 
-  const pingRequest = useCallback(() => {
-    webConfig.axiosFactory("PRIVATE").then((data) => {
-      data
-        .get(webConfig.apiEndpointFactory(ApiPathEnum.Ping))
-        .catch((error) => {
-          if (error.code === "ERR_NETWORK") {
-            setInternetError(true);
-          }
-        });
-    });
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      pingRequest();
-    }, 5000);
-
-    pingRequest();
-
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <div style={{ height: "calc(100vh - 45px - 32px)" }}>
       {isSafari && <div className="h-[1px] w-full bg-[#060931]"></div>}
@@ -231,27 +300,8 @@ const getDashboardLeftBarItem = useCallback((currentActivePageId: LeftActiveBarI
         onMenuClick={() => setMenuOpen(!isMenuOpen)}
       />
 
-      {isInternetError && (
-        <motion.div initial={{translateY: 140}} animate={{translateY: 0}} transition={{duration: 0.1}} className="flex flex-row items-center justify-start gap-2 fixed bottom-0 left-0 text-white z-50 px-3.5 py-2 text-xs right-0 absolute bg-[#ef233c] font-medium">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="size-4"
-          >
-            <path
-              fillRule="evenodd"
-              d="M11.484 2.17a.75.75 0 0 1 1.032 0 11.209 11.209 0 0 0 7.877 3.08.75.75 0 0 1 .722.515 12.74 12.74 0 0 1 .635 3.985c0 5.942-4.064 10.933-9.563 12.348a.749.749 0 0 1-.374 0C6.314 20.683 2.25 15.692 2.25 9.75c0-1.39.223-2.73.635-3.985a.75.75 0 0 1 .722-.516l.143.001c2.996 0 5.718-1.17 7.734-3.08ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75ZM12 15a.75.75 0 0 0-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 0 0 .75-.75v-.008a.75.75 0 0 0-.75-.75H12Z"
-              clipRule="evenodd"
-            />
-          </svg>
-
-          <span>There are problems with your Internet connection.</span>
-        </motion.div>
-      )}
-
       <main className="w-full h-full bg-white flex flex-row overflow-hidden">
-        {isMenuOpen && <motion.nav transition={{duration: 0.1}} className="w-[150px] flex-shrink-0 h-full bg-white border-r border-gray-200">
+        {isMenuOpen && <motion.nav transition={{duration: 0.1}} className="w-[165px] flex-shrink-0 h-full bg-white border-r border-gray-200">
           <ul>
             {
               getDashboardLeftBarItem(currentLeftActiveBarItem || null).map((item) => (
@@ -279,28 +329,10 @@ const getDashboardLeftBarItem = useCallback((currentActivePageId: LeftActiveBarI
           </ul>
         </motion.nav>}
 
-        <div className="w-full transition-all h-full bg-white overflow-y-auto">
+        <div className="w-full h-full bg-zinc-100 overflow-y-auto">
           {children}
         </div>
       </main>
-
-      {/* <DashboardBasicWrapper className="h-full">
-        <DashboardArea
-          menuEnabled={!isHideMenu}
-          nested={[
-            View({
-              children: (
-                <div className="h-full w-full overflow-y-auto bg-[#edf2f4] bg-opacity-50">
-                  <section className="h-full w-full">{children}</section>
-                </div>
-              ),
-            }),
-            isHideMenu !== true
-              ? Menu({ children: MenuElement(currentLeftActiveBarItem) })
-              : undefined,
-          ]}
-        />
-      </DashboardBasicWrapper> */}
     </div>
   );
 }

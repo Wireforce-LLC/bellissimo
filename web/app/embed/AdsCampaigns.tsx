@@ -1,8 +1,7 @@
-import { Axios } from "axios";
-import { useCallback, useEffect, useState } from "react";
 import LoadingActivity from "~/components/LoadingActivity";
 import Table from "~/components/Table";
 import webConfig, { ApiPathEnum } from "~/web.config";
+import { useCallback, useEffect, useState } from "react";
 
 interface AdCampaign {
   readonly name: string;
@@ -26,6 +25,7 @@ export default function AdsCampaigns({ startDate, endDate }: Props) {
 
   const fether = useCallback(() => {
     setFetching(true);
+    
     webConfig.axiosFactory("PRIVATE").then((axios) => {
       axios
         .get(
@@ -61,7 +61,7 @@ export default function AdsCampaigns({ startDate, endDate }: Props) {
   }
 
   return data?.map((i) => (
-    <div className="w-full px-3 py-2 flex justify-between hover:bg-zinc-50 cursor-pointer border-b border-b-zinc-100">
+    <div className="w-full bg-white px-3 py-2 flex justify-between hover:bg-zinc-50 cursor-pointer border-b border-b-zinc-100">
       <div>
         <div className="flex flex-row items-center gap-1">
           {i.campaign_type === 101 ? (

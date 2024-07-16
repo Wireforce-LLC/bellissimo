@@ -12,6 +12,7 @@ pub struct RouteWay {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct AsnRecord<'a> {
+    pub http_method: Option<String>,
     pub request_id: String,
     pub time: i64,
     pub asn_name: Option<String>,

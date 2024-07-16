@@ -1,7 +1,6 @@
-use crate::database::get_database;
-
+use crate::mongo_sdk::MongoDatabase;
 use serde::{Deserialize, Serialize};
-use mongodb::{bson::doc, sync::Collection};
+use mongodb::bson::doc;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Resource {
@@ -12,9 +11,8 @@ pub struct Resource {
 }
 
 pub fn get_resource(resource_id: &str) -> Option<Resource> {
-  let collection: Collection<Resource> =
-    get_database(String::from("resources")).collection("resources");
-
+  let collection = MongoDatabase::use_resources_collection();
+  
   let resource: Option<Resource> = collection
     .find_one(
       doc! {
@@ -30,8 +28,7 @@ pub fn get_resource(resource_id: &str) -> Option<Resource> {
 }
 
 pub fn get_resources() -> Vec<Resource> {
-  let collection: Collection<Resource> =
-    get_database(String::from("resources")).collection("resources"); 
+  let collection = MongoDatabase::use_resources_collection();
 
   let resources: Vec<Resource> = collection
     .find(None, None)
@@ -43,8 +40,7 @@ pub fn get_resources() -> Vec<Resource> {
 }
 
 pub fn is_resource_exist(resource_id: &str) -> bool {
-  let collection: Collection<Resource> =
-    get_database(String::from("resources")).collection("resources");
+  let collection = MongoDatabase::use_resources_collection();
 
   let is_resource = collection
     .find_one(
@@ -61,8 +57,7 @@ pub fn is_resource_exist(resource_id: &str) -> bool {
 
 // Get resource
 pub fn require_resource(resource_id: &str) -> Resource {
-  let collection: Collection<Resource> =
-    get_database(String::from("resources")).collection("resources");
+  let collection = MongoDatabase::use_resources_collection();
 
   let resource: Resource = collection
     .find_one(

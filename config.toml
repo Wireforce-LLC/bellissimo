@@ -1,18 +1,27 @@
+#    ___      _ _ _         _                 
+#   / __\ ___| | (_)___ ___(_)_ __ ___   ___  
+#  /__\/// _ \ | | / __/ __| | '_ ` _ \ / _ \ 
+# / \/  \  __/ | | \__ \__ \ | | | | | | (_) |
+# \_____/\___|_|_|_|___/___/_|_| |_| |_|\___/ 
+#                                           
 # Bellissimo configurations
+# Configurations work with assign mode
+# config.toml + config.local.toml = config.toml
 
-http_server_port = 8000 # port
-http_server_address = "0.0.0.0" # host or ip
-http_workers = 0 # set to 0 to auto detect number of cpus
-http_ident = "Nginx"
+# Settings of HTTP server
+# Based http server
+http_server_port = 8000 
+http_server_address = "0.0.0.0"
+
+# Additional settings of HTTP server
+http_workers = 0
+http_ident = "Nginx" 
 http_keep_alive = 10
 
-http_server_serve_path = "./public" # path with static files
-# path (for serve (like http://{http_server_address}/{http_server_serve_uri_path}))
-# with static files
-http_server_serve_uri_path = "/static" 
-http_base_route_uri_path = "/"
-http_api_uri_path = "/api"
-
+# Configuring the basic functions that will be
+# available in your Bellissimo build.
+# Changing the functionality does not require
+# rebuilding with the ./build command
 is_http_future_main_router = true
 is_http_future_api = true
 is_http_future_robots_txt = true
@@ -21,22 +30,30 @@ is_http_future_static_serve = true
 is_http_future_ping = true
 is_http_future_kit = true
 
-not_found_message = "Page not found"
-
-driver_proxy_ua_enabled = true
-driver_proxy_referer_enabled = false
-driver_proxy_origin_enabled = false
-
-is_allow_debug_throw = true
-
-is_plugins_enabled = true
-
+# Directory settings
 dir_plugins = "./plugins"
 dir_registry = "./registry"
 dir_logs = "./logs"
 dir_cache = "./cache"
 dir_tmp = "./tmp"
 dir_data = "./data"
+
+http_server_serve_path = "./public"
+http_server_serve_uri_path = "/static" 
+http_base_route_uri_path = "/"
+http_api_uri_path = "/api"
+
+not_found_message = "Page not found"
+
+driver_proxy_ua_enabled = true
+driver_proxy_referer_enabled = false
+driver_proxy_origin_enabled = false
+
+# deprecated
+is_allow_debug_throw = true
+
+is_plugins_enabled = true
+
 
 v8_init_heap_size = 1000000
 v8_max_heap_size = 5000000
@@ -46,6 +63,8 @@ stdout_warning = true
 use_cloudflare_data_priority = true
 
 is_save_requests_in_mongodb = true
+
+# deprecated
 is_save_requests_in_elastic = false
 
 # Ext configs

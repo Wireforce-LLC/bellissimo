@@ -3,6 +3,7 @@ use mongodb::bson::doc;
 use rocket::form::FromForm;
 use serde::{Serialize, Deserialize};
 use crate::ad_campaign_manager::{AdCampaignManager, AdCampaignType};
+use crate::dynamic_router::REDIS;
 use crate::mongo_sdk::MongoDatabase;
 use rocket::http::{ContentType, Status};
 use serde_json::json;
@@ -59,7 +60,7 @@ pub struct AdManagerCampaign {
  * Get all campaigns.
  */
 #[get("/adsmanager/campaigns/list?<selector..>")]
-pub fn list_campaigns(selector: SelectorDateOfCampaign) -> (Status, (ContentType, String)) {
+pub async fn list_campaigns(selector: SelectorDateOfCampaign) -> (Status, (ContentType, String)) {
   let collection = MongoDatabase::use_campaigns_collection();
   let result = collection.find(doc! {}, None);
 

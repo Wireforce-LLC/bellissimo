@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use mongodb::{bson::doc, sync::Collection};
 use rocket::{form::Form, http::{ContentType, Status}};
-use crate::{api::{standard_http_error, trivial_checkpoint, CreateFilter}, database::get_database,  filter::{Condition, Filter}, filter_kit::get_all_registred_filters_names};
+use crate::{api::{standard_http_error, trivial_checkpoint, CreateFilter}, filter::{Condition, Filter}, filter_kit::get_all_registred_filters_names, mongo_sdk::MongoDatabase};
 
 #[post("/filter/create", data = "<input>")]
 pub fn create_new_filter(input: Form<CreateFilter>) -> (Status, (ContentType, String)) {
@@ -31,8 +31,7 @@ pub fn create_new_filter(input: Form<CreateFilter>) -> (Status, (ContentType, St
     conditions: conditions
   };
 
-  let collection: Collection<Filter> = get_database(String::from("filters"))
-    .collection("filters");
+  let collection = MongoDatabase::use_filters_collection();    
 
   let result = collection
     .insert_one(doc, None)
@@ -57,8 +56,7 @@ pub fn create_new_filter(input: Form<CreateFilter>) -> (Status, (ContentType, St
 
 #[get("/filter/list")]
 pub fn get_all_filters() -> (Status, (ContentType, String))  {
-  let collection: Collection<Filter> = get_database(String::from("filters"))
-    .collection("filters");
+  let collection = MongoDatabase::use_filters_collection();
 
   let mut result = collection
     .find(doc! {}, None)
@@ -94,8 +92,7 @@ pub fn get_filter_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
     return standard_http_error::filter_not_found(id.display().to_string().as_str());
   }
 
-  let collection: Collection<Filter> = get_database(String::from("filters"))
-    .collection("filters");
+  let collection = MongoDatabase::use_filters_collection();
 
   let result = collection
     .find_one(
@@ -145,7 +142,7 @@ pub fn update_filter_by_id(filter: Form<CreateFilter>) -> (Status, (ContentType,
     });
   }
 
-  let collection: Collection<Filter> = get_database(String::from("filters")).collection("filters");
+  let collection = MongoDatabase::use_filters_collection();
 
   let result = collection
     .update_one(
@@ -184,8 +181,7 @@ pub fn delete_filter_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
     return standard_http_error::filter_not_found(id.display().to_string().as_str());
   }
 
-  let collection: Collection<Filter> = get_database(String::from("filters"))
-    .collection("filters");
+  let collection = MongoDatabase::use_filters_collection();
 
   let result = collection
     .delete_one(

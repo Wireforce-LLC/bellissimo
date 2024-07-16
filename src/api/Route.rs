@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use mongodb::{bson::doc, sync::Collection};
 use rocket::{form::Form, http::{ContentType, Status}};
-use crate::{api::{standard_http_error, trivial_checkpoint}, database::get_database, dynamic_router::Route};
+use crate::{api::{standard_http_error, trivial_checkpoint}, dynamic_router::Route, mongo_sdk::MongoDatabase};
 
 use crate::api::CreateRoute;
 
@@ -23,8 +23,7 @@ pub fn create_new_route(input: Form<CreateRoute>) -> (Status, (ContentType, Stri
     return standard_http_error::route_already_exists(&input.name);
   }
  
-  let collection: Collection<Route> = get_database(String::from("routes"))
-    .collection("routes");
+  let collection = MongoDatabase::use_routes_collection();
 
   let doc: Route = Route {
     path: input.path.to_string(),
@@ -58,8 +57,7 @@ pub fn create_new_route(input: Form<CreateRoute>) -> (Status, (ContentType, Stri
 
 #[get("/route/list")]
 pub fn get_all_routes() -> (Status, (ContentType, String))  {
-  let collection: Collection<Route> = get_database(String::from("routes"))
-    .collection("routes");
+  let collection = MongoDatabase::use_routes_collection();
 
   let mut result = collection
     .find(doc! {}, None)
@@ -94,8 +92,7 @@ pub fn get_route_by_name(name: PathBuf) -> (Status, (ContentType, String)) {
     return standard_http_error::route_not_found(name.display().to_string().as_str());
   }
 
-  let collection: Collection<Route> = get_database(String::from("routes"))
-    .collection("routes");
+  let collection = MongoDatabase::use_routes_collection();
 
   let result = collection
     .find_one(
@@ -129,8 +126,7 @@ pub fn delete_route_by_name(name: PathBuf) -> (Status, (ContentType, String)) {
     return standard_http_error::route_not_found(name.display().to_string().as_str());
   }
 
-  let collection: Collection<Route> = get_database(String::from("routes"))
-    .collection("routes");
+  let collection = MongoDatabase::use_routes_collection();
 
   let result = collection
     .delete_one(

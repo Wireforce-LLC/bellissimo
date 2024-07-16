@@ -1,18 +1,65 @@
 use crate::api_ad_manager::AdCampaign;
 use crate::asn_record::AsnRecord;
 use crate::click::Click as ClickType;
+use crate::dynamic_router::Route;
+use crate::filter::Filter;
+use crate::guard_kit::GuardScore;
+use crate::resource_kit::Resource;
 use mongodb::{options::ClientOptions, bson::doc};
 use mongodb::sync::{Client, Collection, Database};
+use paris::info;
 use std::env;
+use std::sync::Arc;
 
 lazy_static! {
-  pub static ref DATABASE_CLIENT: Client = Client
-    ::with_options(MongoDatabase::get_client_options())
-    .expect("Unable to create client");
+  pub static ref DATABASE_CLIENT: Client = MongoDatabase::spawn_connection();
+
+  pub static ref POOL_CLIENTS: Arc<Vec<Client>> = Arc::new(MongoDatabase::create_pool_of_connections());
 }
 
 #[derive(Default, Debug)]
 pub struct MongoDatabase {}
+
+impl MongoDatabase {
+  pub fn spawn_connection() -> Client {
+    Client
+      ::with_options(MongoDatabase::get_client_options())
+      .expect("Unable to create client")
+  }
+
+  pub fn create_pool_of_connections() -> Vec<Client> {
+    let mut clients = Vec::new();
+    
+    for i in 0..3 {
+      clients.push(MongoDatabase::spawn_connection());
+      info!("MongoDB connection '{}' created", i);
+    }
+
+    return clients;
+  }
+
+  pub fn use_client() -> Client {
+    return DATABASE_CLIENT.clone();
+  }
+
+  pub fn get_pool_of_clients() -> Arc<Vec<Client>> {
+    return POOL_CLIENTS.clone();
+  }
+
+  pub fn get_client_from_pool() -> Client {
+    let clients = MongoDatabase::get_pool_of_clients();
+    let index = rand::random::<usize>() % clients.len();
+    return clients[index].clone();
+  }
+}
+
+impl MongoDatabase {
+  pub fn predict_load() {
+    MongoDatabase::get_pool_of_clients().iter().for_each(|client| {
+      client;
+    });
+  }
+}
 
 impl MongoDatabase {
   /**
@@ -27,6 +74,27 @@ impl MongoDatabase {
       "asn_records"
     )
   }
+
+  pub fn use_routes_collection() -> Collection<Route> {
+    MongoDatabase::use_collection::<Route>(
+      "routes",
+      "routes"
+    )
+  }
+
+  pub fn use_guards_collection() -> Collection<GuardScore> {
+    MongoDatabase::use_collection::<GuardScore>(
+      "requests",
+      "guard"
+    )
+  }
+
+  pub fn use_resources_collection() -> Collection<Resource> {
+    MongoDatabase::use_collection::<Resource>(
+      "resources",
+      "resources"
+    )
+  }
   
   /**
    * Function to use the clicks collection.
@@ -38,6 +106,13 @@ impl MongoDatabase {
     MongoDatabase::use_collection::<ClickType>(
       "requests",
       "clicks"
+    )
+  }
+
+  pub fn use_filters_collection() -> Collection<Filter> {
+    MongoDatabase::use_collection::<Filter>(
+      "filters",
+      "filters"
     )
   }
 
@@ -136,14 +211,17 @@ impl MongoDatabase {
    * @returns {Database} The database object associated with the specified name.
    */
   pub fn use_database(name: &str) -> Database {
-    return DATABASE_CLIENT.database(&name);
+    return MongoDatabase::get_client_from_pool()
+      .database(&name);
   }
 
   /**
    * Retrieves the collection with the specified name.
    */
   pub fn use_collection<T>(database: &str, collection: &str) -> mongodb::sync::Collection<T> {
-    return DATABASE_CLIENT.database(&database).collection::<T>(&collection);
+    return MongoDatabase::get_client_from_pool()
+      .database(&database)
+      .collection::<T>(&collection);
   }
 
   /**
@@ -151,7 +229,7 @@ impl MongoDatabase {
    * @return
    */
   pub fn get_databases() -> Vec<String> {
-    let databases = DATABASE_CLIENT
+    let databases = MongoDatabase::get_client_from_pool()
       .list_database_names(None, None)
       .unwrap();
 

@@ -1,12 +1,10 @@
-import moment from "moment";
-import { useCallback, useEffect, useState } from "react";
-import FirstRecordPlease from "~/components/FirstRecordPlease";
 import SafeWhiteSpace from "~/components/SafeWhiteSpace";
 import SubNavbar from "~/components/SubNavbar";
 import Tabs from "~/components/Tabs";
-import DocsBar from "~/embed/DocsBar";
+import moment from "moment";
 import string from "~/localization/polyglot";
 import webConfig, { ApiPathEnum } from "~/web.config";
+import { useCallback, useEffect, useState } from "react";
 
 interface LogEntity {
   event_name: string;
@@ -41,40 +39,41 @@ export default function Scenario() {
         // onCreateAction={() => setIsModalCreateVisible(true)}
       />
 
-      <div className="w-full h-full flex flex-row overflow-hidden">
-        <div className="h-full w-full">
-          <Tabs
-            isFullSize
-            isDisablePaddings
-            isDisableBorders
-            titles={["Logs", "Linked"]}
-          >
-            <div className="h-full overflow-y-auto">
-              <FirstRecordPlease
-                title="Create router"
-                text="Create your first router to route traffic from different domains, different paths. Create and manage full-fledged routers"
-                // isVisible={_.isEmpty(data) && _.isArray(data)}
-                // icon={<img className="h-20" src={routerImage} alt="Server image" />}
-              />
+      <Tabs
+        isDisablePaddings
+        isDisableBorders
+        titles={["Event logs", "Linked"]}
+      >
+        <div className="h-full overflow-y-auto">
+          <div className="">
+            <ol className="relative py-1 dark:border-gray-700">
+              {logs?.map((log) => (
+                <li className="text-xs flex flex-row gap-2 px-2 py-0.5 hover:bg-zinc-100 cursor-pointer">
+                  <span className="text-zinc-400 w-[140px] font-mono">
+                    {moment(log.time * 1000).format("DD.MM.YYYY HH:mm:ss")}
+                  </span>
+                  <span className="text-lime-700 w-[120px] line-clamp-1 text-ellipsis whitespace-nowrap font-mono">
+                    {log.event_name}
+                  </span>
+                  <span className="text-gray-500 hover:text-black line-clamp-2 hover:line-clamp-none font-mono">
+                    {log.result}
+                  </span>
+                </li>
+                // <li className="mb-2 ms-4">
+                //   <div className="absolute w-3 h-3 bg-gray-200 rounded-full mt-1.5 -start-1.5 border border-white"></div>
+                //   <time className="mb-1 select-none text-xs font-normal leading-none text-gray-400">
+                //     {moment(log.time * 1000).format("DD.MM.YYYY HH:mm:ss")}
+                //   </time>
+                //   <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                //     {log.event_name}
+                //   </h3>
+                //   {/* <a href="#" className="select-none text-xs text-blue-500">Open more</a> */}
+                // </li>
+              ))}
+            </ol>
+          </div>
 
-              <div className="px-4 py-2">
-                <ol className="relative border-s border-gray-200 dark:border-gray-700">
-                  {logs?.map((log) => (
-                    <li className="mb-2 ms-4">
-                      <div className="absolute w-3 h-3 bg-gray-200 rounded-full mt-1.5 -start-1.5 border border-white"></div>
-                      <time className="mb-1 select-none text-xs font-normal leading-none text-gray-400">
-                      {moment(log.time * 1000).format("DD.MM.YYYY HH:mm:ss")}
-                      </time>
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {log.event_name}
-                      </h3>
-                      {/* <a href="#" className="select-none text-xs text-blue-500">Open more</a> */}
-                    </li>
-                  ))}
-                </ol>
-              </div>
-
-              {/* {logs &&
+          {/* {logs &&
                 logs.length > 0 &&
                 logs.map((log) => (
                   <div
@@ -105,17 +104,11 @@ export default function Scenario() {
                   </div>
                 ))} */}
 
-              <SafeWhiteSpace />
-            </div>
-
-            <div></div>
-          </Tabs>
+          <SafeWhiteSpace />
         </div>
 
-        <div className="h-full w-[300px] border-l border-l-zinc-200">
-          <DocsBar id="how_to_work_routers" />
-        </div>
-      </div>
+        <div></div>
+      </Tabs>
     </>
   );
 }

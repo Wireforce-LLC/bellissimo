@@ -179,6 +179,48 @@ pub fn write_data_into_dataset(dataset_name: String, data: String) -> (Status, (
   }
 }
  
+#[get("/dataset/write/<dataset_name>?<data..>")]
+pub fn write_get_data_into_dataset(dataset_name: String, data: HashMap<String, String>) -> (Status, (ContentType, String)) {
+  if !Dataset::is_dataset(&dataset_name) {
+    return (
+      Status::Conflict, 
+      (
+        ContentType::JSON,
+        serde_json::json!({
+          "isOk": false,
+          "error": format!("Dataset '{}' not found", dataset_name),
+          "value": null
+        }).to_string()
+      )
+    );
+  }
+
+  let mut data: HashMap<String, serde_json::Value> = data.into_iter().map(|(k, v)| (k, Value::from(v))).collect();
+
+  data.insert("time".to_string(), Value::from(Utc::now().timestamp_micros()));
+
+  let result = Dataset::insert_into_dataset(&dataset_name, data);
+
+  match result {
+    Ok(insert_result) => {
+      return (Status::Created, (ContentType::JSON, serde_json::json!({
+        "isOk": true,
+        "value": insert_result.inserted_id,
+        "err": null
+      }).to_string()));
+    }
+
+    Err(err) => {
+      return (Status::InternalServerError, (ContentType::JSON, serde_json::json!({
+        "isOk": false,
+        "value": null,
+        "error": err.to_string()
+      }).to_string()));
+    }
+  }
+}
+ 
+
 #[get("/dataset/<dataset_name>?<dataset_select_filter..>", rank = 4)]
 pub fn get_dataset_data_by_id(dataset_name: String, dataset_select_filter: DatasetSelectFilter) -> (Status, (ContentType, String)) {
   let data = Dataset::get_dataset_data(&dataset_name, doc! {}, DatasetCursorFilter {

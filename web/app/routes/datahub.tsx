@@ -1,24 +1,17 @@
-import { ReactNode, useCallback, useMemo, useState } from "react";
-import TopTitle from "~/components/TopTitle";
-import DatahubRequests from "../fragments/datahub_requests";
-import Navbar from "~/components/Navbar";
-import { MetaFunction } from "@remix-run/react";
-import DatahubPostbacks from "../fragments/datahub_postbacks";
 import DatahubClicks from "../fragments/datahub_clicks";
-import wireforceLogo from "/wireforce-logo.png";
-import rightTopImage from "/top-right-01.png";
-import _ from "lodash";
-import Funnels from "../fragments/datahub_funnels";
-import DatahubExplorer from "../fragments/datahub_explorer";
 import DatahubDatasets from "~/fragments/datahub_datasets";
+import DatahubExplorer from "../fragments/datahub_explorer";
+import DatahubPostbacks from "../fragments/datahub_postbacks";
+import DatahubRequests from "../fragments/datahub_requests";
+import Funnels from "../fragments/datahub_funnels";
+import TopTitle from "~/components/TopTitle";
+import _ from "lodash";
+import { MetaFunction } from "@remix-run/react";
+import { ReactNode, useCallback, useMemo, useState } from "react";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Bellissimo Datahub" },
-    {
-      name: "description",
-      content: "Welcome to Paper Analytics! This is your dashboard",
-    },
+    { title: "Bellissimo Datahub" }
   ];
 };
 
@@ -137,36 +130,6 @@ export default function Datahub() {
 
   return (
     <div className="bg-zinc-100 h-screen overflow-hidden">
-      <div className="w-full bg-[#060931] h-[32px] px-4 flex flex-row items-center justify-between">
-        <div className="container w-full flex flex-row items-center justify-between">
-          <img src={wireforceLogo} className="h-[32px]" alt="" />
-          <img src={rightTopImage} className="h-[32px]" alt="" />
-        </div>
-      </div>
-
-      <Navbar
-        className="w-full  z-20 bg-zinc-50 text-black border-b border-b-zinc-200 h-[40px] md:h-[46px]"
-        menuIcon={
-          <svg
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            height="1em"
-            width="1em"
-            className="size-5"
-          >
-            <path d="M13.293 6.293L7.586 12l5.707 5.707 1.414-1.414L10.414 12l4.293-4.293z" />
-          </svg>
-        }
-        onMenuClick={() => {
-          if (currentPath === null) {
-            window.location.href = "/"
-            return;
-          }
-
-          setCurrentPath(null)
-        }}
-      />
-
       <div className="w-full h-full overflow-y-auto">{fragment}</div>
     </div>
   );

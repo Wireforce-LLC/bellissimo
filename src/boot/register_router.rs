@@ -21,10 +21,7 @@ use crate::resource_kit::Resource;
 use crate::statistica_sdk::{Converter, Statistica};
 use crate::{asn_record, filter, filter_kit, guard_kit};
 use crate::main_routes::not_found;
-use crate::{rdr_kit, resource_kit, database::get_database};
-use elasticsearch::{
-  Elasticsearch, http::transport::Transport,
-};
+use crate::{rdr_kit, resource_kit};
 
 struct RouterBody<'a> {
   x_real_ip: XRealIp<'a>,
@@ -143,14 +140,6 @@ lazy_static! {
       .get_connection()
       .expect("Unable to get redis connection")
   );
-
-  // Define elastic search client
-  pub static ref ELASTIC: Elasticsearch = Elasticsearch
-    ::new(
-      Transport
-        ::single_node(&env::var("ELASTIC_URI").unwrap_or("http://127.0.0.1:9200".to_string()).as_str())
-        .unwrap()
-    );
 }
 
 
@@ -197,8 +186,7 @@ fn get_router_by_path_and_domain(
   path: &str,
   domain: Option<&str>
 ) -> Option<Route> {
-  let collection: Collection<Route> =
-    get_database(String::from("routes")).collection("routes");
+  let collection = MongoDatabase::use_routes_collection();
 
   let mut find_result = collection
     .find_one(
@@ -430,7 +418,7 @@ async fn router_caller(
       }
     );
 
-    let collection: Collection<guard_kit::GuardScore> = get_database(String::from("requests")).collection("guard");
+    let collection = MongoDatabase::use_guards_collection();
 
     collection
       .insert_one(

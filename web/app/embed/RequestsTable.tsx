@@ -1,12 +1,10 @@
-import humanizeString from "humanize-string";
+import Table2 from "~/components/Table2";
 import _ from "lodash";
-import moment, { Moment } from "moment";
-import { useState, useMemo, useCallback, useEffect } from "react";
-import Table from "~/components/Table";
-import webConfig, { ApiPathEnum } from "~/web.config";
-import Modal from "~/components/Modal";
-import Label from "~/components/Label";
 import classNames from "classnames";
+import humanizeString from "humanize-string";
+import moment, { Moment } from "moment";
+import webConfig, { ApiPathEnum } from "~/web.config";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface Props {
   readonly onSelectedItem?: (index: number, item: any) => void;
@@ -27,7 +25,7 @@ export default function RequestsTableEmbed({
   skip,
   limit,
 }: Props) {
-  const [data, setData] = useState<any[]|undefined>(undefined);
+  const [data, setData] = useState<any[] | undefined>(undefined);
 
   const tableHeaders: string[] = useMemo(() => {
     return (
@@ -71,106 +69,117 @@ export default function RequestsTableEmbed({
   return (
     <div className="flex flex-row">
       <div className="w-full">
-        <Table
-          headers={tableHeaders}
-          doKey={(index, item) => {
-            return fullData[index].request_id || fullData[index].time;
+        <Table2
+          rowClassName="text-xs font-normal py-[5px] px-[5px]  text-ellipsis whitespace-nowrap"
+          headerTransformer={{
+            any(value: string) {
+              return humanizeString(value);
+            },
+            asn_country_code: () => "Country",
+            resource_id: () => "Resource",
+            ip: () => "IP"
           }}
-          onSelectedItem={(index, item) => {
-            onSelectedItem?.(index, sorted(fullData[index]));
+          additionalColumns={{
+            ip(data, row) {
+              return _.get(row, "headers.cf-connecting-ip", "N/A");
+            }
           }}
-          data={data?.map((it, index) => {
-            const row = {
-              ...it,
-              request_id: (
-                <div className="flex flex-row items-start">
-                  <svg
-                    viewBox="0 0 21 21"
-                    fill="currentColor"
-                    height="1em"
-                    width="1em"
-                    className="size-4"
-                  >
-                    <g
-                      fill="none"
-                      fillRule="evenodd"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M13.5 5.5l-2 10M9.5 5.5l-2 10M6.5 8.5h9M5.5 12.5h9" />
-                    </g>
-                  </svg>
-                  <span>{it.request_id}</span>
-                </div>
-              ),
-              time: (
-                <div className="flex flex-row items-center gap-1">
-                  <svg
-                    viewBox="0 0 920 1000"
-                    fill="currentColor"
-                    height="1em"
-                    width="1em"
-                    className="size-3 text-zinc-400"
-                  >
-                    <path d="M460 40c126.667 0 235 45 325 135s135 198.333 135 325-45 235-135 325-198.333 135-325 135-235-45-325-135S0 626.667 0 500s45-235 135-325S333.333 40 460 40m0 820c100 0 185-35.333 255-106s105-155.333 105-254c0-100-35-185-105-255S560 140 460 140c-98.667 0-183.333 35-254 105S100 400 100 500c0 98.667 35.333 183.333 106 254s155.333 106 254 106m36-620v244l150 150-50 50-170-170V240h70" />
-                  </svg>
-                  <span
-                    className={classNames("text-zinc-400", {
-                      "text-zinc-800":
-                        moment(it.time / 1000).diff(moment(), "d") == 0,
-                    })}
-                  >
-                    {moment(it.time / 1000).format("DD.MM.YYYY HH:mm")}
-                  </span>
-                </div>
-              ),
-              headers: (
-                <span>
-                  <span>{_.size(it.headers)}</span>{" "}
-                  <span className="text-gray-400">HIR</span>
+          valueTransformer={{
+            asn_country_code(value: any) {
+              return (
+                <span className="flex flex-row items-center gap-2">
+                  <img
+                    className="h-3 w-4 rounded-[4px] bg-zinc-200 object-cover"
+                    src={`http://purecatamphetamine.github.io/country-flag-icons/3x2/${value}.svg`}
+                    alt=""
+                  />
+                  <span>{value}</span>
                 </span>
-              ),
-              user_agent_client: it.user_agent_client?.device?.family,
-              route_way:
-                it.route_way &&
-                (it.route_way.find((it: any) => it.use_this_way)?.name ||
-                  undefined),
-              query: it.query ? (
-                _.size(it.query) > 5 ? (
+              );
+            },
+            route_way(value: any) {
+              let route = value && _.get((Object.values(value).find((it: any) => it.use_this_way)), 'name', "N/A");
+
+              if (route == 'default') {
+                return <span className="font-mono text-[10px] bg-zinc-200">{route}</span>;
+              }
+
+              return <span className="font-mono text-[10px]">{route}</span>;
+            },
+            resource_id(value: any) {
+              return <span className="font-mono text-[10px]">{value}</span>;
+            },
+            route_name(value: string) {
+              return <span className="flex flex-row items-center gap-1">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  height="1em"
+                  width="1em"
+                >
+                  <path d="M13.061 4.939l-2.122 2.122L15.879 12l-4.94 4.939 2.122 2.122L20.121 12z" />
+                  <path d="M6.061 19.061L13.121 12l-7.06-7.061-2.122 2.122L8.879 12l-4.94 4.939z" />
+                </svg>
+                {value}
+              </span>;
+            },
+            headers(value: any[]) {
+              return <span className="flex flex-row items-center gap-1">
+                <span className="font-normal">{_.size(value)}</span>
+                <span className="font-light text-gray-400">HIR</span>
+              </span>
+            },
+            request_id(value: string) {
+              return <span className="text-zinc-400">
+                {value}
+              </span>
+            },
+            query(query: any) {
+              return query ? (
+                _.size(query) > 5 ? (
                   <span>
-                    <span>
-                      {_.keys(it.query).sort().splice(0, 3).join(", ")}
+                    <span className="text-zinc-600 italic">
+                      {_.keys(query).sort().splice(0, 3).join(", ")}
                     </span>{" "}
                     <span className="text-zinc-400">
-                      and {" " + (_.size(it.query) - 3 + " keys")}
+                      and {" " + (_.size(query) - 3 + " keys")}
                     </span>
                   </span>
                 ) : (
-                  _.keys(it.query).sort().join(", ")
+                  <span className="italic">{_.keys(query).sort().join(", ")}</span>
                 )
               ) : (
                 "No"
-              ),
-
-              asn_country_code: it?.asn_country_code && (
-                <span className="flex items-center flex-row gap-2">
-                  <img
-                    className="size-3"
-                    alt="United States"
-                    src={`http://purecatamphetamine.github.io/country-flag-icons/3x2/${it?.asn_country_code?.toUpperCase()}.svg`}
-                  />
-
-                  <span className="font-medium">
-                    {it?.asn_country_code?.toUpperCase()}
-                  </span>
+              )
+            },
+            time(value: number) {
+              return <div className="flex flex-row items-center gap-1">
+                <svg
+                  viewBox="0 0 920 1000"
+                  fill="currentColor"
+                  height="1em"
+                  width="1em"
+                  className="size-3 text-zinc-400"
+                >
+                  <path d="M460 40c126.667 0 235 45 325 135s135 198.333 135 325-45 235-135 325-198.333 135-325 135-235-45-325-135S0 626.667 0 500s45-235 135-325S333.333 40 460 40m0 820c100 0 185-35.333 255-106s105-155.333 105-254c0-100-35-185-105-255S560 140 460 140c-98.667 0-183.333 35-254 105S100 400 100 500c0 98.667 35.333 183.333 106 254s155.333 106 254 106m36-620v244l150 150-50 50-170-170V240h70" />
+                </svg>
+                <span
+                  className={classNames("text-zinc-400", {
+                    "text-zinc-800":
+                      moment(value / 1000).diff(moment(), "d") == 0,
+                  })}
+                >
+                  {moment(value / 1000).format("DD.MM.YYYY HH:mm")}
                 </span>
-              ),
-            };
-
-            return _.omit(row, filterKeys);
-          })}
+              </div>
+            }
+          }}
+          sortColumns={["time", "asn_country_code", "resource_id"]}
+          hiddenColumns={filterKeys}
+          dataset={fullData}
         />
+
+      
       </div>
     </div>
   );

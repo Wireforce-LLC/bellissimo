@@ -1,12 +1,9 @@
-import moment, { unix } from "moment";
-import { useCallback, useEffect, useState } from "react";
-import toast from "react-hot-toast";
 import Button from "~/components/Button";
+import EditRouterParamsEmbed from "./EditRouterParams";
 import Input from "~/components/Input";
 import Tabs from "~/components/Tabs";
 import webConfig, { ApiPathEnum } from "~/web.config";
-import EditRouterParamsEmbed from "./EditRouterParams";
-import EditFilterEmbed from "./EditFilter";
+import { useEffect, useState } from "react";
 
 interface Route {
   readonly name: string;
@@ -49,7 +46,7 @@ export default function ViewRouteEmbed({ routeName, onDeleteRoute }: Props) {
 
   // Render the component
   return (
-    <Tabs isDisableBorders isDisablePaddings isFullSize titles={["Overview", "Params", "Filter (*)".replace('*', route?.filter_id || "")]}>
+    <Tabs isDisableBorders isDisablePaddings isFullSize titles={["Overview", "Params"]}>
         <div className="h-full w-full flex flex-col gap-4 p-2">
           <Input type="text" label="Name" isDisabled value={route?.name} />
 
@@ -81,10 +78,6 @@ export default function ViewRouteEmbed({ routeName, onDeleteRoute }: Props) {
 
         <div className="h-full w-full flex flex-col gap-4 p-2">
           <EditRouterParamsEmbed routeName={routeName} startParams={route?.params || {}}/>
-        </div>
-
-        <div className="h-full w-full gap-4 p-2">
-          <EditFilterEmbed filterId={route?.filter_id}/>
         </div>
       </Tabs>
   );

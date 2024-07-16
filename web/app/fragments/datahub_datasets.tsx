@@ -1,16 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
 import Button from "~/components/Button";
 import EazyModal from "~/components/EazyModal";
 import Input from "~/components/Input";
+import Label from "~/components/Label";
 import SubNavbar from "~/components/SubNavbar";
-import Table from "~/components/Table";
+import Table2 from "~/components/Table2";
+import TopTitle from "~/components/TopTitle";
+import humanizeString from "humanize-string";
 import string from "~/localization/polyglot";
 import webConfig, { ApiPathEnum } from "~/web.config";
-import TopTitle from "~/components/TopTitle";
-import Label from "~/components/Label";
-import DocsBar from "~/embed/DocsBar";
-import _ from "lodash";
-import FirstRecordPlease from "~/components/FirstRecordPlease";
+import { useCallback, useEffect, useState } from "react";
 
 export default function DatahubDatasets() {
   const [onAppendModal, setOnAppendModal] = useState(false);
@@ -83,7 +81,7 @@ export default function DatahubDatasets() {
         <div className="mt-3">
           <Label>How to record data</Label>
 
-          <p className="text-zinc-400 text-xs font-mono">
+          <p className="text-zinc-400 text-xs font-mono mb-4">
             <span className="select-none">&lt;!DOCTYPE html&gt;</span>
             <br />
             <span className="select-none">
@@ -135,6 +133,19 @@ export default function DatahubDatasets() {
             <span className="ml-4 text-black">&lt;/script&gt;</span>
             <br />
           </p>
+
+          <Label>Or use HTTP Request</Label>
+
+          <p className="text-xs mb-3">
+            Just send your data in HTTP request with GET method. Document encoded in query string
+          </p>
+
+          <div className="text-sm text-zinc-900 bg-zinc-100  px-4 py-2 font-light">
+            <span>/api/dataset/write/</span>
+            <span className="text-green-700">{datasetOverviewModal}</span>
+            <span className="text-orange-500">?</span>
+            <span className="text-blue-500">key=value</span>
+          </div>
         </div>
       </EazyModal>
 
@@ -157,24 +168,26 @@ export default function DatahubDatasets() {
         }}
       />
 
-      <div className="w-full h-full flex flex-row overflow-hidden">
-        <div className="h-full w-full">
-          <FirstRecordPlease
-            title="Create your first dataset"
-            text="Dataset is a collection of data. Create and manage full-fledged datasets."
-            isVisible={_.isEmpty(datasets) && _.isArray(datasets)}
-          />
+      <Table2
+        sortColumns={["name", "size_of_dataset"]}
+        headerTransformer={{
+          any(value: string) {
+            return humanizeString(value);
+          }
+        }}
+        valueTransformer={{
+          size_of_dataset(value: number) {
+          return <span className="flex flex-row gap-1 items-center">
+            {value.toLocaleString()}
 
-          <Table
-            data={datasets}
+            <span className="text-zinc-500">RECORDS</span>
+          </span>
+          }
+        }}
+        rowClassName="px-3 py-1.5 text-xs"
+            dataset={datasets}
             onSelectedItem={(_, item) => setDatasetOverviewModal(item.name)}
           />
-        </div>
-
-        <div className="h-full bg-white w-[300px] border-l border-l-zinc-200">
-          <DocsBar id="how_to_work_datasets" />
-        </div>
-      </div>
     </>
   );
 }

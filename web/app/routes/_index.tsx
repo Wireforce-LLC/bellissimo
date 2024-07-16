@@ -1,22 +1,28 @@
+import AdsManager from "~/fragments/ads_manager";
+import DashboardLayout from "~/layouts/DashboardLayout";
+import Datahub from "./datahub";
+import DatahubDatasets from "~/fragments/datahub_datasets";
+import DatahubExplorer from "~/fragments/datahub_explorer";
+import DatahubRequests from "~/fragments/datahub_requests";
+import Files from "../fragments/files";
+import Filters from "../fragments/filters";
+import Funnels from "~/fragments/datahub_funnels";
+import Resources from "../fragments/resources";
+import Routes from "../fragments/routes";
+import Scenario from "~/fragments/scenario";
+import _ from "lodash";
+import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
+
 import {
   type MetaFunction,
 } from "@remix-run/node";
-import DashboardLayout from "~/layouts/DashboardLayout";
-import _ from "lodash";
-import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
-import Routes from "../fragments/routes";
-import Files from "../fragments/files";
-import Filters from "../fragments/filters";
-import Resources from "../fragments/resources";
-import Scenario from "~/fragments/scenario";
-import AdsManager from "~/fragments/ads_manager";
 
 export const meta: MetaFunction = () => {
   return [
     { title: "Bellissimo" },
     {
       name: "description",
-      content: "Welcome to Paper Analytics! This is your dashboard",
+      content: "Fa una zuppa meravigliosa!",
     },
   ];
 };
@@ -56,13 +62,22 @@ export default function Dashboard() {
       "/filters": <Filters/>,
       "/resources": <Resources/>,
       "/scenario": <Scenario/>,
-      "/adsmanager": <AdsManager/>
+      "/adsmanager": <AdsManager/>,
+      "/datahub": <Datahub/>,
+      "/datahub/explorer": <DatahubExplorer/>,
+      "/datahub/requests": <DatahubRequests/>,
+      "/datahub/datasets": <DatahubDatasets/>,
+      "/datahub/funnels": <Funnels/>
     }
   }, []);
 
   const fragment = useMemo(() => {
-    if (currentPath == null) {
+    if (currentPath === null) {
       return registry["/routes"];
+    }
+
+    if (currentPath === undefined) {
+      return undefined;
     }
 
     return registry[currentPath] || undefined;

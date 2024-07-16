@@ -1,18 +1,20 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Button from "~/components/Button";
+import EazyModal from "~/components/EazyModal";
+import ErrorString from "~/components/ErrorString";
+import Input from "~/components/Input";
+import LibraryOfExplorerEmbed from "~/embed/LibraryOfExplorer";
+import Link from "~/components/Link";
 import LoadingActivity from "~/components/LoadingActivity";
-import Select from "~/components/Select";
 import MonacoEditorEmbed from "~/embed/MonacoEditor";
-import webConfig, { ApiPathEnum } from "~/web.config";
-import { flatten } from "flat";
-import Table from "~/components/Table";
-import _, { template } from "lodash";
+import Select from "~/components/Select";
+import SubNavbar from "~/components/SubNavbar";
+import Table2 from "~/components/Table2";
+import _ from "lodash";
 import humanizeString from "humanize-string";
 import moment from "moment";
-import EazyModal from "~/components/EazyModal";
-import LibraryOfExplorerEmbed from "~/embed/LibraryOfExplorer";
-import Input from "~/components/Input";
-import ErrorString from "~/components/ErrorString";
+import webConfig, { ApiPathEnum } from "~/web.config";
+import { flatten } from "flat";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /**
  * Component for exploring and aggregating data from a MongoDB database.
@@ -188,6 +190,8 @@ export default function DatahubExplorer() {
         <ErrorString>{errorString}</ErrorString>
       </EazyModal>
 
+      <SubNavbar title="Data explorer"/>
+      
       {/* Datahub explorer */}
       <div className="w-full h-full bg-white overflow-y-auto">
         <div className="w-full z-50">
@@ -268,9 +272,44 @@ export default function DatahubExplorer() {
         {/* Table */}
         {!isFetching && (
           <div className="w-full overflow-auto z-10">
-            <Table
-              headers={tableHeaders}
-              data={flattenRequestedData.map((it) => ({
+            <Table2
+              headerTransformer={{
+                any(value: string) {
+                  return humanizeString(value);
+                },
+                ip: () => "IP"
+              }}
+              valueTransformer={{
+                // Loockup on ipinfo
+                ip(value: string) {
+                  return <span className="font-medium hover:underline">
+                    <Link href={"https://ipinfo.io/" + value}>
+                      {value}
+                    </Link>
+                  </span>;
+                },
+                time(value: number) {
+                  if (moment(value).isValid()) {
+                    return <span className="font-mono text-[10px]">
+                      {moment(value).format("DD.MM.YYYY HH:mm:ss")}
+                    </span>;
+                  } else if (moment(value / 1000).isValid() && moment(value / 1000).year() > 2000) {
+                    return <span className="font-mono text-[10px]">
+                      {moment(value / 1000).format("DD.MM.YYYY HH:mm:ss")}
+                    </span>;
+                  } else if (moment(value * 1000).isValid() && moment(value * 1000).year() > 2000) {
+                    return <span className="font-mono text-[10px]">
+                      {moment(value * 1000).format("DD.MM.YYYY HH:mm:ss")}
+                    </span>;
+                  }
+
+                  return value;
+                }
+              }}
+              dataset={flattenRequestedData} />
+            {/* <Table2
+              
+              dataset={flattenRequestedData.map((it) => ({
                 ...it,
                 time: it.time && (
                   moment(it.time).format("DD.MM.YYYY") ==
@@ -287,8 +326,8 @@ export default function DatahubExplorer() {
                     <span>{moment(it.time).format("DD.MM.YYYY HH:mm:ss")}</span>
                   )
                 ),
-              }))}
-            />
+              }))} */}
+            {/* /> */}
           </div>
         )}
       </div>

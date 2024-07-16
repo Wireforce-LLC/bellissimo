@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fs, path::{Path, PathBuf}};
 use mongodb::{bson::{doc, document}, sync::Collection};
 use rocket::{form::Form, http::{ContentType, Status}};
-use crate::{api::{standard_http_error, trivial_checkpoint, CreateResource}, database::get_database, dynamic_router::Route, plugin::get_all_runtime_plugins, resource::Resource};
+use crate::{api::{standard_http_error, trivial_checkpoint, CreateResource}, mongo_sdk::MongoDatabase, plugin::get_all_runtime_plugins, resource_kit::Resource};
 
 
 #[get("/resource/<id..>")]
@@ -10,8 +10,7 @@ pub fn get_resource_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
     return standard_http_error::resource_not_found(id.display().to_string().as_str());
   }
 
-  let collection: Collection<Resource> = get_database(String::from("resources"))
-    .collection("resources");
+  let collection = MongoDatabase::use_resources_collection();
 
   let result = collection
     .find_one(
@@ -45,8 +44,7 @@ pub fn update_resource_by_id(id: PathBuf, input: Form<CreateResource>) -> (Statu
     return standard_http_error::resource_not_found(id.display().to_string().as_str());
   }
 
-  let collection: Collection<Resource> = get_database(String::from("resources"))
-    .collection("resources");
+  let collection = MongoDatabase::use_resources_collection();
 
   let result = collection
     .update_one(
@@ -88,8 +86,8 @@ pub fn delete_resource_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
     return standard_http_error::resource_not_found(id.display().to_string().as_str());
   }
 
-  let collection: Collection<Resource> = get_database(String::from("resources"))
-    .collection("resources");
+    let collection = MongoDatabase::use_resources_collection();
+
 
   let result = collection
     .delete_one(
@@ -119,8 +117,8 @@ pub fn delete_resource_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
 
 #[get("/resource/list")]
 pub fn get_all_resources() -> (Status, (ContentType, String))  {
-  let collection: Collection<Resource> = get_database(String::from("resources"))
-    .collection("resources");
+    let collection = MongoDatabase::use_resources_collection();
+
 
   let mut result = collection
     .find(doc! {}, None)
@@ -202,8 +200,7 @@ pub fn set_route_params(name: PathBuf, input: Form<HashMap<String, String>>) -> 
     return standard_http_error::route_not_found(&name);
   }
 
-  let collection: Collection<Route> =
-    get_database(String::from("routes")).collection("routes");
+  let collection = MongoDatabase::use_routes_collection();
 
   let route_name = name.clone();
   let params = input.into_inner();
@@ -245,8 +242,7 @@ pub fn set_route_params(name: PathBuf, input: Form<HashMap<String, String>>) -> 
 
 #[post("/resource/create", data = "<input>")]
 pub fn create_new_resource(input: Form<CreateResource>) -> (Status, (ContentType, String)) {
-  let collection: Collection<Resource> = get_database(String::from("resources"))
-    .collection("resources");
+    let collection = MongoDatabase::use_resources_collection();
 
   let resource_count = collection.count_documents(doc! {
     "resource_id": &input.resource_id.clone()
@@ -312,9 +308,6 @@ pub fn create_new_resource(input: Form<CreateResource>) -> (Status, (ContentType
     );
   }
 
-  // let collection: Collection<Resource> = get_database(String::from("resources"))
-  // .collection("resources");
-
   let doc: Resource = Resource {
     driver: input.driver.clone(),
     resource_id: input.resource_id.clone(),
@@ -328,9 +321,6 @@ pub fn create_new_resource(input: Form<CreateResource>) -> (Status, (ContentType
       None
     }
   };
-
-  // let collection: Collection<filter::Filter> = get_database(String::from("filters"))
-  //   .collection("filters");
 
   let result = collection
     .insert_one(doc, None)

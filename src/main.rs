@@ -22,8 +22,6 @@ static ALLOCATOR: System = System;
 #[path = "api/Resource.rs"] mod api_resource;
 #[path = "api/Request.rs"] mod api_request;
 #[path = "api/File.rs"] mod api_file;
-#[path = "api/Postback.rs"] mod api_postback;
-#[path = "api/User.rs"] mod api_user;
 #[path = "api/Plugin.rs"] mod api_plugin;
 #[path = "api/Click.rs"] mod api_click;
 #[path = "api/Funnel.rs"] mod api_funnel;
@@ -60,12 +58,9 @@ static ALLOCATOR: System = System;
 #[path = "boot/register_router.rs"] mod dynamic_router;
 #[path = "boot/register_filters.rs"] mod register_filters;
 #[path = "boot/bootstrap_fs.rs"] mod bfs;
-#[path = "boot/bootstrap_db.rs"] mod bootstrap_db;
 
 // DTO
-#[path = "dto/postback_payout_postback.rs"] pub mod postback_payout_postback;
 #[path = "dto/mode.rs"] pub mod mode;
-#[path = "dto/resource.rs"] pub mod resource;
 #[path = "dto/filter.rs"] pub mod filter;
 #[path = "dto/asn_record.rs"] pub mod asn_record;
 #[path = "dto/create_file.rs"] pub mod create_file;
@@ -73,6 +68,7 @@ static ALLOCATOR: System = System;
 #[path = "dto/click.rs"] pub mod click;
 
 use config::CONFIG;
+use mongo_sdk::MongoDatabase;
 use paris::info;
 use std::{collections::HashMap, net::IpAddr};
 use rocket::{config::Ident, data::Limits, fairing::AdHoc, Config};
@@ -121,7 +117,6 @@ async fn register_routes_and_attach_server() {
 
   let is_http_future_api: bool = CONFIG["is_http_future_api"].as_bool().unwrap();
   let is_http_future_robots_txt: bool = CONFIG["is_http_future_robots_txt"].as_bool().unwrap();
-  let is_http_future_postbacks: bool = CONFIG["is_http_future_postbacks"].as_bool().unwrap();
   let is_http_future_static_serve: bool = CONFIG["is_http_future_static_serve"].as_bool().unwrap();
   let is_http_future_ping: bool = CONFIG["is_http_future_ping"].as_bool().unwrap();
   let is_http_future_main_router: bool = CONFIG["is_http_future_main_router"].as_bool().unwrap();
@@ -160,7 +155,6 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api_resource::set_route_params])
       .mount(http_api_uri_path, routes![api_request::get_all_guards])
       .mount(http_api_uri_path, routes![api_request::get_guard_by_request_id])
-      .mount(http_api_uri_path, routes![api_user::get_users])
       .mount(http_api_uri_path, routes![api_filter::update_filter_by_id])
       .mount(http_api_uri_path, routes![api_request::get_all_domains_grouped_by_source])
       .mount(http_api_uri_path, routes![api_request::get_all_routes])
@@ -175,7 +169,7 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api_dataset::get_dataset_data_by_id])
       .mount(http_api_uri_path, routes![api_dataset::get_all_datasets])
       .mount(http_api_uri_path, routes![api_dataset::write_data_into_dataset])
-      .mount(http_api_uri_path, routes![api_postback::get_postback_amount])
+      .mount(http_api_uri_path, routes![api_dataset::write_get_data_into_dataset])
       .mount(http_api_uri_path, routes![api_explorer::explore_dataset])
       .mount(http_api_uri_path, routes![api_explorer::create_template])
       .mount(http_api_uri_path, routes![api_explorer::list_templates])
@@ -204,16 +198,9 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api_resource::get_all_resources])
       .mount(http_api_uri_path, routes![api_resource::get_resource_by_id])
       .mount(http_api_uri_path, routes![api_request::get_all_requests])
-      .mount(http_api_uri_path, routes![api_postback::get_all_postbacks])
       .mount(http_api_uri_path, routes![api_filter::get_all_plugins_for_filters])
       .mount(http_api_uri_path, routes![api_resource::get_all_drivers_for_resources]);
   }
-
-  if is_http_future_postbacks {
-    rocket_server = rocket_server.mount("/service", routes![api_postback::postback_get]);
-    rocket_server = rocket_server.mount("/service", routes![api_postback::postback_post]);
-  }
-
 
   if is_http_future_main_router {
     rocket_server = rocket_server.mount(http_base_route_uri_path, routes![dynamic_router::router_get]);
@@ -249,23 +236,18 @@ async fn main() {
     register_background_service().await;
   });
 
-  task::spawn(async {
-    info!("Starting server...");
+  info!("Starting server...");
 
-    // Bootstrap FS (file system)
-    bfs::bootstrap_fs().await;
+  // Bootstrap FS (file system)
+  bfs::bootstrap_fs().await;
 
-    // Register default filters
-    register_filters::register_default_filters();
-    
-    // Register default render methods
-    rdr_kit::register_default_render_methods();
+  // Register default filters
+  register_filters::register_default_filters();
+  
+  // Register default render methods
+  rdr_kit::register_default_render_methods();
 
-    // Bootstrap DB
-    bootstrap_db::register_database_tables();
+  MongoDatabase::predict_load();
 
-    register_routes_and_attach_server().await;
-  });
-
-  loop {}
+  register_routes_and_attach_server().await;
 }

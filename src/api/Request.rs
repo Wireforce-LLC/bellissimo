@@ -3,7 +3,7 @@ use chrono::{DateTime, Days, TimeZone, Utc};
 use mongodb::{bson::{doc, Document}, options::FindOptions, sync::Collection};
 use rocket::{http::{ContentType, Status}, FromForm};
 use serde::{Deserialize, Serialize};
-use crate::{asn_record::{AsnRecord, RouteWay}, database::get_database, domains_by_source::DomainsGroupedBySource, guard_kit::GuardScore, requests_sdk};
+use crate::{asn_record::{AsnRecord, RouteWay}, domains_by_source::DomainsGroupedBySource, guard_kit::GuardScore, mongo_sdk::MongoDatabase, requests_sdk};
 
 #[derive(FromForm)]
 #[derive(Serialize, Deserialize, Debug)]
@@ -15,8 +15,7 @@ pub struct FilterRequests {
 }
 
 fn select_requests(document: Document, limit: i64, skip: u64) -> Vec<AsnRecord<'static>> {
-  let collection: Collection<AsnRecord> = get_database(String::from("requests"))
-    .collection("asn_records");
+  let collection = MongoDatabase::use_requests_collection();
 
   let mut result = collection
     .find(
@@ -39,10 +38,7 @@ fn select_requests(document: Document, limit: i64, skip: u64) -> Vec<AsnRecord<'
 }
 
 #[get("/requests/summary?<query>")]
-pub fn get_requests_summary(query: HashMap<String, String>) -> (Status, (ContentType, String)) {
-  // let collection: Collection<AsnRecord> = get_database(String::from("requests"))
-  //   .collection("asn_records");
-  
+pub fn get_requests_summary(query: HashMap<String, String>) -> (Status, (ContentType, String)) {  
   let mut ua_bots_counts: HashMap<String, i64> = HashMap::from([
     ("bot".to_string(), 0),
     ("not_bot".to_string(), 0),
@@ -156,7 +152,7 @@ pub fn get_requests_summary(query: HashMap<String, String>) -> (Status, (Content
 
 #[get("/requests/guard/<rid..>")]
 pub fn get_guard_by_request_id(rid: PathBuf) -> (Status, (ContentType, String)) {
-  let collection: Collection<GuardScore> = get_database(String::from("requests")).collection("guard");
+  let collection = MongoDatabase::use_guards_collection();
 
   let result = collection
     .find_one(
@@ -202,7 +198,7 @@ pub fn get_guard_by_request_id(rid: PathBuf) -> (Status, (ContentType, String)) 
 pub fn get_all_guards() -> (Status, (ContentType, String))  {
   let mut guards: Vec<GuardScore> = Vec::new();
 
-  let collection: Collection<GuardScore> = get_database(String::from("requests")).collection("guard");
+  let collection = MongoDatabase::use_guards_collection();
 
   let mut result= collection
     .find(

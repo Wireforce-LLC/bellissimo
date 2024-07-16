@@ -1,11 +1,10 @@
 import Card from "~/components/Card";
-import Select from "~/components/Select";
-import FunnelClicksEmbed from "~/embed/FunnelClicks";
 import FunnelClicksDate from "~/embed/FunnelClicksDate";
+import FunnelClicksEmbed from "~/embed/FunnelClicks";
 
 export default function Funnels() {
     return <div className="w-full h-full">
-        <div className="grid lg:grid-cols-2 grid-cols-1 gap-2 m-3">
+        <div className="grid lg:grid-cols-2 grid-cols-1">
             {/* <div className="min-h-64 border border-zinc-200 bg-white">
                 <FunnelClicksEmbed/>
             </div> */}
@@ -17,13 +16,11 @@ export default function Funnels() {
                 <FunnelClicksEmbed isHideShortSchemas/>
             </Card>
 
-            <Card title={"Funnel Clicks Date"} description={"Make a date range"} className={"min-h-64 bg-white overflow-x-auto"}>
+            <Card  title={"Funnel Clicks Date"} description={"Make a date range"} className={"min-h-64 bg-white overflow-x-auto"}>
                 <FunnelClicksDate/>
             </Card>
 
-            <div className="min-h-64 border border-zinc-200 bg-white"></div>
-            <div className="min-h-64 border border-zinc-200 bg-white"></div>
-            <div className="min-h-64 border border-zinc-200 bg-white"></div>
+        
         </div>
     </div>
 }

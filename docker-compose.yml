@@ -62,19 +62,7 @@ services:
     volumes:
       - ./public:/usr/src/app/public
       - ./containers:/usr/src/app/containers
- 
-  bell-elasticsearch:
-    restart: always
-    user: root
-    image: 'bitnami/elasticsearch:latest'
-    container_name: bell-elasticsearch
-    volumes:
-      - ./docker/elasticsearch-data-persistence:/bitnami/elasticsearch/data
-    healthcheck:
-      test: curl -s http://localhost:9200 >/dev/null || exit 1
-      interval: 5s
-      timeout: 5s
-      retries: 10
+
 
   bellissimo:
     restart: always
@@ -97,36 +85,11 @@ services:
       - MONGO_URI=mongodb://mongo:27017
       - PHP_FPM_HOST=phpfpm
       - PHP_FPM_PORT=9000
-      - ELASTIC_URI=http://bell-elasticsearch:9200
     depends_on:
       redis:
         condition: service_healthy
       mongo:
         condition: service_healthy
-      # phpfpm:
-      #   condition: service_healthy
-      bell-elasticsearch:
-       condition: service_healthy
-
-  # varnish:
-  #   image: varnish:stable
-  #   container_name: varnish
-  #   volumes:
-  #     - "./default.vcl:/etc/varnish/default.vcl"
-  #   # ports:
-  #   #   - "80:80"
-  #   tmpfs:
-  #     - /var/lib/varnish:exec
-  #   environment:
-  #     - VARNISH_SIZE=2G  
-  #   command: "-p default_keep=300"
-  #   depends_on:
-  #     - bellissimo-collector
-  #     - redis
-  #     - mongo
-  #     - bellissimo
-  #     - nginx
-
 
   nginx:
     restart: always

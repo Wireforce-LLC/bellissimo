@@ -1,27 +1,18 @@
-import type { MetaFunction } from "@remix-run/node";
-import classNames from "classnames";
-import _, { functions } from "lodash";
-import { useState, useEffect, useCallback } from "react";
-import toast from "react-hot-toast";
-import BigInput from "~/components/BigInput";
-import Button from "~/components/Button";
-import ButtonSecondary from "~/components/ButtonSecondary";
+import CreateResourceEmbed from "~/embed/CreateResource";
 import DriverBadge from "~/components/DriverBadge";
-import Input from "~/components/Input";
+import EditResourceEmbed from "~/embed/EditResource";
 import Modal from "~/components/Modal";
-import Select from "~/components/Select";
 import SubNavbar from "~/components/SubNavbar";
 import Table from "~/components/Table";
-import CreateResourceEmbed from "~/embed/CreateResource";
-import EditResourceEmbed from "~/embed/EditResource";
-import DashboardLayout, { LeftActiveBarItem } from "~/layouts/DashboardLayout";
+import _ from "lodash";
 import string from "~/localization/polyglot";
-import webConfig, { ApiPathEnum, DRIVERS } from "~/web.config";
+import toast from "react-hot-toast";
+import webConfig, { ApiPathEnum } from "~/web.config";
+import type { MetaFunction } from "@remix-run/node";
+import { useCallback, useEffect, useState } from "react";
 
 export const meta: MetaFunction = () => {
-  return [
-    { title: string("meta.title.resources") },
-  ];
+  return [{ title: string("meta.title.resources") }];
 };
 
 function ToolIconByResourceId({ resourceId }: { resourceId: string }) {
@@ -206,34 +197,31 @@ export default function Resources() {
               <ToolIconByResourceId resourceId={i.resource_id} />
             </div>
           ),
-          file_path: i.file_path ? <div className="flex flex-row items-center justify-start gap-2">
-            <svg
-      viewBox="0 0 512 512"
-      fill="currentColor"
-      height="1em"
-      width="1em"
-      className="size-3.5 text-gray-400 hover:text-blue-800"
-    >
-      <path
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={48}
-        d="M200.66 352H144a96 96 0 010-192h55.41M312.59 160H368a96 96 0 010 192h-56.66"
-      />
-    </svg>
-    <span className="text-zinc-400 underline">{i.file_path}</span></div> : undefined,
+          file_path: i.file_path ? (
+            <div className="flex flex-row items-center justify-start gap-2">
+              <svg
+                viewBox="0 0 512 512"
+                fill="currentColor"
+                height="1em"
+                width="1em"
+                className="size-3.5 text-gray-400 hover:text-blue-800"
+              >
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={48}
+                  d="M200.66 352H144a96 96 0 010-192h55.41M312.59 160H368a96 96 0 010 192h-56.66"
+                />
+              </svg>
+              <span className="text-zinc-400 underline">{i.file_path}</span>
+            </div>
+          ) : undefined,
           driver: <DriverBadge driver={i.driver} />,
           raw_content: i.raw_content ? _.take(i.raw_content, 64) : undefined,
         }))}
       />
-
-      <div className="px-2.5 py-1">
-        <small className="text-zinc-400 text-xs">
-          In table <b>{_.size(data)}</b> records
-        </small>
-      </div>
     </>
   );
 }

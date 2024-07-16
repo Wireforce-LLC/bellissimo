@@ -72,7 +72,11 @@ impl AdCampaignManager {
       "query.utm_campaign": doc! {
         "$ne": Bson::Null,
         "$exists": true
-      }
+      },
+      "time": doc! {
+        "$gte": start_time.timestamp_micros(),
+        "$lte": end_time.timestamp_micros()
+      },
     };
 
     match campaign_type {
@@ -107,21 +111,21 @@ impl AdCampaignManager {
           "ip": doc! {
             "$max": "$headers.cf-connecting-ip"
           },
-          "country": doc! {
-            "$max": "$headers.cf-ipcountry"
-          },
-          "first_request": doc! {
-            "$min": "$time"
-          },
-          "last_request": doc! {
-            "$max": "$time"
-          },
-          "count_requests": doc! {
-            "$sum": 1
-          },
-          "resources": doc! {
-            "$addToSet": "$resource_id"
-          },
+          // "country": doc! {
+          //   "$max": "$headers.cf-ipcountry"
+          // },
+          // "first_request": doc! {
+          //   "$min": "$time"
+          // },
+          // "last_request": doc! {
+          //   "$max": "$time"
+          // },
+          // "count_requests": doc! {
+          //   "$sum": 1
+          // },
+          // "resources": doc! {
+          //   "$addToSet": "$resource_id"
+          // },
           "campaigns": doc! {
             "$addToSet": "$query.utm_campaign"
           }
@@ -160,20 +164,20 @@ impl AdCampaignManager {
         "$replaceRoot": doc! {
           "newRoot": doc! {
             "ip": "$ip",
-            "clicks_arr": doc! {
-              "$max": "$clicks_arr"
-            },
-            "country": "$country",
-            "first_request": "$first_request",
-            "last_request": "$last_request",
-            "flow_time": doc! {
-              "$subtract": [
-                "$last_request",
-                "$first_request"
-              ]
-            },
+            // "clicks_arr": doc! {
+            //   "$max": "$clicks_arr"
+            // },
+            // "country": "$country",
+            // "first_request": "$first_request",
+            // "last_request": "$last_request",
+            // "flow_time": doc! {
+            //   "$subtract": [
+            //     "$last_request",
+            //     "$first_request"
+            //   ]
+            // },
             "count_requests": "$count_requests",
-            "resources": "$resources",
+            // "resources": "$resources",
             "campaigns": "$campaigns"
           }
         }
@@ -187,10 +191,10 @@ impl AdCampaignManager {
       },
       doc! {
         "$match": doc! {
-          "last_request": doc! {
-            "$gte": start_time.timestamp_micros(),
-            "$lte": end_time.timestamp_micros()
-          },
+          // "last_request": doc! {
+          //   "$gte": start_time.timestamp_micros(),
+          //   "$lte": end_time.timestamp_micros()
+          // },
           "campaigns": doc! {
             "$in": [
               campaign_id,
