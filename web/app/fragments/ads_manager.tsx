@@ -1,4 +1,5 @@
-import AdsCampaigns from "~/embed/AdsCampaigns";
+import AdsCampaignClicks from "~/embed/AdsCampaignClicks";
+import AdsCampaigns, { AdCampaign } from "~/embed/AdsCampaigns";
 import Button from "~/components/Button";
 import CreateCampaignEmbed, { Submit } from "~/embed/CreateCampaign";
 import EazyModal from "~/components/EazyModal";
@@ -15,6 +16,8 @@ export default function AdsManager() {
 
   const [applyStartDate, setApplyStartDate] = useState<number>(startDate);
   const [applyEndDate, setApplyEndDate] = useState<number>(endDate);
+
+  const [modalOverviewSelectedCampaign, setModalOverviewSelectedCampaign] = useState<AdCampaign>();
 
   const onCreateCampaign = useCallback((it: Submit) => {
     webConfig.axiosFactory("PRIVATE").then((axios) => {
@@ -41,6 +44,10 @@ export default function AdsManager() {
     <>
       <EazyModal title="Create new campaign" isVisible={isCreationModalShow} intent={() => setCreationModalShow(false)}>
         <CreateCampaignEmbed onSubmit={onCreateCampaign}/>
+      </EazyModal>
+
+      <EazyModal title="View campaign" isVisible={modalOverviewSelectedCampaign != undefined} intent={() => setModalOverviewSelectedCampaign(undefined)}>
+        <AdsCampaignClicks campaignId={modalOverviewSelectedCampaign?.campaign_id}/>
       </EazyModal>
 
       <SubNavbar title="AdsManager" createActionLabel="Create campaign" onCreateAction={() => setCreationModalShow(true)}/>
@@ -75,7 +82,7 @@ export default function AdsManager() {
         </div>
       </div>
 
-      <AdsCampaigns startDate={applyStartDate} endDate={applyEndDate}/>
+      <AdsCampaigns onSelect={setModalOverviewSelectedCampaign} startDate={applyStartDate} endDate={applyEndDate}/>
     </>
   );
 }

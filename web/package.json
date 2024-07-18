@@ -44,7 +44,8 @@
     "react-json-editor-ajrm": "^2.5.14",
     "react-json-pretty": "^2.2.0",
     "react-object-view": "^0.3.5",
-    "react-syntax-highlighter": "^15.5.0"
+    "react-syntax-highlighter": "^15.5.0",
+    "recharts": "^2.12.7"
   },
   "devDependencies": {
     "@remix-run/dev": "^2.8.1",

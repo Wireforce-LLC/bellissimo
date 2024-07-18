@@ -177,6 +177,7 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api_explorer::get_datasets])
       .mount(http_api_uri_path, routes![api_ad_manager::create_campaign])
       .mount(http_api_uri_path, routes![api_ad_manager::list_campaigns])
+      .mount(http_api_uri_path, routes![api_ad_manager::get_campaign_clicks_history])
 
       .mount(http_api_uri_path, routes![api_file::get_all_files])
       .mount(http_api_uri_path, routes![api_file::get_file])

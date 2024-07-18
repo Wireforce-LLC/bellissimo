@@ -16,6 +16,23 @@ pub enum AdCampaignType {
   TikTok = 107,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct AdCampaignClickRecord {
+  pub month: i32,
+  pub day: i32,
+  pub year: i32,
+  pub clicks: i32
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct AdCampaignKpi {
+  pub campaign_id: String,
+  pub clicks: i32,
+  pub target_records: i32,
+  pub not_target_records: i32,
+  pub success_rate: i32
+}
+
 impl AdCampaignType {
   pub fn u8_is_enum(value: u8) -> bool {
     return (101..107).contains(&value);
@@ -35,6 +52,134 @@ impl AdCampaignType {
   }
 }
 
+impl AdCampaignManager {
+  pub fn collect_campaign_clicks_history(
+    start_time: DateTime<Utc>,
+    end_time: DateTime<Utc>,
+    utm_campaign_name: &str
+  ) -> Vec<AdCampaignClickRecord> {
+    let collection = MongoDatabase::use_requests_collection();
+    let pipeline = vec![
+        doc! {
+            "$match": doc! {
+                "query.utm_campaign": doc! {
+                  "$eq": utm_campaign_name
+                },
+                "time": doc! {
+                  "$gte": start_time.timestamp_micros(),
+                  "$lte": end_time.timestamp_micros()
+                }
+            }
+        },
+        doc! {
+            "$group": doc! {
+                "_id": "$headers.cf-connecting-ip",
+                "campaign": doc! {
+                    "$max": "$query.utm_campaign"
+                },
+                "time": doc! {
+                    "$max": "$time"
+                }
+            }
+        },
+        doc! {
+            "$project": doc! {
+                "y": doc! {
+                    "$year": doc! {
+                        "$toDate": doc! {
+                            "$divide": [
+                                "$time",
+                                1000
+                            ]
+                        }
+                    }
+                },
+                "m": doc! {
+                    "$month": doc! {
+                        "$toDate": doc! {
+                            "$divide": [
+                                "$time",
+                                1000
+                            ]
+                        }
+                    }
+                },
+                "d": doc! {
+                    "$dayOfMonth": doc! {
+                        "$toDate": doc! {
+                            "$divide": [
+                                "$time",
+                                1000
+                            ]
+                        }
+                    }
+                },
+                "h": doc! {
+                    "$hour": doc! {
+                        "$toDate": doc! {
+                            "$divide": [
+                                "$time",
+                                1000
+                            ]
+                        }
+                    }
+                },
+                "tweet": 1
+            }
+        },
+        doc! {
+            "$group": doc! {
+                "_id": doc! {
+                    "month": "$m",
+                    "day": "$d",
+                    "year": "$y"
+                },
+                "count": doc! {
+                    "$count": doc! {}
+                }
+            }
+        },
+        doc! {
+            "$sort": doc! {
+                "_id.d": -1,
+                "_id.m": -1,
+                "_id.y": -1
+            }
+        },
+        doc! {
+            "$sort": doc! {
+                "_id": -1
+            }
+        },
+        doc! {
+            "$limit": 14
+        }
+    ];
+
+    let mut clicks_history: Vec<AdCampaignClickRecord> = Vec::new();
+    let aggr = collection.aggregate(pipeline, None);
+
+    for doc in aggr.unwrap() {
+      let doc = doc.unwrap();
+      
+      let record = AdCampaignClickRecord {
+        // month: doc.get("_id.month").unwrap(),
+        // day: doc.get_i32("_id.day").unwrap(),
+        // year: doc.get_i32("_id.year").unwrap(),
+        // clicks: doc.get_i32("count").unwrap()
+        month: doc.get_document("_id").unwrap().get_i32("month").unwrap(),
+        day: doc.get_document("_id").unwrap().get_i32("day").unwrap(),
+        year: doc.get_document("_id").unwrap().get_i32("year").unwrap(),
+        clicks: doc.get_i32("count").unwrap()
+      };
+
+      clicks_history.push(record);
+    }
+
+    return clicks_history;
+  }
+}
+
 /*
  * Collects campaigns and their performance statistics.
  * This functions-set is used to collect campaigns and their performance statistics.
@@ -50,33 +195,23 @@ impl AdCampaignManager {
     start_time: DateTime<Utc>,
     end_time: DateTime<Utc>,
     campaign_type: AdCampaignType
-  ) -> Option<Document> {
+  ) -> Option<AdCampaignKpi> {
     let collection = MongoDatabase::use_requests_collection();
     let targets: Vec<Document> = target_clicks_names.iter().map(|name| doc! {
       "$in": [
-        name,
-        doc! {
-          "$ifNull": [
-            "$clicks_arr",
-            []
-          ]
-        }
+          "wantInstall",
+          "$clicks_arr"
       ]
     }).collect();
 
     let mut first_match = doc! {
-      "headers.cf-connecting-ip": doc! {
-        "$exists": true,
-        "$ne": Bson::Null
-      },
       "query.utm_campaign": doc! {
-        "$ne": Bson::Null,
-        "$exists": true
+        "$eq": campaign_id
       },
       "time": doc! {
         "$gte": start_time.timestamp_micros(),
         "$lte": end_time.timestamp_micros()
-      },
+      }
     };
 
     match campaign_type {
@@ -108,147 +243,97 @@ impl AdCampaignManager {
       doc! {
         "$group": doc! {
           "_id": "$headers.cf-connecting-ip",
-          "ip": doc! {
-            "$max": "$headers.cf-connecting-ip"
+          "time": doc! {
+            "$max": "$time"
           },
-          // "country": doc! {
-          //   "$max": "$headers.cf-ipcountry"
-          // },
-          // "first_request": doc! {
-          //   "$min": "$time"
-          // },
-          // "last_request": doc! {
-          //   "$max": "$time"
-          // },
-          // "count_requests": doc! {
-          //   "$sum": 1
-          // },
-          // "resources": doc! {
-          //   "$addToSet": "$resource_id"
-          // },
-          "campaigns": doc! {
-            "$addToSet": "$query.utm_campaign"
+          "campaign": doc! {
+            "$max": "$query.utm_campaign"
           }
         }
       },
       doc! {
         "$lookup": doc! {
           "from": "clicks",
-          "localField": "ip",
+          "localField": "_id",
           "foreignField": "ip",
-          "as": "clicks",
-          "pipeline": [
-            doc! {
-              "$group": doc! {
-                "_id": Bson::Null,
-                "uniqueValues": doc! {
-                  "$addToSet": "$name"
-                }
-              }
-            },
-            doc! {
-              "$project": doc! {
-                "_id": 0,
-                "uniqueValues": 1
-              }
-            }
-          ]
+          "as": "clicks"
         }
       },
       doc! {
         "$addFields": doc! {
-          "clicks_arr": "$clicks.uniqueValues"
-        }
-      },
-      doc! {
-        "$replaceRoot": doc! {
-          "newRoot": doc! {
-            "ip": "$ip",
-            // "clicks_arr": doc! {
-            //   "$max": "$clicks_arr"
-            // },
-            // "country": "$country",
-            // "first_request": "$first_request",
-            // "last_request": "$last_request",
-            // "flow_time": doc! {
-            //   "$subtract": [
-            //     "$last_request",
-            //     "$first_request"
-            //   ]
-            // },
-            "count_requests": "$count_requests",
-            // "resources": "$resources",
-            "campaigns": "$campaigns"
+          "clicks_arr": doc! {
+            "$map": doc! {
+              "input": "$clicks",
+              "as": "click",
+              "in": "$$click.name"
+            }
           }
         }
       },
       doc! {
         "$addFields": doc! {
-          "isTargetConversion": doc! {
+          "is_target": doc! {
             "$or": targets
           }
         }
       },
       doc! {
-        "$match": doc! {
-          // "last_request": doc! {
-          //   "$gte": start_time.timestamp_micros(),
-          //   "$lte": end_time.timestamp_micros()
-          // },
-          "campaigns": doc! {
-            "$in": [
-              campaign_id,
-              "$campaigns"
-            ]
-          }
-        }
-      },
-      doc! {
-        "$group": doc! {
-          "_id": Bson::Null,
-          "countClicks": doc! {
-              "$sum": 1
-          },
-          "cakpi": doc! {
-            "$sum": doc! {
-              "$cond": [
-                doc! {
-                  "$eq": [
-                    "$isTargetConversion",
-                    true
-                  ]
-                }, 1, 0
-              ]
-            }
-          },
-          "caNokpi": doc! {
-            "$sum": doc! {
-              "$cond": [
-                doc! {
-                  "$eq": [
-                    "$isTargetConversion",
-                    false
-                  ]
-                }, 1, 0
-              ]
-            }
-          }
-        }
-      },
-      doc! {
-        "$addFields": doc! {
-          "kpiPercent": doc! {
-            "$multiply": [
-              doc! {
-                "$divide": [
-                  "$cakpi",
-                  "$caNokpi"
-                ]
+          "$group": doc! {
+              "_id": "$campaign",
+              "count": doc! {
+                  "$count": doc! {}
               },
-              100
-            ]
+              "target_records": doc! {
+                  "$sum": doc! {
+                      "$cond": [
+                          doc! {
+                              "$eq": [
+                                  "$is_target",
+                                  true
+                              ]
+                          },
+                          1,
+                          0
+                      ]
+                  }
+              },
+              "not_target_records": doc! {
+                  "$sum": doc! {
+                      "$cond": [
+                          doc! {
+                              "$eq": [
+                                  "$is_target",
+                                  false
+                              ]
+                          },
+                          1,
+                          0
+                      ]
+                  }
+              }
           }
-        }
+      },
+      doc! {
+          "$addFields": doc! {
+              "success_rate": doc! {
+                  "$toInt": doc! {
+                      "$multiply": [
+                          doc! {
+                              "$divide": [
+                                  "$target_records",
+                                  "$not_target_records"
+                              ]
+                          },
+                          100
+                      ]
+                  }
+              }
+          }
+      },
+      doc! {
+          "$sort": doc! {
+              "is_target": -1
+          }
       }
     ];
 
@@ -269,7 +354,17 @@ impl AdCampaignManager {
         }
 
         let result = result.unwrap();
+
+        println!("result: {:?}", result);
         
+        let result = AdCampaignKpi {
+          campaign_id: result.get("_id").unwrap().as_str().unwrap_or("Untitled").to_string(),
+          clicks: result.get("count").unwrap().as_i32().unwrap_or(0),
+          target_records: result.get("target_records").unwrap().as_i32().unwrap_or(0),
+          not_target_records: result.get("not_target_records").unwrap().as_i32().unwrap_or(0),
+          success_rate: result.get("success_rate").unwrap().as_i32().unwrap_or(0),
+        };
+
         return Some(result);
       }
 

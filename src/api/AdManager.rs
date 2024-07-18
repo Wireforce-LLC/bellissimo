@@ -2,7 +2,7 @@ use chrono::{DateTime, Duration, Utc};
 use mongodb::bson::doc;
 use rocket::form::FromForm;
 use serde::{Serialize, Deserialize};
-use crate::ad_campaign_manager::{AdCampaignManager, AdCampaignType};
+use crate::ad_campaign_manager::{AdCampaignKpi, AdCampaignManager, AdCampaignType};
 use crate::dynamic_router::REDIS;
 use crate::mongo_sdk::MongoDatabase;
 use rocket::http::{ContentType, Status};
@@ -50,16 +50,40 @@ pub struct AdManagerCampaign {
   pub campaign_id: String,
   pub target_click: Vec<String>,
   pub campaign_type: u8,
-  pub kpi_success: u8,
-  pub kpi_fail: u8,
-  pub kpi_percent: f64,
-  pub count_clicks: u8,
+  pub kpi: Option<AdCampaignKpi>
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, FromForm)]
+pub struct SelectorHistoryOfCampaign {
+  pub start_time: i64,
+  pub end_time: i64,
+  pub utm_campaign_name: String
+}
+
+#[get("/adsmanager/campaign/clicks/history?<campaign_history_selector..>")]
+pub async fn get_campaign_clicks_history(campaign_history_selector: SelectorHistoryOfCampaign) -> (Status, (ContentType, String)) {
+  let history: Vec<crate::ad_campaign_manager::AdCampaignClickRecord> = AdCampaignManager::collect_campaign_clicks_history(
+    DateTime::from_timestamp(campaign_history_selector.start_time.clone(), 0).unwrap(),
+    DateTime::from_timestamp(campaign_history_selector.end_time.clone(), 0).unwrap(),
+    &campaign_history_selector.utm_campaign_name
+  );
+  
+  return (
+    Status::Ok, 
+    (
+      ContentType::JSON,
+      json!({
+        "isOk": true,
+        "value": history
+      }).to_string()
+    )
+  );
 }
 
 /**
  * Get all campaigns.
  */
-#[get("/adsmanager/campaigns/list?<selector..>")]
+#[get("/adsmanager/campaign/list?<selector..>")]
 pub async fn list_campaigns(selector: SelectorDateOfCampaign) -> (Status, (ContentType, String)) {
   let collection = MongoDatabase::use_campaigns_collection();
   let result = collection.find(doc! {}, None);
@@ -98,10 +122,7 @@ pub async fn list_campaigns(selector: SelectorDateOfCampaign) -> (Status, (Conte
         campaign_id: campaign.campaign_id,
         target_click: campaign.target_click,
         campaign_type: campaign.campaign_type,
-        kpi_success: 0,
-        kpi_fail: 0,
-        kpi_percent: 0.0,
-        count_clicks: 0
+        kpi: None,
       };
 
       campaigns_vec.push(campaign);
@@ -114,10 +135,7 @@ pub async fn list_campaigns(selector: SelectorDateOfCampaign) -> (Status, (Conte
         campaign_id: campaign.campaign_id,
         target_click: campaign.target_click,
         campaign_type: campaign.campaign_type,
-        kpi_success: campaign_results.get_i32("cakpi").unwrap_or(0) as u8,
-        kpi_fail: campaign_results.get_i32("caNokpi").unwrap_or(0) as u8,
-        kpi_percent: campaign_results.get_f64("kpiPercent").unwrap_or(0.0) as f64,
-        count_clicks: campaign_results.get_i32("countClicks").unwrap_or(0) as u8,
+        kpi: Some(campaign_results),
       };
 
       campaigns_vec.push(campaign);
@@ -138,7 +156,7 @@ pub async fn list_campaigns(selector: SelectorDateOfCampaign) -> (Status, (Conte
 
 }
 
-#[post("/adsmanager/create", data="<campaign>")]
+#[post("/adsmanager/campaign/create", data="<campaign>")]
 pub fn create_campaign(campaign: String) -> (Status, (ContentType, String)) {
   let campaign = serde_json::from_str(&campaign);
 
