@@ -302,7 +302,7 @@ export default {
     menu: {
       files: "Files",
       routes: "Routes",
-      scenario: "Scenario",
+      functions: "Functions",
       filters: "Filters",
       resources: "Resources",
       asnRecords: "Requests",
@@ -312,6 +312,7 @@ export default {
         postbacks: "Postbacks",
         clicks: "Clicks",
         funnels: "Funnels",
+        widgets: "Widgets",
         datasets: "Datasets",
         explorer: "Explorer",
       },

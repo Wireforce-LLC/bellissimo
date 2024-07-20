@@ -1,9 +1,11 @@
 import Card from "./Card";
 import _ from "lodash";
+import classNames from "classnames";
 import moment from "moment";
 import { ReactNode, useMemo } from "react";
 
 interface Props<T> {
+  readonly className?: string;
   readonly isCompact?: boolean;
   readonly dataset?: T[] | null;
   readonly isTransform?: boolean;
@@ -154,15 +156,17 @@ const findDocumentWithMostKeys = (
  * @returns Combined document with all keys filled with undefined.
  */
 const combineWithUndefined = (docs: any) => {
-    const allKeys: string[] = [...new Set(docs.flatMap((doc: any) => Object.keys(doc)))] as string[];
+  const allKeys: string[] = [
+    ...new Set(docs.flatMap((doc: any) => Object.keys(doc))),
+  ] as string[];
 
-    const combinedDoc: Record<string, undefined> = {};
-    
-    allKeys.forEach(key => {
-        combinedDoc[key] = undefined;
-    });
+  const combinedDoc: Record<string, undefined> = {};
 
-    return combinedDoc;
+  allKeys.forEach((key) => {
+    combinedDoc[key] = undefined;
+  });
+
+  return combinedDoc;
 };
 
 /**
@@ -189,28 +193,31 @@ export default function Table2<T>({
   additionalColumns,
   rowClassName,
   isCompact,
-  onSelectedItem
+  className,
+  onSelectedItem,
 }: Props<T>) {
   if (dataset == null) {
     return (
-      <Card className="border-none">
-        <div className="flex justify-center items-center flex-col w-full h-full min-h-[100px]">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 16 16"
-            fill="currentColor"
-            className="size-4 fill-gray-400 mb-1"
-          >
-            <path d="M8 7c3.314 0 6-1.343 6-3s-2.686-3-6-3-6 1.343-6 3 2.686 3 6 3Z" />
-            <path d="M8 8.5c1.84 0 3.579-.37 4.914-1.037A6.33 6.33 0 0 0 14 6.78V8c0 1.657-2.686 3-6 3S2 9.657 2 8V6.78c.346.273.72.5 1.087.683C4.42 8.131 6.16 8.5 8 8.5Z" />
-            <path d="M8 12.5c1.84 0 3.579-.37 4.914-1.037.366-.183.74-.41 1.086-.684V12c0 1.657-2.686 3-6 3s-6-1.343-6-3v-1.22c.346.273.72.5 1.087.683C4.42 12.131 6.16 12.5 8 12.5Z" />
-          </svg>
+      <div
+        className={
+          "flex justify-center items-center flex-col w-full h-full min-h-[100px]"
+        }
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16"
+          fill="currentColor"
+          className="size-4 fill-gray-400 mb-1"
+        >
+          <path d="M8 7c3.314 0 6-1.343 6-3s-2.686-3-6-3-6 1.343-6 3 2.686 3 6 3Z" />
+          <path d="M8 8.5c1.84 0 3.579-.37 4.914-1.037A6.33 6.33 0 0 0 14 6.78V8c0 1.657-2.686 3-6 3S2 9.657 2 8V6.78c.346.273.72.5 1.087.683C4.42 8.131 6.16 8.5 8 8.5Z" />
+          <path d="M8 12.5c1.84 0 3.579-.37 4.914-1.037.366-.183.74-.41 1.086-.684V12c0 1.657-2.686 3-6 3s-6-1.343-6-3v-1.22c.346.273.72.5 1.087.683C4.42 12.131 6.16 12.5 8 12.5Z" />
+        </svg>
 
-          <p className="text-gray-400 text-xs">
-            There is no data to display in the table
-          </p>
-        </div>
-      </Card>
+        <p className="text-gray-400 text-xs">
+          There is no data to display in the table
+        </p>
+      </div>
     );
   }
 
@@ -311,7 +318,7 @@ export default function Table2<T>({
       if (headerTransformer && _.hasIn(headerTransformer, i)) {
         return (
           <th
-            className={rowClassName || "text-xs font-normal py-[5px] px-[5px]"}
+            className={rowClassName || "text-[10px] font-mono py-[5px] px-[8px]"}
             align="left"
             key={i}
           >
@@ -323,7 +330,7 @@ export default function Table2<T>({
       if (headerTransformer && _.hasIn(headerTransformer, "any")) {
         return (
           <th
-            className={rowClassName || "text-xs font-normal py-[5px] px-[5px]"}
+            className={rowClassName || "text-[10px] font-mono py-[5px] px-[8px]"}
             align="left"
             key={i}
           >
@@ -334,7 +341,7 @@ export default function Table2<T>({
 
       return (
         <th
-          className={rowClassName || "text-xs font-normal py-[5px] px-[5px]"}
+          className={rowClassName || "text-[10px] font-mono py-[5px] px-[8px]"}
           align="left"
           key={i}
         >
@@ -350,12 +357,14 @@ export default function Table2<T>({
         <tr
           key={generateObjectHash(a)}
           onClick={() => {
-            onSelectedItem?.(
-            index,
-            a as T
-            )
+            onSelectedItem?.(index, a as T);
           }}
-          className="hover:bg-zinc-100 cursor-pointer border-b border-b-gray-100"
+          className={classNames(
+            "hover:bg-blue-50 border-b border-b-gray-100",
+            onSelectedItem
+              ? "cursor-pointer hover:outline outline-offset-2 outline-black"
+              : "cursor-default"
+          )}
         >
           {_.toPairs(a).map(([key, value]) => {
             if (
@@ -365,19 +374,19 @@ export default function Table2<T>({
               return (
                 <td
                   className={
-                    rowClassName || "text-xs font-normal py-[5px] px-[5px]"
+                    rowClassName || "text-xs font-normal py-[5px] px-[8px]"
                   }
                   align="left"
                   key={key}
                 >
-                  {valueTransformer[key](value, a as T)}
+                  {valueTransformer[key](value, dataset[index] as T)}
                 </td>
               );
             }
             return (
               <td
                 className={
-                  rowClassName || "text-xs font-normal py-[5px] px-[5px]"
+                  rowClassName || "text-xs font-normal py-[5px] px-[8px]"
                 }
                 align="left"
                 key={key}
@@ -392,7 +401,7 @@ export default function Table2<T>({
   }, [displayData]);
 
   return (
-    <table className="table-auto w-full bg-white">
+    <table className={classNames(className, "table-auto w-full bg-white")}>
       <thead>
         <tr>{reactHeaders}</tr>
       </thead>

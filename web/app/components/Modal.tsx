@@ -1,6 +1,6 @@
 import classNames from "classnames";
+import { motion } from "framer-motion";
 import { ReactNode, useEffect } from "react";
-import { motion } from "framer-motion"
 
 interface Props {
   readonly children: ReactNode;
@@ -8,6 +8,7 @@ interface Props {
   readonly isBigModal?: boolean;
   readonly isNoPadding?: boolean;
   readonly onClose: () => void | any;
+  readonly zIndex?: number
 }
 
 /**
@@ -27,6 +28,7 @@ export default function Modal({
   children,
   onClose,
   isNoPadding = false,
+  zIndex = 1
 }: Props) {
   // Add event listener for escape key press to close the modal
   useEffect(() => {
@@ -48,7 +50,8 @@ export default function Modal({
       transition={{ duration: 0.1 }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="w-full h-full bg-black bg-opacity-55 fixed z-50 top-0 left-0 right-0 bottom-0 flex items-center justify-center"
+      style={{zIndex: zIndex * 100}}
+      className="w-full h-full overflow-hidden select-none bg-black bg-opacity-55 fixed z-50 top-0 left-0 right-0 bottom-0 flex items-center justify-center"
     >
       {/* Modal content container */}
       <motion.div
@@ -85,11 +88,11 @@ export default function Modal({
         </div>
 
         {/* Modal content */}
-        <div className="w-full h-[calc(100%-32px)] overflow-y-auto">
+        <div className="w-full h-[calc(100%-34px)] overflow-y-auto">
           <div
             className={classNames({
               "p-2 h-full w-full": !isNoPadding,
-              "h-[calc(100%-32px)] w-full": isNoPadding,
+              "h-full w-full": isNoPadding,
             })}
           >
             {children}

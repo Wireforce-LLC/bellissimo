@@ -7,13 +7,14 @@ import { motion } from "framer-motion";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 
 export enum LeftActiveBarItem {
+  WIDGETS = "widgets",
   FILES = "files",
   ROUTES = "routes",
   FILTERS = "filters",
   RESOURCES = "resources",
   ASN_RECORDS = "asn-records",
   POSTBACKS = "postbacks",
-  SCENARIO = "scenario",
+  FUNCTIONS = "functions",
   ADS_MANAGER = "adsmanager",
   DATAHUB = "datahub",
   DATAHUB_EXPLORER = "datahub/explorer",
@@ -112,12 +113,12 @@ const getDashboardLeftBarItem = useCallback((currentActivePageId: LeftActiveBarI
     },
 
     {
-      id: "scenario",
-      classname: LeftActiveBarItem.SCENARIO,
+      id: "functions",
+      classname: LeftActiveBarItem.FUNCTIONS,
       priority: 1,
-      name: string("dashboard.menu.scenario"),
-      href: "/scenario",
-      isActive: currentActivePageId == LeftActiveBarItem.SCENARIO,
+      name: string("dashboard.menu.functions"),
+      href: "/functions",
+      isActive: currentActivePageId == LeftActiveBarItem.FUNCTIONS,
       icon: (
         <svg
           viewBox="0 0 24 24"
@@ -222,12 +223,12 @@ const getDashboardLeftBarItem = useCallback((currentActivePageId: LeftActiveBarI
     },
 
     {
-      id: "datahub-funnels",
-      classname: LeftActiveBarItem.DATAHUB_FUNNELS,
+      id: "datahub-widgets",
+      classname: LeftActiveBarItem.WIDGETS,
       priority: 1,
-      name: string("dashboard.menu.datahub.funnels"),
-      href: "/datahub/funnels",
-      isActive: currentActivePageId == LeftActiveBarItem.DATAHUB_FUNNELS,
+      name: string("dashboard.menu.datahub.widgets"),
+      href: "/widgets",
+      isActive: currentActivePageId == LeftActiveBarItem.WIDGETS,
       icon: (
         <svg
         viewBox="0 0 1024 1024"
@@ -286,7 +287,7 @@ const getDashboardLeftBarItem = useCallback((currentActivePageId: LeftActiveBarI
   }, []);
 
   return (
-    <div style={{ height: "calc(100vh - 45px - 32px)" }}>
+    <div style={{ height: "calc(100vh - 45px - 32px)", width: '100%'}}>
       {isSafari && <div className="h-[1px] w-full bg-[#060931]"></div>}
 
       <div className="w-full bg-[#060931] h-[32px] px-4 flex flex-row items-center justify-between">
@@ -300,7 +301,7 @@ const getDashboardLeftBarItem = useCallback((currentActivePageId: LeftActiveBarI
         onMenuClick={() => setMenuOpen(!isMenuOpen)}
       />
 
-      <main className="w-full h-full bg-white flex flex-row overflow-hidden">
+      <main className="w-screen h-full bg-white flex flex-row overflow-hidden">
         {isMenuOpen && <motion.nav transition={{duration: 0.1}} className="w-[165px] flex-shrink-0 h-full bg-white border-r border-gray-200">
           <ul>
             {
@@ -308,7 +309,7 @@ const getDashboardLeftBarItem = useCallback((currentActivePageId: LeftActiveBarI
                 <li onClick={() => {
                   onMenuSelected(item.href)
                   setCurrentLeftActiveBarItem(item.classname)
-                }} className={classNames(
+                }} key={item.id} className={classNames(
                   "w-full px-3.5 py-2.5 cursor-pointer flex flex-row gap-2",
                   {
                     "bg-blue-50 border-r border-r-blue-500 text-blue-500": item.isActive,
@@ -329,7 +330,7 @@ const getDashboardLeftBarItem = useCallback((currentActivePageId: LeftActiveBarI
           </ul>
         </motion.nav>}
 
-        <div className="w-full h-full bg-zinc-100 overflow-y-auto">
+        <div className="w-full h-full bg-zinc-100 overflow-y-auto overflow-x-auto">
           {children}
         </div>
       </main>

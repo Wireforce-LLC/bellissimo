@@ -41,7 +41,7 @@ static ALLOCATOR: System = System;
 #[path = "libs/Router.rs"] mod router_sdk;
 #[path = "libs/Dataset.rs"] mod dataset_sdk;
 #[path = "libs/AdCampaignManager.rs"] mod ad_campaign_manager;
-
+#[path = "libs/RemoteFunctions.rs"] mod remote_function;
 
 // Config Files
 #[path = "config.rs"] mod config;
@@ -178,6 +178,15 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api_ad_manager::create_campaign])
       .mount(http_api_uri_path, routes![api_ad_manager::list_campaigns])
       .mount(http_api_uri_path, routes![api_ad_manager::get_campaign_clicks_history])
+      
+
+      .mount(http_api_uri_path, routes![api_scenario::create_remote_function])
+      .mount(http_api_uri_path, routes![api_scenario::list_remote_functions])
+      .mount(http_api_uri_path, routes![api_scenario::get_remote_function])
+      .mount(http_api_uri_path, routes![api_scenario::read_remote_function])
+      .mount(http_api_uri_path, routes![api_scenario::delete_remote_function])
+      .mount(http_api_uri_path, routes![api_scenario::write_remote_function])
+      .mount(http_api_uri_path, routes![api_scenario::run_function_with_debugger])
 
       .mount(http_api_uri_path, routes![api_file::get_all_files])
       .mount(http_api_uri_path, routes![api_file::get_file])

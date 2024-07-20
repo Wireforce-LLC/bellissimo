@@ -1,18 +1,13 @@
-import type { MetaFunction } from "@remix-run/node";
-import _, { set } from "lodash";
-import SubNavbar from "~/components/SubNavbar";
-import DashboardLayout, { LeftActiveBarItem } from "~/layouts/DashboardLayout";
-import string from "~/localization/polyglot";
-import FileEditorEmbed, { $emitter as $fileEmitter } from "~/embed/FileEditor";
-import { useCallback, useEffect, useState } from "react";
-import Modal from "~/components/Modal";
-import Input from "~/components/Input";
 import Button from "~/components/Button";
-import webConfig, { ApiPathEnum } from "~/web.config";
-import toast from "react-hot-toast";
+import FileEditorEmbed, { $emitter as $fileEmitter } from "~/embed/FileEditor";
+import Input from "~/components/Input";
+import Modal from "~/components/Modal";
+import SubNavbar from "~/components/SubNavbar";
 import classNames from "classnames";
-import DocsBar from "~/embed/DocsBar";
-
+import string from "~/localization/polyglot";
+import toast from "react-hot-toast";
+import webConfig, { ApiPathEnum } from "~/web.config";
+import { useCallback, useEffect, useState } from "react";
 
 /**
  * Represents a file list page.
@@ -134,8 +129,7 @@ export default function Files() {
           hidden: !isReady,
         })}
       >
-        <div className="h-full w-full">
-          { pwd?.includes("scenario/events") && <div className="border-b border-zinc-200 px-3 py-2">
+        { pwd?.includes("scenario/events") && <div className="border-b border-zinc-200 px-3 py-2">
             <p className="text-xs">
               <span className="font-medium">Scenario</span> 
               {" - "}
@@ -150,11 +144,7 @@ export default function Files() {
             onChangePwd={setPwd}
             pwd={pwd}
           />
-        </div>
 
-        <div className="h-full w-[300px] border-l border-l-zinc-200">
-          <DocsBar id="how_edit_files" />
-        </div>
       </div>
     </>
   );

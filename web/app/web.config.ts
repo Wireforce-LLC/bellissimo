@@ -38,6 +38,14 @@ export enum ApiPathEnum {
   GetAdsManagerCampaignsList = "/api/adsmanager/campaign/list",
   CreateAdsManagerCampaign = "/api/adsmanager/campaign/create",
 
+  GetAllRemoteFunctions = "/api/function/list",
+  CreateRemoteFunction = "/api/function/create",
+  GetFunction = "/api/function",
+  ReadFunction = "/api/function/read",
+  DeleteFunction = "/api/function/delete",
+  WriteFunction = "/api/function/write",
+  RunFunctionWithDebugger = "/api/function/run/debug",
+
   CreateRoutes = "/api/route/create",
   CreateResources = "/api/resource/create",
   CreateFilters = "/api/filter/create",

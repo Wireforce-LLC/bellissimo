@@ -1,8 +1,8 @@
 import _ from "lodash";
-import { useEffect, useState } from "react";
-import webConfig, { ApiPathEnum } from "~/web.config";
 import classNames from "classnames";
 import moment from "moment";
+import webConfig, { ApiPathEnum } from "~/web.config";
+import { useEffect, useState } from "react";
 
 interface Props {}
 
@@ -55,6 +55,15 @@ export default function FunnelClicksDate() {
       );
     });
   }, []);
+
+
+  if (_.isEmpty(data)) {
+    return <div className="w-full h-full flex flex-col items-center justify-center">
+      <div className="text-xs text-zinc-500">
+        Sorry, there is no data available.
+      </div>
+    </div>
+  }
 
   return (
     <div className="w-full h-full space-y-4 text-xs">

@@ -1,5 +1,5 @@
-import { ReactNode } from "react";
 import string from "~/localization/polyglot";
+import { ReactNode } from "react";
 
 interface Props {
   readonly title?: string;
@@ -15,8 +15,8 @@ export default function SubNavbar({
   createActionIcon
 }: Props) {
   return (
-    <div className="w-full bg-white">
-      <div className="w-full h-[38px] bg-white font-medium flex items-center border-b border-b-zinc-200">
+    <div className="w-full bg-white z-10 sticky top-0">
+      <div className="w-full h-[37px] bg-white font-medium flex items-center border-b border-b-zinc-200">
         <div className="md:px-4 px-4 w-full flex flex-row justify-between items-center">
           <span className="text-xs text-gray-800  h-fit">
             {title || "Untitled"}

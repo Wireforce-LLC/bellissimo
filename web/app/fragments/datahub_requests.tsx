@@ -1,15 +1,12 @@
-import { flatten } from "flat";
-import _ from "lodash";
-import { Moment } from "moment";
-import { useState } from "react";
 import EazyModal from "~/components/EazyModal";
 import FilterRequests from "~/components/FilterRequests";
 import Modal from "~/components/Modal";
-import SubNavbar from "~/components/SubNavbar";
-import Table from "~/components/Table";
 import RequestOverviewEmbed from "~/embed/RequestOverview";
 import RequestsTableEmbed from "~/embed/RequestsTable";
+import SubNavbar from "~/components/SubNavbar";
 import string from "~/localization/polyglot";
+import { Moment } from "moment";
+import { useState } from "react";
 
 export default function DatahubRequests() {
   const [onAppendModal, setOnAppendModal] = useState(false);
@@ -33,7 +30,7 @@ export default function DatahubRequests() {
   ]);
 
   return (
-    <div className="w-full h-full bg-white">
+    <>
       {modelOverviewData && (
         <Modal
           title="Overview request"
@@ -61,6 +58,7 @@ export default function DatahubRequests() {
           skip={skip}
         />
       </EazyModal>
+
       <SubNavbar
         title={string("dashboard.subtitle.requests")}
         createActionLabel="Filter"
@@ -80,7 +78,7 @@ export default function DatahubRequests() {
         }}
       />
 
-      <div className="w-full h-full overflow-auto">
+      <div className="p-2 w-full overflow-x-auto">
         <RequestsTableEmbed
           date={date}
           country={country}
@@ -92,6 +90,6 @@ export default function DatahubRequests() {
           }}
         />
       </div>
-    </div>
+    </>
   );
 }

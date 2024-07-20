@@ -29,6 +29,7 @@ pub async fn bootstrap_fs() {
   }
 
   unsafe {
+    fs::create_dir(format!("{}/functions", CONFIG["http_server_serve_path"].as_str().unwrap())).unwrap_unchecked();
     fs::create_dir(format!("{}/objects", CONFIG["http_server_serve_path"].as_str().unwrap())).unwrap_unchecked();
     fs::create_dir(format!("{}/plugins", CONFIG["http_server_serve_path"].as_str().unwrap())).unwrap_unchecked();
     fs::create_dir(format!("{}/scenario", CONFIG["http_server_serve_path"].as_str().unwrap())).unwrap_unchecked();

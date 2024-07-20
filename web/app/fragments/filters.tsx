@@ -147,43 +147,45 @@ export default function Filters() {
         onCreateAction={() => setIsModalCreateVisible(true)}
       />
 
-      <Table2
-        dataset={data}
-        sortColumns={["name", "filter_id", "conditions_count"]}
-        rowClassName="px-3 py-1.5 text-xs"
-        headerTransformer={{
-          name: () => "Name",
-          filter_id: () => "Filter ID",
-          conditions: () => "Conditions count",
-        }}
-        valueTransformer={{
-          conditions(value: any) {
-            const conditions = Object.values(value)
+      <div className="p-2">
+        <Table2
+          dataset={data}
+          sortColumns={["name", "filter_id", "conditions_count"]}
+          headerTransformer={{
+            name: () => "Name",
+            filter_id: () => "Filter ID",
+            conditions: () => "Conditions count",
+          }}
+          onSelectedItem={(index, it) => setEditModelFilterId(it?.filter_id)}
+          valueTransformer={{
+            conditions(value: any) {
+              const conditions = Object.values(value)
 
-            return conditions.length <= 5 ?  <span className="text-zinc-700 italic">{conditions.map((it: any) => it.name).join(", ")}</span> : <span className="text-zinc-700 italic">{_.take(conditions, 5).map((it: any) => it.name).join(", ")} and {(conditions.length - 5) + " conditions"}</span>
-          },
+              return conditions.length <= 5 ?  <span className="text-zinc-700 italic">{conditions.map((it: any) => it.name).join(", ")}</span> : <span className="text-zinc-700 italic">{_.take(conditions, 5).map((it: any) => it.name).join(", ")} and {(conditions.length - 5) + " conditions"}</span>
+            },
 
-          filter_id(value, row) {
-            return (
-              <span className="flex flex-row gap-1.5 items-center text-zinc-700">
-                <svg
-                  viewBox="0 0 1024 1024"
-                  fill="currentColor"
-                  height="1em"
-                  width="1em"
-                  className="size-3"
-                >
-                  <path d="M349 838c0 17.7 14.2 32 31.8 32h262.4c17.6 0 31.8-14.3 31.8-32V642H349v196zm531.1-684H143.9c-24.5 0-39.8 26.7-27.5 48l221.3 376h348.8l221.3-376c12.1-21.3-3.2-48-27.7-48z" />
-                </svg>
+            filter_id(value, row) {
+              return (
+                <span className="flex flex-row gap-1.5 items-center text-zinc-700">
+                  <svg
+                    viewBox="0 0 1024 1024"
+                    fill="currentColor"
+                    height="1em"
+                    width="1em"
+                    className="size-3"
+                  >
+                    <path d="M349 838c0 17.7 14.2 32 31.8 32h262.4c17.6 0 31.8-14.3 31.8-32V642H349v196zm531.1-684H143.9c-24.5 0-39.8 26.7-27.5 48l221.3 376h348.8l221.3-376c12.1-21.3-3.2-48-27.7-48z" />
+                  </svg>
 
-                <span data-filter-id={row.filter_id} onClick={() => setEditModelFilterId(row.filter_id)} className="text-zinc-400 hover:text-indigo-500 underline decoration-dotted font-medium">
-                {value}
+                  <span data-filter-id={row.filter_id} className="text-zinc-400 underline decoration-dotted font-medium">
+                  {value}
+                  </span>
                 </span>
-              </span>
-            );
-          },
-        }}
-      />
+              );
+            },
+          }}
+        />
+      </div>
     </>
   );
 }

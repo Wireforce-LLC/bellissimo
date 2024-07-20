@@ -7,7 +7,6 @@ import Link from "~/components/Link";
 import LoadingActivity from "~/components/LoadingActivity";
 import MonacoEditorEmbed from "~/embed/MonacoEditor";
 import Select from "~/components/Select";
-import SubNavbar from "~/components/SubNavbar";
 import Table2 from "~/components/Table2";
 import _ from "lodash";
 import humanizeString from "humanize-string";
@@ -189,8 +188,6 @@ export default function DatahubExplorer() {
       >
         <ErrorString>{errorString}</ErrorString>
       </EazyModal>
-
-      <SubNavbar title="Data explorer"/>
       
       {/* Datahub explorer */}
       <div className="w-full h-full bg-white overflow-y-auto">

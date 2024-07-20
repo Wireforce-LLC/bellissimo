@@ -137,7 +137,8 @@ export default function DatahubDatasets() {
           <Label>Or use HTTP Request</Label>
 
           <p className="text-xs mb-3">
-            Just send your data in HTTP request with GET method. Document encoded in query string
+            Just send your data in HTTP request with GET method. Document
+            encoded in query string
           </p>
 
           <div className="text-sm text-zinc-900 bg-zinc-100  px-4 py-2 font-light">
@@ -168,26 +169,30 @@ export default function DatahubDatasets() {
         }}
       />
 
-      <Table2
-        sortColumns={["name", "size_of_dataset"]}
-        headerTransformer={{
-          any(value: string) {
-            return humanizeString(value);
-          }
-        }}
-        valueTransformer={{
-          size_of_dataset(value: number) {
-          return <span className="flex flex-row gap-1 items-center">
-            {value.toLocaleString()}
+      <div className="p-2">
+        <Table2
+          sortColumns={["name", "size_of_dataset"]}
+          headerTransformer={{
+            any(value: string) {
+              return humanizeString(value);
+            },
+          }}
+          valueTransformer={{
+            size_of_dataset(value: number) {
+              return (
+                <span className="flex flex-row gap-1 items-center">
+                  {value.toLocaleString()}
 
-            <span className="text-zinc-500">RECORDS</span>
-          </span>
-          }
-        }}
-        rowClassName="px-3 py-1.5 text-xs"
-            dataset={datasets}
-            onSelectedItem={(_, item) => setDatasetOverviewModal(item.name)}
-          />
+                  <span className="text-zinc-500">RECORDS</span>
+                </span>
+              );
+            },
+          }}
+          rowClassName="px-3 py-1.5 text-xs"
+          dataset={datasets}
+          onSelectedItem={(_, item) => setDatasetOverviewModal(item.name)}
+        />
+      </div>
     </>
   );
 }

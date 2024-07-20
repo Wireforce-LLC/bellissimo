@@ -3,8 +3,9 @@ import DriverBadge from "~/components/DriverBadge";
 import EditResourceEmbed from "~/embed/EditResource";
 import Modal from "~/components/Modal";
 import SubNavbar from "~/components/SubNavbar";
-import Table from "~/components/Table";
+import Table2 from "~/components/Table2";
 import _ from "lodash";
+import humanizeString from "humanize-string";
 import string from "~/localization/polyglot";
 import toast from "react-hot-toast";
 import webConfig, { ApiPathEnum } from "~/web.config";
@@ -170,35 +171,29 @@ export default function Resources() {
         onCreateAction={() => setIsModalCreateVisible(true)}
       />
 
-      <Table
-        headers={["Resource ID", "Driver", "Content", "File path"]}
-        data={data?.map((i: any) => ({
-          ...i,
-          resource_id: (
-            <div className="flex flex-row items-center w-full justify-start gap-2">
-              <span
-                className="cursor-pointer"
-                onClick={() => setModalEditResourceId(i.resource_id)}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
-                  className="size-3.5 text-gray-400 hover:text-blue-800"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M11.013 2.513a1.75 1.75 0 0 1 2.475 2.474L6.226 12.25a2.751 2.751 0 0 1-.892.596l-2.047.848a.75.75 0 0 1-.98-.98l.848-2.047a2.75 2.75 0 0 1 .596-.892l7.262-7.261Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </span>
-              <span>{i.resource_id || "-"}</span>
-              <ToolIconByResourceId resourceId={i.resource_id} />
-            </div>
-          ),
-          file_path: i.file_path ? (
-            <div className="flex flex-row items-center justify-start gap-2">
+      <div className="p-2">
+        <Table2
+          // ={["Resource ID", "Driver", "Content", "File path"]}
+          dataset={data}
+          // rowClassName="px-3 py-1.5 text-xs font-normal"
+          onSelectedItem={(i, item) => setModalEditResourceId(item.resource_id)}
+          sortColumns={["resource_id", "driver"]}
+          headerTransformer={{
+            any(row) {
+              return humanizeString(row);
+            }
+          }}
+          valueTransformer={{
+            driver(driver) {
+              return <DriverBadge driver={driver} />  
+            },
+
+            raw_content(raw_content) {
+              return raw_content ? _.take(raw_content, 64) : undefined  
+            },
+
+            file_path(file_path) {
+              return <div className="flex flex-row items-center justify-start gap-2">
               <svg
                 viewBox="0 0 512 512"
                 fill="currentColor"
@@ -215,13 +210,16 @@ export default function Resources() {
                   d="M200.66 352H144a96 96 0 010-192h55.41M312.59 160H368a96 96 0 010 192h-56.66"
                 />
               </svg>
-              <span className="text-zinc-400 underline">{i.file_path}</span>
+              <span className="text-zinc-400 underline">{file_path}</span>
             </div>
-          ) : undefined,
-          driver: <DriverBadge driver={i.driver} />,
-          raw_content: i.raw_content ? _.take(i.raw_content, 64) : undefined,
-        }))}
-      />
+            },
+
+            resource_id(resource_id) {
+              return <span>{resource_id || "-"}</span>
+            },
+          }}
+        />
+      </div>
     </>
   );
 }

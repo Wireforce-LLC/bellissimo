@@ -1,15 +1,15 @@
+import stylesheet from "~/tailwind.css?url";
 import type { LinksFunction } from "@remix-run/node";
+import { ReactNode } from "react";
+import { Toaster } from "react-hot-toast";
+
 import {
   Links,
   Meta,
   Outlet,
   Scripts,
-  ScrollRestoration,
+  ScrollRestoration
 } from "@remix-run/react";
-import _ from "lodash";
-import { ReactNode } from "react";
-import stylesheet from "~/tailwind.css?url";
-import { Toaster } from "react-hot-toast";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
@@ -26,6 +26,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <Links />
       </head>
       <body>
+        
         <main>{children}</main>
         <div>
           <Toaster

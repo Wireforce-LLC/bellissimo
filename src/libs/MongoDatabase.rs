@@ -4,6 +4,7 @@ use crate::click::Click as ClickType;
 use crate::dynamic_router::Route;
 use crate::filter::Filter;
 use crate::guard_kit::GuardScore;
+use crate::remote_function::RemoteFunction;
 use crate::resource_kit::Resource;
 use mongodb::{options::ClientOptions, bson::doc};
 use mongodb::sync::{Client, Collection, Database};
@@ -93,6 +94,13 @@ impl MongoDatabase {
     MongoDatabase::use_collection::<Resource>(
       "resources",
       "resources"
+    )
+  }
+
+  pub fn use_remote_functions_collection() -> Collection<RemoteFunction> {
+    MongoDatabase::use_collection::<RemoteFunction>(
+      "pipeline",
+      "remote_functions"
     )
   }
   

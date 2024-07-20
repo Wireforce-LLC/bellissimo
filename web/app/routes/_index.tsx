@@ -1,20 +1,19 @@
 import AdsManager from "~/fragments/ads_manager";
 import DashboardLayout from "~/layouts/DashboardLayout";
-import Datahub from "./datahub";
 import DatahubDatasets from "~/fragments/datahub_datasets";
 import DatahubExplorer from "~/fragments/datahub_explorer";
 import DatahubRequests from "~/fragments/datahub_requests";
 import Files from "../fragments/files";
 import Filters from "../fragments/filters";
-import Funnels from "~/fragments/datahub_funnels";
+import RemoteFunctions from "~/fragments/functions";
 import Resources from "../fragments/resources";
 import Routes from "../fragments/routes";
-import Scenario from "~/fragments/scenario";
+import Widgets from "~/fragments/widgets";
 import _ from "lodash";
 import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
 
 import {
-  type MetaFunction,
+  type MetaFunction
 } from "@remix-run/node";
 
 export const meta: MetaFunction = () => {
@@ -61,13 +60,12 @@ export default function Dashboard() {
       "/files": <Files/>,
       "/filters": <Filters/>,
       "/resources": <Resources/>,
-      "/scenario": <Scenario/>,
+      "/functions": <RemoteFunctions/>,
       "/adsmanager": <AdsManager/>,
-      "/datahub": <Datahub/>,
       "/datahub/explorer": <DatahubExplorer/>,
       "/datahub/requests": <DatahubRequests/>,
       "/datahub/datasets": <DatahubDatasets/>,
-      "/datahub/funnels": <Funnels/>
+      "/widgets": <Widgets/>
     }
   }, []);
 
