@@ -288,6 +288,7 @@ export default {
       requests: "Requests",
       clicks: "Clicks",
       scenario: "Scenario",
+      functions: "Functions",
 
       createThread: "Create new thread",
       events: "Events",

@@ -1,8 +1,15 @@
 use std::{fs, path::Path};
 use rocket::{form::Form, http::{ContentType, Status}, FromForm};
 use serde::{Deserialize, Serialize};
-use crate::{config::CONFIG, create_file::CreateFile};
+use crate::{config::CONFIG};
 use glob::glob;
+
+#[derive(FromForm)]
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreateFile {
+  pub name: String,
+  pub pwd: String,
+}
 
 #[derive(FromForm)]
 #[derive(Serialize, Deserialize, Debug)]

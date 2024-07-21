@@ -55,6 +55,24 @@ pub fn is_resource_exist(resource_id: &str) -> bool {
   return is_resource;
 }
 
+pub async fn async_require_resource(resource_id: &str) -> Resource {
+  let collection = MongoDatabase::use_async_resources_collection();
+
+  let resource: Resource = collection
+    .find_one(
+      doc! {
+        "resource_id": resource_id
+      },
+      None,
+    )
+    .await
+    .expect("Unable to find resource")
+    .expect("Resource not found")
+    .into();
+
+  return resource;
+}
+
 // Get resource
 pub fn require_resource(resource_id: &str) -> Resource {
   let collection = MongoDatabase::use_resources_collection();

@@ -1,25 +1,132 @@
 use crate::api_ad_manager::AdCampaign;
 use crate::asn_record::AsnRecord;
-use crate::click::Click as ClickType;
+use crate::click_sdk::Click;
 use crate::dynamic_router::Route;
 use crate::filter::Filter;
 use crate::guard_kit::GuardScore;
-use crate::remote_function::RemoteFunction;
+use crate::remote_function::{RemoteFunction, TriggerFunction};
 use crate::resource_kit::Resource;
 use mongodb::{options::ClientOptions, bson::doc};
 use mongodb::sync::{Client, Collection, Database};
-use paris::info;
+use mongodb::Client as AsyncClient;
+use mongodb::Collection as AsyncCollection;
+use paris::{info, log};
 use std::env;
 use std::sync::Arc;
 
 lazy_static! {
   pub static ref DATABASE_CLIENT: Client = MongoDatabase::spawn_connection();
 
+  pub static ref DATABASE_ASYNC_CLUENT: AsyncClient = MongoDatabase::spawn_async_connection("MainAsyncClient");
+
   pub static ref POOL_CLIENTS: Arc<Vec<Client>> = Arc::new(MongoDatabase::create_pool_of_connections());
+}
+
+pub fn init_func() {
+  MongoDatabase::get_pool_of_clients().iter().for_each(|client| {
+    client;
+  });
 }
 
 #[derive(Default, Debug)]
 pub struct MongoDatabase {}
+
+impl MongoDatabase {
+  /**
+   * Retrieves the client options for
+   * connecting to the MongoDB server.
+   */
+  pub fn spawn_async_connection(name: &str) -> AsyncClient {
+    info!("MongoDB async connection '{}' created", name);
+
+    AsyncClient
+      ::with_options(MongoDatabase::get_client_options())
+      .expect("Unable to create client")
+  }
+
+  /**
+   * Spawn a new client with collection.
+   */
+  pub fn use_async_collection<T>(database: &str, collection: &str) -> AsyncCollection<T> {
+    return DATABASE_ASYNC_CLUENT
+      .database(database)
+      .collection::<T>(collection);
+  }
+}
+
+impl MongoDatabase {
+  pub fn use_async_trigger_collection() -> AsyncCollection<TriggerFunction> {
+    MongoDatabase::use_async_collection::<TriggerFunction>(
+      "pipeline",
+      "triggers"
+    )
+  }
+
+  pub fn use_async_requests_collection<'x>() -> AsyncCollection<AsnRecord<'x>> {
+    MongoDatabase::use_async_collection::<AsnRecord>(
+      "requests",
+      "asn_records"
+    )
+  }
+
+  pub fn use_async_routes_collection() -> AsyncCollection<Route> {
+    MongoDatabase::use_async_collection::<Route>(
+      "routes",
+      "routes"
+    )
+  }
+
+  pub fn use_async_guards_collection() -> AsyncCollection<GuardScore> {
+    MongoDatabase::use_async_collection::<GuardScore>(
+      "requests",
+      "guard"
+    )
+  }
+
+  pub fn use_async_resources_collection() -> AsyncCollection<Resource> {
+    MongoDatabase::use_async_collection::<Resource>(
+      "resources",
+      "resources"
+    )
+  }
+
+  pub fn use_async_remote_functions_collection() -> AsyncCollection<RemoteFunction> {
+    MongoDatabase::use_async_collection::<RemoteFunction>(
+      "pipeline",
+      "remote_functions"
+    )
+  }
+  
+  /**
+   * Function to use the clicks collection.
+   *
+   * @returns {Collection<Click>}
+   *    The collection for click types.
+   */
+  pub fn use_async_clicks_collection() -> AsyncCollection<Click> {
+    MongoDatabase::use_async_collection::<Click>(
+      "requests",
+      "clicks"
+    )
+  }
+
+  pub fn use_async_filters_collection() -> AsyncCollection<Filter> {
+    MongoDatabase::use_async_collection::<Filter>(
+      "filters",
+      "filters"
+    )
+  }
+
+  /**
+   * Function to use the campaigns collection.
+   */
+  pub fn use_async_campaigns_collection() -> AsyncCollection<AdCampaign> {
+    MongoDatabase::use_async_collection::<AdCampaign>(
+      "adsManager",
+      "campaigns"
+    )
+  }
+}
 
 impl MongoDatabase {
   pub fn spawn_connection() -> Client {
@@ -39,10 +146,6 @@ impl MongoDatabase {
     return clients;
   }
 
-  pub fn use_client() -> Client {
-    return DATABASE_CLIENT.clone();
-  }
-
   pub fn get_pool_of_clients() -> Arc<Vec<Client>> {
     return POOL_CLIENTS.clone();
   }
@@ -55,14 +158,13 @@ impl MongoDatabase {
 }
 
 impl MongoDatabase {
-  pub fn predict_load() {
-    MongoDatabase::get_pool_of_clients().iter().for_each(|client| {
-      client;
-    });
+  pub fn use_trigger_collection() -> Collection<TriggerFunction> {
+    MongoDatabase::use_collection::<TriggerFunction>(
+      "pipeline",
+      "triggers"
+    )
   }
-}
 
-impl MongoDatabase {
   /**
    * Function to use the requests collection.
    *
@@ -107,11 +209,11 @@ impl MongoDatabase {
   /**
    * Function to use the clicks collection.
    *
-   * @returns {Collection<ClickType>}
+   * @returns {Collection<Click>}
    *    The collection for click types.
    */
-  pub fn use_clicks_collection() -> Collection<ClickType> {
-    MongoDatabase::use_collection::<ClickType>(
+  pub fn use_clicks_collection() -> Collection<Click> {
+    MongoDatabase::use_collection::<Click>(
       "requests",
       "clicks"
     )

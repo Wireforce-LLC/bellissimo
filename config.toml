@@ -52,12 +52,6 @@ driver_proxy_origin_enabled = false
 # deprecated
 is_allow_debug_throw = true
 
-is_plugins_enabled = true
-
-
-v8_init_heap_size = 1000000
-v8_max_heap_size = 5000000
-
 stdout_warning = true
 
 use_cloudflare_data_priority = true

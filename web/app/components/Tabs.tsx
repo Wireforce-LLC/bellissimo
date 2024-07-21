@@ -1,7 +1,7 @@
-import classNames from "classnames";
-import { ReactNode, useEffect, useState } from "react";
 import Card from "./Card";
 import _ from "lodash";
+import classNames from "classnames";
+import { ReactNode, useState } from "react";
 
 interface Props {
   readonly children: ReactNode[] | ReactNode;
@@ -24,7 +24,7 @@ export default function Tabs({
 
   return (
     <Card
-      className={classNames({
+      className={classNames("bg-zinc-100", {
         "border-none": isDisableBorders === true,
         "w-full h-full": isFullSize
       })}
@@ -32,7 +32,7 @@ export default function Tabs({
     >
       <div
         className={classNames(
-          "flex flex-row w-full border-b border-b-gray-100",
+          "flex flex-row w-full border-b border-b-gray-100 bg-white",
           {}
         )}
       >

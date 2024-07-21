@@ -1,14 +1,20 @@
-use std::{collections::HashMap, fs};
-
+use std::collections::HashMap;
 use chrono::Utc;
 use mongodb::sync::Collection;
+use serde::{Serialize, Deserialize};
+use rocket::form::FromForm;
+use crate::{mongo_sdk::MongoDatabase, remote_function::Trigger, scenario_sdk::Scenario};
 
-use crate::{click::Click as ClickType, mongo_sdk::MongoDatabase, scenario_sdk::{self, Scenario}};
-
-#[derive(Default)]
+#[derive(FromForm)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Click {
-
+    pub time: i64,
+    pub ip: String,
+    pub cursor_x: Option<i64>,
+    pub cursor_y: Option<i64>,
+    pub name: Option<String>,
 }
+
 
 /**
  * Position of cursor
@@ -34,13 +40,18 @@ impl Click {
         params.insert("time".to_string(), Click::now().to_string());
         params.insert("namespace".to_string(), namespace.to_string());
 
-        Scenario::execute_once(name, params.to_owned()).await;   
+        // Scenario::execute_once(name, params.to_owned()).await;   
+
+        Trigger::call_with_params(
+            format!("click::{}", name).as_str(),
+            params
+        ).await.unwrap();
     }
 
     pub fn click(ip: &str, name: &str, cursor: CursorPosition) -> bool {   
-        let collection: Collection<ClickType> = MongoDatabase::use_collection("requests", "clicks");
+        let collection: Collection<Click> = MongoDatabase::use_collection("requests", "clicks");
 
-        let click = ClickType {
+        let click: Click = Click {
             time: Click::now(),
             ip: ip.to_string(),
             cursor_x: Some(cursor.0),

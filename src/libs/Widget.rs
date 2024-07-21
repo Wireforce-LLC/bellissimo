@@ -1,4 +1,4 @@
-use crate::{click::Click, click_sdk, mongo_sdk::MongoDatabase};
+use crate::{click_sdk::{self, Click}, http_over_sdk::HttpOver, mongo_sdk::MongoDatabase};
 use chrono::Duration;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -40,6 +40,45 @@ pub struct FunnelCountDateIterRow {
 pub struct FunnelCountDateRow {
     pub date: String,
     pub counts: Vec<FunnelCountDateIterRow>,
+}
+
+pub fn init_func() {
+    HttpOver::register(
+        "funnel_by_clicks",
+        "Get the funnel by clicks",
+        |params: HashMap<String, String>| {
+            let filter = FunnelStandardFilter {
+                start_time: params.get("start_time").map(|x| x.parse::<u32>().unwrap()),
+                end_time: params.get("end_time").map(|x| x.parse::<u32>().unwrap()),
+                limit: params.get("limit").map(|x| x.parse::<u32>().unwrap()),
+                skip: params.get("skip").map(|x| x.parse::<u32>().unwrap()),
+            };
+            
+            let specific_filter = FunnelByClicksFilter {
+                hide_short_schemas: params
+                    .get("hide_short_schemas")
+                    .map(|x| x.parse::<bool>().unwrap()),
+            };
+
+            let result: Vec<FunnelRow> = Funnel::funnel_by_clicks(filter, specific_filter);
+
+            let mut map: HashMap<String, serde_json::Value> = HashMap::new();
+            
+            for row in result {
+                let mut schema = row.schema;
+                schema.sort();
+                map.insert(
+                    schema.join("."),
+                    serde_json::json!({
+                        "count": row.count,
+                        "schema": schema
+                    })
+                );
+            }
+
+            Ok(Option::from(map))
+        }
+    ).unwrap();
 }
 
 impl Funnel {

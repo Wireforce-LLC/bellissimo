@@ -2,9 +2,18 @@ use std::path::PathBuf;
 use mongodb::{bson::{doc, Document}, options::FindOptions};
 use rocket::{http::{ContentType, HeaderMap, Status}, request::{FromRequest, Outcome}, Request};
 use serde::{Deserialize, Serialize};
-use crate::{click::Click, dynamic_router::ImplementationError, mongo_sdk::MongoDatabase};
-use crate::click::ReceiveClick;
+use crate::{click_sdk::Click, dynamic_router::ImplementationError, mongo_sdk::MongoDatabase};
 use crate::click_sdk;
+
+
+#[derive(FromForm)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ReceiveClick {
+    pub cursor_x: Option<i64>,
+    pub cursor_y: Option<i64>,
+    pub name: Option<String>,
+    pub namespace: Option<String>,
+}
 
 struct HeadersMap<'r>(&'r HeaderMap<'r>);
 

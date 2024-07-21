@@ -1,10 +1,8 @@
-use crate::{config::CONFIG, dynamic_router::{BOT_DETECTOR, REDIS}, filter_kit::{self, ext_filter_v8}, guard_kit, ipsum_kit, plugin::get_all_runtime_plugins};
+use crate::{config::CONFIG, dynamic_router::{BOT_DETECTOR, REDIS}, filter_kit::{self}, guard_kit, ipsum_kit};
 
 use std::{collections::HashMap, net::IpAddr};
 use asn_db::Record;
-use redis::Commands;
 use rocket::http::HeaderMap;
-use uaparser::{Parser, UserAgentParser};
 
 #[path="../filter/UA.rs"] mod ua;
 #[path="../filter/ASNGroups.rs"] mod asn_groups;
@@ -96,20 +94,5 @@ pub fn register_default_filters() {
       "proxycheck_io",
       proxycheck_io
     );
-  }
-}
-
-/**
- * Function to include runtime filters based on plugins.
- * Iterates through all runtime plugins and registers filters if conditions are met.
- */
-pub fn include_runtime_filters() {
-  for plugin in get_all_runtime_plugins() {
-      if &plugin.attach_at == "plugin_filter" && &plugin.engine == "v8" {
-          filter_kit::register_filter(
-              &plugin.name, 
-              ext_filter_v8
-          )
-      }
   }
 }

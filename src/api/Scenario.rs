@@ -2,10 +2,15 @@ use std::collections::HashMap;
 
 use rocket::{form::Form, http::{ContentType, Status}};
 use serde::{Deserialize, Serialize};
-use crate::{remote_function::{CreateRemoteFunction, RemoteFunction, RemoteFunctions}, scenario_sdk::Scenario};
+use crate::{remote_function::{CreateRemoteFunction, RemoteFunction, RemoteFunctions, Trigger, TriggerFunction}, scenario_sdk::Scenario};
 
 #[derive(Debug, FromForm)]
 pub struct GetRemoteFunction {
+    pub id: String
+}
+
+#[derive(Debug, FromForm)]
+pub struct GetTrigger {
     pub id: String
 }
 
@@ -21,6 +26,110 @@ pub struct RunDebug {
     pub id: String,
     pub argv: HashMap<String, String>
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RunFunction {
+    pub id: String,
+    pub argv: HashMap<String, String>
+}
+
+
+#[delete("/trigger/delete?<selector..>")]
+pub fn delete_trigger(selector: GetTrigger) -> (Status, (ContentType, String)) {
+    let result = Trigger::delete_trigger(&selector.id);
+
+    if result.is_err() {
+        let value = serde_json::json!({
+            "isOk": false,
+            "value": null,
+            "error": result.err().unwrap().to_string()
+        });
+
+        let result: String = value.to_string();
+
+        return (Status::Ok, (ContentType::JSON, result));
+    }
+    
+    let value = serde_json::json!({
+        "isOk": true,
+        "value": null,
+        "error": null
+    });
+
+    let result: String = value.to_string();
+
+    return (Status::Ok, (ContentType::JSON, result));
+}
+
+#[get("/function/triggers/list?<selector..>")]
+pub fn get_function_triggers(selector: GetTrigger) -> (Status, (ContentType, String)) {
+    let value = serde_json::json!({
+        "isOk": true,
+        "value": Trigger::get_triggers_by_function_id(&selector.id).unwrap(),
+        "error": null
+    });
+
+    let result: String = value.to_string();
+
+    return (Status::Ok, (ContentType::JSON, result));
+}
+
+#[get("/trigger/list")]
+pub fn get_triggers() -> (Status, (ContentType, String)) {
+    let value = serde_json::json!({
+        "isOk": true,
+        "value": Trigger::get_triggers().unwrap(),
+        "error": null
+    });
+
+    let result: String = value.to_string();
+
+    return (Status::Ok, (ContentType::JSON, result));
+}
+
+#[post("/trigger/create", data="<input>")]
+pub fn create_trigger(input: String) -> (Status, (ContentType, String)) {
+    let intent_json = serde_json::from_str(&input);
+
+    if intent_json.is_err() {
+        let value = serde_json::json!({
+            "isOk": false,
+            "value": null,
+            "error": intent_json.unwrap_err().to_string()
+        });
+
+        let result: String = value.to_string();
+
+        return (Status::BadRequest, (ContentType::JSON, result));
+    }
+
+    let intent_json: TriggerFunction = intent_json.unwrap();
+
+    let result = Trigger::create_trigger(intent_json);
+
+    if result.is_err() {
+        let value = serde_json::json!({
+            "isOk": false,
+            "value": null,
+            "error": result.unwrap_err()
+        });
+
+        let result: String = value.to_string();
+
+        return (Status::BadRequest, (ContentType::JSON, result));
+    }
+
+    let value = serde_json::json!({
+        "isOk": true,
+        "value": null,
+        "error": null
+    });
+
+    let result: String = value.to_string();
+
+    return (Status::Created, (ContentType::JSON, result));
+}
+
 
 #[delete("/function/delete?<selector..>")]
 pub fn delete_remote_function(selector: GetRemoteFunction) -> (Status, (ContentType, String)) {
@@ -233,6 +342,54 @@ pub async fn run_function_with_debugger(input: String) -> (Status, (ContentType,
     let args = intent_json.argv;
 
     let result = RemoteFunctions::execute_function_in_runtime(&id, args).await;
+
+    if result.is_err() {
+        let value = serde_json::json!({
+            "isOk": false,
+            "value": null,
+            "error": result.unwrap_err()
+        });
+
+        let result: String = value.to_string();
+
+        return (Status::InternalServerError, (ContentType::JSON, result));
+    }
+
+    let data = result.unwrap();
+
+    let value = serde_json::json!({
+        "isOk": true,
+        "value": data,
+        "error": null
+    });
+
+    let result = value.to_string();
+    
+    return (Status::Ok, (ContentType::JSON, result));
+}
+
+#[post("/function/run", data="<input>")]
+pub async fn run_function(input: String) -> (Status, (ContentType, String)) {
+    let intent_json = serde_json::from_str(&input);
+
+    if intent_json.is_err() {
+        let value = serde_json::json!({
+            "isOk": false,
+            "value": null,
+            "error": intent_json.unwrap_err().to_string()
+        });
+
+        let result: String = value.to_string(); 
+
+        return (Status::BadRequest, (ContentType::JSON, result));
+    }
+
+    let intent_json: RunFunction = intent_json.unwrap();
+
+    let id = intent_json.id;
+    let args = intent_json.argv;
+
+    let result = RemoteFunctions::call(&id, Some(args)).await;
 
     if result.is_err() {
         let value = serde_json::json!({

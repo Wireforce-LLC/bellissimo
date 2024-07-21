@@ -26,7 +26,7 @@ pub async fn object_get(object: PathBuf) -> Option<(Status, (ContentType, String
   let resource = resource_kit::get_resource(resource_id.as_str());
 
   if resource.is_none() {
-    return Some(not_found());
+    return Some(not_found().await);
   }
 
   let resource = rdr_kit::render_resource_for_http(
@@ -62,7 +62,7 @@ pub async fn webmanifest(
   query: HashMap<String, String>
 ) -> Option<(Status, (ContentType, String))> {  
   if resource_kit::is_resource_exist("webmanifest") {
-    let resource = resource_kit::require_resource("webmanifest");
+    let resource = resource_kit::async_require_resource("webmanifest").await;
     let out = rdr_kit::render_resource_for_http(resource, HashMap::new()).await;
 
     return Some(out);
@@ -131,7 +131,7 @@ pub async fn static_protector(path: PathBuf) -> Option<NamedFile> {
 
 // Configure Rocket
 #[get("/robots.txt")]
-pub fn robots_txt() -> (Status, (ContentType, String)) {
+pub async fn robots_txt() -> (Status, (ContentType, String)) {
   return (
     Status::Ok,
     (
@@ -143,7 +143,7 @@ pub fn robots_txt() -> (Status, (ContentType, String)) {
 
 // Configure not found
 #[get("/")]
-pub fn not_found() -> (Status, (ContentType, String)) {
+pub async fn not_found() -> (Status, (ContentType, String)) {
   return (
     Status::NotFound,
     (
@@ -155,7 +155,7 @@ pub fn not_found() -> (Status, (ContentType, String)) {
 
 // Ping the server
 #[get("/ping")]
-pub fn ping() -> (Status, (ContentType, String)) {
+pub async fn ping() -> (Status, (ContentType, String)) {
   return (
     Status::Ok,
     (

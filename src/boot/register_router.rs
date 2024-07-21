@@ -295,16 +295,16 @@ async fn router_caller(
   let find_result = get_router_by_path_and_domain(&path_as_string, domain);
   let request_method = body.http_method.unwrap_or("GET".to_string());
 
-  let collection = MongoDatabase::use_collection::<filter::Filter>("filters", "filters");
+  let collection = MongoDatabase::use_async_collection::<filter::Filter>("filters", "filters");
 
   if find_result.is_none() {
-    return Some(not_found());
+    return Some(not_found().await);
   }
 
   let route = find_result.unwrap();
 
   if route.resource_id.is_none() || route.filter_id.is_none() {
-    return Some(not_found());
+    return Some(not_found().await);
   }
 
   let filter = collection
@@ -314,6 +314,7 @@ async fn router_caller(
       },
       None,
     )
+    .await
     .expect("Unable to find filter")
     .expect("Filter not found");
 
@@ -328,7 +329,7 @@ async fn router_caller(
       .resource_id
       .expect("Unable to get resource");
     
-    let resource = resource_kit::require_resource(resource_id.as_str());
+    let resource = resource_kit::async_require_resource(resource_id.as_str()).await;
 
     if condition.plugin.is_empty() {
       continue;
@@ -418,13 +419,14 @@ async fn router_caller(
       }
     );
 
-    let collection = MongoDatabase::use_guards_collection();
+    let collection = MongoDatabase::use_async_guards_collection();
 
     collection
       .insert_one(
         score,
         None
       )
+      .await
       .unwrap();
   }
 
@@ -445,7 +447,7 @@ async fn router_caller(
   }
   
   let resource_id = route.resource_id.unwrap();
-  let resource = resource_kit::require_resource(resource_id.as_str());
+  let resource = resource_kit::async_require_resource(resource_id.as_str()).await;
 
   let files_link_meta = Converter::convert_params_to_meta_file_links(&resource);
 

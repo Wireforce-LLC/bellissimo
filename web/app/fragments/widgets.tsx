@@ -1,6 +1,7 @@
 import Card from "~/components/Card";
 import FunnelClicksDate from "~/embed/FunnelClicksDate";
 import FunnelClicksEmbed from "~/embed/FunnelClicks";
+import WidgetMapWithHighTrafficEmbed from "~/embed/WidgetMapWithHighTraffic";
 
 /**
  * A component that renders two cards:
@@ -30,6 +31,17 @@ export default function Widgets() {
         >
           {/* The content of the second card */}
           <FunnelClicksDate />
+        </Card>
+
+        <Card
+          title={"Map with high traffic"}
+          description={
+            "We collected information about all the routes of users who sent their events through clicks to Bellissimo. We combined them into routes. Here's what we got"
+          }
+          className={"min-h-64 bg-white overflow-x-auto"}
+          isCanBeFullScreen
+        >
+          <WidgetMapWithHighTrafficEmbed />
         </Card>
       </div>
     </div>

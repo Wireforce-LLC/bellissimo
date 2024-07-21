@@ -1,25 +1,25 @@
 use std::path::PathBuf;
-use mongodb::{bson::doc, sync::Collection};
+use mongodb::bson::doc;
 use rocket::{form::Form, http::{ContentType, Status}};
 use crate::{api::{standard_http_error, trivial_checkpoint}, dynamic_router::Route, mongo_sdk::MongoDatabase};
 
 use crate::api::CreateRoute;
 
 #[post("/route/create", data = "<input>")]
-pub fn create_new_route(input: Form<CreateRoute>) -> (Status, (ContentType, String)) {
-  if !trivial_checkpoint::is_resource_exists(&input.resource_id) {
+pub async fn create_new_route(input: Form<CreateRoute>) -> (Status, (ContentType, String)) {
+  if !trivial_checkpoint::is_resource_exists(&input.resource_id).await {
     return standard_http_error::resource_not_found(&input.resource_id);
   }
 
-  if !trivial_checkpoint::is_filter_exists(&input.filter_id) {
+  if !trivial_checkpoint::is_filter_exists(&input.filter_id).await {
     return standard_http_error::filter_not_found(&input.filter_id);
   }
 
-  if trivial_checkpoint::is_route_path_exists(&input.domain, &input.path) {
+  if trivial_checkpoint::is_route_path_exists(&input.domain, &input.path).await {
     return standard_http_error::route_with_path_already_exists(&input.domain, &input.path);
   }
 
-  if trivial_checkpoint::is_route_exists(&input.name) {
+  if trivial_checkpoint::is_route_exists(&input.name).await {
     return standard_http_error::route_already_exists(&input.name);
   }
  
@@ -87,8 +87,8 @@ pub fn get_all_routes() -> (Status, (ContentType, String))  {
 }
 
 #[get("/route/<name..>")]
-pub fn get_route_by_name(name: PathBuf) -> (Status, (ContentType, String)) {
-  if !trivial_checkpoint::is_route_exists(name.display().to_string().as_str()) {
+pub async fn get_route_by_name(name: PathBuf) -> (Status, (ContentType, String)) {
+  if !trivial_checkpoint::is_route_exists(name.display().to_string().as_str()).await {
     return standard_http_error::route_not_found(name.display().to_string().as_str());
   }
 
@@ -121,8 +121,8 @@ pub fn get_route_by_name(name: PathBuf) -> (Status, (ContentType, String)) {
 }
 
 #[delete("/route/<name..>")]
-pub fn delete_route_by_name(name: PathBuf) -> (Status, (ContentType, String)) {
-  if !trivial_checkpoint::is_route_exists(name.display().to_string().as_str()) {
+pub async fn delete_route_by_name(name: PathBuf) -> (Status, (ContentType, String)) {
+  if !trivial_checkpoint::is_route_exists(name.display().to_string().as_str()).await {
     return standard_http_error::route_not_found(name.display().to_string().as_str());
   }
 

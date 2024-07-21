@@ -3,6 +3,7 @@ import production from "./production";
 
 export enum ApiPathEnum {
   Ping = "/ping",
+  Playground= "/api/playground",
   CreateDataset = "/api/dataset/create",
   CampaignsByRequests = "/api/requests/selector/g/q/utm_campaign",
   CampaignsBySource = "/api/requests/selector/g/q/utm_source",
@@ -37,6 +38,13 @@ export enum ApiPathEnum {
   GetAdsManagerCampaignsClicksHistory = "/api/adsmanager/campaign/clicks/history",
   GetAdsManagerCampaignsList = "/api/adsmanager/campaign/list",
   CreateAdsManagerCampaign = "/api/adsmanager/campaign/create",
+  GetAllTriggersList = "/api/trigger/list",
+  CreateTrigger = "/api/trigger/create",
+  UpdateTrigger = "/api/trigger/update",
+  GetTrigger = "/api/trigger",
+  DeleteTrigger = "/api/trigger/delete",
+  GetFunctionList = "/api/function/list",
+  GetTriggersListByFunction = "/api/function/triggers/list",
 
   GetAllRemoteFunctions = "/api/function/list",
   CreateRemoteFunction = "/api/function/create",

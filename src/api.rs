@@ -1,10 +1,7 @@
 use std::{collections::{HashMap}, fs, path::{Path, PathBuf}};
-use chrono::{DateTime, Duration, TimeZone, Utc};
-use mongodb::{bson::{doc, document}, options::FindOptions, sync::Collection};
-use rocket::{http::{ContentType, Status}, FromForm};
+use mongodb::{bson::{doc}};
+use rocket::{FromForm};
 use serde::{Serialize, Deserialize};
-use crate::{database::get_database, dynamic_router::Route, resource_kit::Resource};
-
 
 #[derive(FromForm)]
 #[derive(Serialize, Deserialize, Debug)]
@@ -58,55 +55,54 @@ pub struct CreateResource {
 
 pub mod trivial_checkpoint {
   use mongodb::{bson::doc, sync::Collection};
-  use crate::{database::get_database, dynamic_router::Route, filter::Filter, resource_kit::Resource};
+  use crate::{database::get_database, dynamic_router::Route, filter::Filter, mongo_sdk::MongoDatabase, resource_kit::Resource};
 
-  pub fn is_route_path_exists(domain: &str, path: &str) -> bool {
-    let collection: Collection<Route> = get_database(String::from("routes"))
-     .collection("routes");
+  pub async fn is_route_path_exists(domain: &str, path: &str) -> bool {
+    let collection = MongoDatabase::use_async_routes_collection();
 
-    collection.count_documents(
-      doc! {
-        "path": path,
-        "domain": domain
-      },
-      None
-    ).expect("Unable to count documents") != 0
+    collection
+      .count_documents(
+        doc! {
+          "path": path,
+          "domain": domain
+        },
+        None
+      )
+      .await
+      .expect("Unable to count documents") != 0
   }
 
-  pub fn is_filter_exists(filter_id: &str) -> bool {
-    let collection: Collection<Filter> = get_database(String::from("filters"))
-      .collection("filters");
+  pub async fn is_filter_exists(filter_id: &str) -> bool {
+    let collection = MongoDatabase::use_async_filters_collection();
   
     collection.count_documents(
       doc! {
         "filter_id": filter_id
       },
       None
-    ).expect("Unable to count documents") != 0
+    ).await.expect("Unable to count documents") != 0
   }
   
-  pub fn is_resource_exists(resource_id: &str) -> bool {
-    let collection: Collection<Resource> = get_database(String::from("resources"))
-     .collection("resources");
+  pub async fn is_resource_exists(resource_id: &str) -> bool {
+    let collection = MongoDatabase::use_async_resources_collection();
   
     collection.count_documents(
       doc! {
         "resource_id": resource_id
       },
       None
-    ).expect("Unable to count documents")!= 0
+    ).await.expect("Unable to count documents")!= 0
   }
   
-  pub fn is_route_exists(name: &str) -> bool {
-    let collection: Collection<Route> = get_database(String::from("routes"))
-     .collection("routes");
+  pub async fn is_route_exists(name: &str) -> bool {
+    let collection = MongoDatabase::use_async_routes_collection();
   
     collection.count_documents(
       doc! {
         "name": name
       },
       None
-    ).expect("Unable to count documents")!= 0
+    ).await.expect("Unable to count documents")!= 0
   }
 }
 

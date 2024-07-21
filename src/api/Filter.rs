@@ -4,15 +4,15 @@ use rocket::{form::Form, http::{ContentType, Status}};
 use crate::{api::{standard_http_error, trivial_checkpoint, CreateFilter}, filter::{Condition, Filter}, filter_kit::get_all_registred_filters_names, mongo_sdk::MongoDatabase};
 
 #[post("/filter/create", data = "<input>")]
-pub fn create_new_filter(input: Form<CreateFilter>) -> (Status, (ContentType, String)) {
-  if trivial_checkpoint::is_filter_exists(&input.filter_id.clone()) {
+pub async fn create_new_filter(input: Form<CreateFilter>) -> (Status, (ContentType, String)) {
+  if trivial_checkpoint::is_filter_exists(&input.filter_id.clone()).await {
     return standard_http_error::filter_already_exists();
   }
 
   let mut conditions = Vec::new();
 
   for condition in &input.conditions {
-    if !trivial_checkpoint::is_resource_exists(&condition.resource_id) {
+    if !trivial_checkpoint::is_resource_exists(&condition.resource_id).await {
       return standard_http_error::resource_not_found(&condition.resource_id);
     }
 
@@ -87,8 +87,8 @@ pub fn get_all_filters() -> (Status, (ContentType, String))  {
 }
 
 #[get("/filter/<id..>")]
-pub fn get_filter_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
-  if !trivial_checkpoint::is_filter_exists(id.display().to_string().as_str()) {
+pub async fn get_filter_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
+  if !trivial_checkpoint::is_filter_exists(id.display().to_string().as_str()).await {
     return standard_http_error::filter_not_found(id.display().to_string().as_str());
   }
 
@@ -121,15 +121,15 @@ pub fn get_filter_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
 }
 
 #[put("/filter/update", data = "<filter>")]
-pub fn update_filter_by_id(filter: Form<CreateFilter>) -> (Status, (ContentType, String)) {
-  if !trivial_checkpoint::is_filter_exists(&filter.filter_id.as_str()) {
+pub async fn update_filter_by_id(filter: Form<CreateFilter>) -> (Status, (ContentType, String)) {
+  if !trivial_checkpoint::is_filter_exists(&filter.filter_id.as_str()).await {
     return standard_http_error::filter_not_found(&filter.filter_id.as_str());
   }
 
   let mut conditions = Vec::new();
 
   for condition in &filter.conditions {
-    if !trivial_checkpoint::is_resource_exists(&condition.resource_id.as_str()) {
+    if !trivial_checkpoint::is_resource_exists(&condition.resource_id.as_str()).await {
       return standard_http_error::resource_not_found(&condition.resource_id.as_str());
     }
 
@@ -176,8 +176,8 @@ pub fn update_filter_by_id(filter: Form<CreateFilter>) -> (Status, (ContentType,
 }
 
 #[delete("/filter/<id..>")]
-pub fn delete_filter_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
-  if trivial_checkpoint::is_filter_exists(id.display().to_string().as_str()) {
+pub async fn delete_filter_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
+  if trivial_checkpoint::is_filter_exists(id.display().to_string().as_str()).await {
     return standard_http_error::filter_not_found(id.display().to_string().as_str());
   }
 

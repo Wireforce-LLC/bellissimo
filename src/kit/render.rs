@@ -1,9 +1,7 @@
 
 use crate::config::CONFIG;
 use crate::main_routes::not_found;
-use crate::plugin;
 use crate::resource_kit::Resource;
-use futures::executor; 
 
 use chrono::Utc;
 use fastcgi_client::{Client, Params, Request};
@@ -350,64 +348,11 @@ fn default_method_php(resource: Resource, meta: HashMap<String, String>) -> Pin<
       );
     }
   
-    return not_found();
+    return not_found().await;
   };
 
   Box::pin(closure)
 }
-
-
-// async fn default_method_php2(resource: Resource, meta: HashMap<String, String>) -> dyn Future<Output = (Status, (ContentType, String))> {
-//   // let func = ;
-
-
-
-//   // let script_filename = env::current_dir()
-//   //   .unwrap()
-//   //   .join("tests")
-//   //   .join("php")
-//   //   .join("index.php");
-
-//   // let script_filename = script_filename.to_str().unwrap();
-//   // let script_name = "/index.php";
-
-//   // let stream = TcpStream::connect((
-//   //   CONFIG["php_fpm_host"].as_str().unwrap(),
-//   //   CONFIG["php_fpm_port"].as_integer().unwrap() as u16
-//   // )).unwrap();
-
-//   // let client = Client::new(stream);
-
-//   // // Fastcgi params, please reference to nginx-php-fpm config.
-//   // let params = Params::default()
-//   //   .request_method("GET")
-//   //   .script_name(script_name)
-//   //   .script_filename(script_filename)
-//   //   .request_uri(script_name)
-//   //   .document_uri(script_name)
-//   //   .remote_addr("127.0.0.1")
-//   //   .remote_port(12345)
-//   //   .server_addr("127.0.0.1")
-//   //   .server_port(80)
-//   //   .server_name("jmjoy-pc")
-//   //   .content_type("")
-//   //   .content_length(0);
-
-//   // // Fetch fastcgi server(php-fpm) response.
-//   // let output = client.execute_once(Request::new(params, &mut io::empty())).await.unwrap();
-
-//   // // "Content-type: text/html; charset=UTF-8\r\n\r\nhello"
-//   // let stdout = String::from_utf8(output.stdout.unwrap()).unwrap();
- 
-//   // return (
-//   //   Status::Ok,
-//   //   (ContentType::Plain, stdout),
-//   // );
-// }
-
-fn default_external_python() {
-
-} 
 
 fn default_method_html(resource: Resource, meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
   let time = Utc::now().timestamp_micros();
@@ -417,7 +362,8 @@ fn default_method_html(resource: Resource, meta: HashMap<String, String>) -> Pin
 
     params.extend(meta);
 
-    if &resource.file_path.is_some() == &true {
+
+    if &resource.file_path.is_some() == &true { 
       let template_uri_raw = resource
         .file_path
         .as_ref()
@@ -548,35 +494,6 @@ fn default_method_proxy_html(resource: Resource, meta: HashMap<String, String>) 
   Box::pin(closure)
 }
 
-
-fn plugin_v8(resource: Resource, meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
-  let closure = async move { 
-    let output = plugin::call_plugin(resource.driver.as_str(), meta);
-  
-    let mut lookup: HashMap<String, Value> = serde_json::from_str(output.as_str()).unwrap();
-    let mut map = HashMap::new();
-
-    for key in vec!["status_code", "body", "content_type"] {
-        let (k, v) = lookup.remove_entry(key).unwrap();
-        map.insert(k, v);
-    }
-
-    let content_type = ContentType
-      ::from_extension(map["content_type"].as_str().unwrap())
-      .unwrap();
-
-      
-    (
-      Status::from_code(map["status_code"].as_u64().unwrap() as u16).unwrap(),
-      (
-        content_type,
-        map["body"].as_str().unwrap().to_string()
-      )
-    )
-  };
-
-  Box::pin(closure)
-}
 
 // Serve static files JS
 fn default_method_serve_js_file(resource: Resource, _meta: HashMap<String, String>) -> Pin<Box<dyn Future<Output = (Status, (ContentType, String))> + Send>> {
@@ -772,15 +689,6 @@ pub fn register_default_render_methods() {
   register_render_method("http_status_page", default_method_http_status_page);
   register_render_method("webmanifest", default_method_webmanifest);
   
-  for plugin in plugin::get_all_runtime_plugins() {
-    if &plugin.attach_at == "render_driver" && &plugin.engine == "v8" {
-      register_render_method(
-        &plugin.name, 
-        |resource, meta| plugin_v8(resource, meta)
-      );
-    }
-  }
-
   // register_render_method("redirect::meta".to_string(), render_resource_for_http);
   // register_render_method("redirect::javascript".to_string(), render_resource_for_http);
 }

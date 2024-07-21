@@ -1,5 +1,5 @@
 use rocket::http::{ContentType, Status};
-use crate::funnel_sdk::{Funnel, FunnelByClicksFilter, FunnelStandardFilter};
+use crate::widget_sdk::{Funnel, FunnelByClicksFilter, FunnelStandardFilter};
 
 #[derive(FromForm)]
 pub struct FunnelClicksQuery {

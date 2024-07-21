@@ -1,12 +1,12 @@
 use std::{collections::HashMap, fs, path::{Path, PathBuf}};
 use mongodb::{bson::{doc, document}, sync::Collection};
 use rocket::{form::Form, http::{ContentType, Status}};
-use crate::{api::{standard_http_error, trivial_checkpoint, CreateResource}, mongo_sdk::MongoDatabase, plugin::get_all_runtime_plugins, resource_kit::Resource};
+use crate::{api::{standard_http_error, trivial_checkpoint, CreateResource}, mongo_sdk::MongoDatabase, resource_kit::Resource};
 
 
 #[get("/resource/<id..>")]
-pub fn get_resource_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
-  if !trivial_checkpoint::is_resource_exists(id.display().to_string().as_str()) {
+pub async fn get_resource_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
+  if !trivial_checkpoint::is_resource_exists(id.display().to_string().as_str()).await {
     return standard_http_error::resource_not_found(id.display().to_string().as_str());
   }
 
@@ -39,8 +39,8 @@ pub fn get_resource_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
 }
 
 #[put("/resource/<id..>", data = "<input>")]
-pub fn update_resource_by_id(id: PathBuf, input: Form<CreateResource>) -> (Status, (ContentType, String)) {
-  if !trivial_checkpoint::is_resource_exists(id.display().to_string().as_str()) {
+pub async fn update_resource_by_id(id: PathBuf, input: Form<CreateResource>) -> (Status, (ContentType, String)) {
+  if !trivial_checkpoint::is_resource_exists(id.display().to_string().as_str()).await {
     return standard_http_error::resource_not_found(id.display().to_string().as_str());
   }
 
@@ -81,8 +81,8 @@ pub fn update_resource_by_id(id: PathBuf, input: Form<CreateResource>) -> (Statu
 } 
 
 #[delete("/resource/<id..>")]
-pub fn delete_resource_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
-  if !trivial_checkpoint::is_resource_exists(id.display().to_string().as_str()) {
+pub async fn delete_resource_by_id(id: PathBuf) -> (Status, (ContentType, String)) {
+  if !trivial_checkpoint::is_resource_exists(id.display().to_string().as_str()).await {
     return standard_http_error::resource_not_found(id.display().to_string().as_str());
   }
 
@@ -163,17 +163,17 @@ pub fn get_all_drivers_for_resources() -> (Status, (ContentType, String))  {
     "webmanifest"
   ];
 
-  let plugins = get_all_runtime_plugins();
+  // let plugins = get_all_runtime_plugins();
 
-  for plugin in plugins.iter() {
-    let name = &plugin.name;
+  // for plugin in plugins.iter() {
+  //   let name = &plugin.name;
     
-    if &plugin.attach_at != "render_driver" {
-      continue;
-    }
+  //   if &plugin.attach_at != "render_driver" {
+  //     continue;
+  //   }
 
-    vector.push(name.as_str());
-  }
+  //   vector.push(name.as_str());
+  // }
 
   let value = serde_json::json!({
     "isOk": true,
@@ -193,10 +193,10 @@ pub fn get_all_drivers_for_resources() -> (Status, (ContentType, String))  {
 }
 
 #[post("/resource/params/<name..>", data="<input>")]
-pub fn set_route_params(name: PathBuf, input: Form<HashMap<String, String>>) -> (Status, (ContentType, String)) {
+pub async fn set_route_params(name: PathBuf, input: Form<HashMap<String, String>>) -> (Status, (ContentType, String)) {
   let name = name.display().to_string();
   
-  if !trivial_checkpoint::is_route_exists(&name) {
+  if !trivial_checkpoint::is_route_exists(&name).await {
     return standard_http_error::route_not_found(&name);
   }
 

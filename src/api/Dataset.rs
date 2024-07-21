@@ -4,7 +4,8 @@ use mongodb::bson::doc;
 use rocket::http::{ContentType, Status};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use crate::dataset_sdk::{Dataset, DatasetCursorFilter};
+use tokio::task;
+use crate::{dataset_sdk::{Dataset, DatasetCursorFilter}, remote_function::Trigger};
 
 #[derive(FromForm)]
 pub struct DatasetSelectFilter {
@@ -21,7 +22,7 @@ pub struct DatasetInfo {
 
 
 #[post("/dataset/create", data="<data>")]
-pub fn create_dataset(data: String) -> (Status, (ContentType, String)) {
+pub async fn create_dataset(data: String) -> (Status, (ContentType, String)) {
   let data: HashMap<String, String> = serde_json::from_str(&data).unwrap();
 
   if !data.contains_key("name") {
@@ -99,14 +100,14 @@ pub fn create_dataset(data: String) -> (Status, (ContentType, String)) {
 }
 
 #[get("/dataset/list", rank = 3)]
-pub fn get_all_datasets() -> (Status, (ContentType, String)) {
+pub async fn get_all_datasets() -> (Status, (ContentType, String)) {
   let mut result = Vec::new();
 
   let datasets = Dataset::get_datasets_list();
 
   for dataset in datasets {
     result.push(DatasetInfo {
-      size_of_dataset: Dataset::size_of_dataset(&dataset),
+      size_of_dataset: Dataset::size_of_dataset(&dataset).await,
       name: dataset,
     });
   }
@@ -125,7 +126,7 @@ pub fn get_all_datasets() -> (Status, (ContentType, String)) {
 }
  
 #[post("/dataset/write/<dataset_name>", data="<data>")]
-pub fn write_data_into_dataset(dataset_name: String, data: String) -> (Status, (ContentType, String)) {
+pub async fn write_data_into_dataset(dataset_name: String, data: String) -> (Status, (ContentType, String)) {
   if !Dataset::is_dataset(&dataset_name) {
     return (
       Status::Conflict, 
@@ -148,10 +149,23 @@ pub fn write_data_into_dataset(dataset_name: String, data: String) -> (Status, (
 
       data.insert("time".to_string(), Value::from(Utc::now().timestamp_micros()));
 
-      let result = Dataset::insert_into_dataset(&dataset_name, data);
+      let params = &data.iter().map(|(k, v)| (k.to_owned(), v.as_str().unwrap_or("").to_string().to_owned())).collect::<HashMap<String, String>>();
+      let params = params.clone();
+      
+      let result = Dataset::insert_into_dataset(&dataset_name, data).await;
 
       match result {
         Ok(insert_result) => {
+          task::spawn(async move {
+            Trigger
+              ::call_with_params(
+                format!("dataset::{}", dataset_name).as_str(),
+                params.to_owned()
+              )
+              .await
+              .unwrap();
+          });
+
           return (Status::Created, (ContentType::JSON, serde_json::json!({
             "isOk": true,
             "value": insert_result.inserted_id,
@@ -180,7 +194,7 @@ pub fn write_data_into_dataset(dataset_name: String, data: String) -> (Status, (
 }
  
 #[get("/dataset/write/<dataset_name>?<data..>")]
-pub fn write_get_data_into_dataset(dataset_name: String, data: HashMap<String, String>) -> (Status, (ContentType, String)) {
+pub async fn write_get_data_into_dataset(dataset_name: String, data: HashMap<String, String>) -> (Status, (ContentType, String)) {
   if !Dataset::is_dataset(&dataset_name) {
     return (
       Status::Conflict, 
@@ -199,10 +213,23 @@ pub fn write_get_data_into_dataset(dataset_name: String, data: HashMap<String, S
 
   data.insert("time".to_string(), Value::from(Utc::now().timestamp_micros()));
 
-  let result = Dataset::insert_into_dataset(&dataset_name, data);
+  let params = &data.iter().map(|(k, v)| (k.to_owned(), v.as_str().unwrap_or("").to_string().to_owned())).collect::<HashMap<String, String>>();
+  let params = params.clone();
+
+  let result = Dataset::insert_into_dataset(&dataset_name, data).await;
 
   match result {
     Ok(insert_result) => {
+      task::spawn(async move {
+        Trigger
+          ::call_with_params(
+            format!("dataset::{}", dataset_name).as_str(),
+            params.to_owned()
+          )
+          .await
+          .unwrap();
+      });
+        
       return (Status::Created, (ContentType::JSON, serde_json::json!({
         "isOk": true,
         "value": insert_result.inserted_id,
