@@ -29,8 +29,24 @@ class FacebookCAPI
       ],
     ]
   ) {
-    if ($fbcid == "" || $ua == "" || $dataset == "" || $access_token == "") {
-      return null;
+    if (!is_string($fbcid) || !is_string($ua) || !is_string($dataset) || !is_string($access_token)) {
+      throw new TypeError();
+    }
+
+    if ($fbcid == "") {
+      throw new Exception("Facebook click ID not set");
+    }
+
+    if ($ua == "") {
+      throw new Exception("User agent not set");
+    }
+
+    if ($dataset == "") {
+      throw new Exception("Dataset ID not set");
+    }
+
+    if ($access_token == "") {
+      throw new Exception("Access token not set");
     }
 
     $fbtime = intval($_GET["time"]) * 1000;

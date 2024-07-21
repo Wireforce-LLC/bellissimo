@@ -1,8 +1,8 @@
-import webConfig, { ApiPathEnum } from "~/web.config";
 import MonacoEditorEmbed from "./MonacoEditor";
-import { toast } from "react-hot-toast";
+import webConfig, { ApiPathEnum } from "~/web.config";
 import { useEffect, useState } from "react";
 import { useCallback } from "react";
+import { toast } from "react-hot-toast";
 
 interface Props {
   readonly path: string;
@@ -136,6 +136,7 @@ export default function FileEditorSignleFileEmbed({
         }}
         language={language}
         startContent={raw}
+        theme="vs"
         onIntentSave={(content) => doSaveFile(content, path)}
       />}
     </div>

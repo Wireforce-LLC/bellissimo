@@ -61,7 +61,8 @@ export default function FunctionViewEmbed({ id }: Props) {
       <div className="w-full h-full">
         <MonacoEditorEmbed
           isHiddenRightBar
-          language="php-snippet"
+          language="php"
+          theme="bellissimo"
           onIntentSave={writeFunction}
           startContent={sourceCode}
         />

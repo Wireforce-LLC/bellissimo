@@ -1,18 +1,20 @@
 import * as d3 from "d3";
 import _ from "lodash";
+import features from "../../public/map-features.json";
 import webConfig, { ApiPathEnum } from "~/web.config";
-import { TCountryCode, getCountryData, getCountryDataList } from "countries-list";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import {
+  TCountryCode,
+  getCountryData,
+  getCountryDataList
+} from "countries-list";
 import {
   ComposableMap,
   Geographies,
   Geography,
-  Graticule,
-  ZoomableGroup,
+  Graticule
 } from "react-simple-maps";
-
-const geoUrl = "/map-features.json";
 
 type CountryRecord = Record<string, string>;
 
@@ -58,59 +60,61 @@ export default function WidgetMapWithHighTrafficEmbed() {
 
   return (
     <div>
-        <ComposableMap
-      projectionConfig={
-        {
-          //   rotate: [-10.0, -53.0, 0],
-          //   scale: 1200,
+      <ComposableMap
+        projectionConfig={
+          {
+            //   rotate: [-10.0, -53.0, 0],
+            //   scale: 1200,
+          }
         }
-      }
-    >
-      <ZoomableGroup center={[0, 4]}>...</ZoomableGroup>
+      >
+        <Graticule scale={1} stroke="#dee2e6" />
 
-      <Graticule scale={1} stroke="#dee2e6" />
+        <Geographies geography={features}>
+          {({ geographies }) =>
+            geographies.map((geo) => {
+              const geoRecord: string | null = _.get(
+                data,
+                getCountryIso2ByIso3(geo.id),
+                null
+              );
+              const geoCount = geoRecord ? parseInt(geoRecord as string) : null;
 
-      <Geographies geography={geoUrl}>
-        {({ geographies }) =>
-          geographies.map((geo) => {
-            const geoRecord: string | null = _.get(
-              data,
-              getCountryIso2ByIso3(geo.id),
-              null
-            );
-            const geoCount = geoRecord ? parseInt(geoRecord as string) : null;
+              console.log();
+              return (
+                <Geography
+                  fill={geoCount ? scaleLinear(geoCount) : "black"}
+                  strokeWidth={1}
+                  onMouseEnter={() => {
+                    setTooltipContent(`${geo.properties.name}`);
+                  }}
+                  onMouseLeave={() => {
+                    setTooltipContent("");
+                  }}
+                  stroke={"#f8f9fa"}
+                  key={geo.rsmKey}
+                  geography={geo}
+                />
+              );
+            })
+          }
+        </Geographies>
+      </ComposableMap>
 
-            console.log();
-            return (
-              <Geography
-                fill={geoCount ? scaleLinear(geoCount) : "black"}
-                strokeWidth={1}
-                onMouseEnter={() => {
-                  setTooltipContent(`${geo.properties.name}`);
-                }}
-                onMouseLeave={() => {
-                  setTooltipContent("");
-                }}
-                stroke={"#f8f9fa"}
-                key={geo.rsmKey}
-                geography={geo}
-              />
-            );
-          })
-        }
-      </Geographies>
-    </ComposableMap>
-
-    <div>
-        {data && (
-            _.take(_.toPairs(data).sort((a, b) => parseInt(b[1]) - parseInt(a[1])), 5).map((i) => (
-                <div className="text-xs" key={i[0]}>
-                    <span>{getCountryData(i[0] as TCountryCode)?.name}</span>
-                    <span className="float-right">{parseInt(i[1]).toLocaleString()} requests</span>
-                </div>
-            ))
-        )}
-    </div>
+      <div>
+        {data &&
+          _.take(
+            _.toPairs(data).sort((a, b) => parseInt(b[1]) - parseInt(a[1])),
+            5
+          ).map((i) => (
+            <div className="text-xs" key={i[0]}>
+              <span>{getCountryData(i[0] as TCountryCode)?.name}</span>
+              <span className="float-right">
+                {parseInt(i[1]).toLocaleString()} requests
+              </span>
+            </div>
+          ))}
+      </div>
     </div>
   );
 }

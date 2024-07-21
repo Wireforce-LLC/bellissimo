@@ -40,6 +40,24 @@ export default function CreateTriggerEmbed({funcId} : Props) {
                 When the dataset with '<b>{triggerEvent.replace("dataset::", "")}</b>' append item, the function will be triggered.
             </p>
         }
+
+        if (triggerEvent.startsWith("every::") && triggerEvent.length > 7) {
+            if (triggerEvent.replace("every::", "") === "minute") {
+                return <p className="text-xs text-gray-500">
+                    The function will be triggered every '<b>1</b>' minutes.
+                </p>
+            } 
+            
+            if (parseInt(triggerEvent.replace("every::", ""))) {
+                return <p className="text-xs text-gray-500">
+                    The trigger will fire every '<b>{triggerEvent.replace("every::", "")}</b>' minutes of every hour.
+                </p>
+            }
+        }
+
+        return <p className="text-xs text-gray-500">
+            Use 'click::' or 'dataset::' to set trigger event.
+        </p>
     }, [triggerId, functionId, triggerEvent]);
 
     return <div className="space-y-2">
@@ -62,9 +80,11 @@ export default function CreateTriggerEmbed({funcId} : Props) {
             onChangeValue={setTriggerEvent}
         />
 
+        <div className="px-2 py-1 bg-zinc-100">
         {
             triggerTip
         }
+        </div>
 
         <Button onPress={fether}>
             Create

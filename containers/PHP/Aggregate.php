@@ -1,8 +1,34 @@
 <?php
-include_once (__DIR__ . "/Base.php");
+include_once __DIR__ . "/Base.php";
 
 class Aggregate extends Base
 {
+  /**
+   * Explore the data in a MongoDB collection using an aggregation pipeline.
+   *
+   * @param string $database The name of the database.
+   * @param string $collection The name of the collection.
+   * @param array<string, mixed> $pipeline The aggregation pipeline.
+   * @return array<string, mixed> The result of the aggregation pipeline.
+   * @throws Exception If the MongoDB connection fails.
+   */
+  public static function explore(
+    string $database,
+    string $collection, 
+    array $pipeline
+  ): array
+  {
+    // Connect to MongoDB and call the 'aggregate_pipeline' function.
+    self::construct();
+
+    // Call the 'aggregate_pipeline' function with the given parameters.
+    return Playground::call("aggregate_pipeline", [
+      "database" => $database, 
+      "collection" => $collection,
+      "pipeline" => json_encode($pipeline),
+    ]);
+  }
+
   /**
    * Merge the query parameters and headers of requests from the same IP address.
    *

@@ -177,7 +177,6 @@ pub fn get_collections(database: DatabaseCollectionsSelector) -> (Status, (Conte
   );
 }
 
-
 #[post("/explorer/explore?<query..>", data="<document>", rank = 5)]
 pub fn explore_dataset(document: String, query: ExploreDatabase) -> (Status, (ContentType, String)) {
   let pipeline = serde_json::from_str::<Vec<Document>>(&document);

@@ -1,8 +1,5 @@
 use std::{collections::HashMap, sync::Mutex};
 
-use crate::{initialization_sdk, register_task};
-
-
 lazy_static! {
     pub static ref HTTP_OVER_REGISTRY: Mutex<HashMap<String, HttpOverFunction>> = Mutex::new(HashMap::new());
     pub static ref HTTP_OVER_DOCUMENTS: Mutex<HashMap<String, String>> = Mutex::new(HashMap::new());

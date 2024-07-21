@@ -41,59 +41,24 @@ export function createHighlightRules(monaco: Monaco) {
 
     tokenizer: {
       root: [
-        [
-          /[a-zA-Z_]\w*/,
-          {
-            cases: {
-              '@phpKeywords': {token: 'keyword.php'},
-              '@phpCompileTimeConstants': {token: 'constant.php'},
-              '@default': 'identifier.php',
-            },
-          },
-        ],
-        [
-          /[$a-zA-Z_]\w*/,
-          {
-            cases: {
-              '@phpPreDefinedVariables': {
-                token: 'variable.predefined.php',
-              },
-              '@default': 'variable.php',
-            },
-          },
-        ],
+        // Keywords
+        [/\b(abstract|class|function|public|protected|private|static|if|else|return|new|var|let|const|null|true|false|import|export)\b/, 'keyword'],
+        [/\b(TelegramBot|FCM|FacebookCAPI)\b/, 'class-name'],
+        // Numbers
+        [/\b(\d+)\b/, 'number'],
+        // Strings
+        [/".*?"/, 'string'],
+        // Identifiers
+        [/\b(\w+::\w+)\b/, 'class-method'],  // Для FCM::sendNotification
+        [/\b([A-Za-z_$][\w$]*)\b/, 'identifier'],
+        // PHP tags
+        [/<\?php/, 'keyword'],
+        [/\?>/, 'keyword'],
+        // Comments
+        [/\/\/.*$/, 'comment'],
+        [/\/\*[\s\S]*?\*\//, 'comment']
 
-        // brackets
-        [/[{}]/, 'delimiter.bracket.php'],
-        [/[\[\]]/, 'delimiter.array.php'],
-        [/[()]/, 'delimiter.parenthesis.php'],
-
-        // whitespace
-        // [/[ \t\r\n]+/],
-
-        // comments
-        [/(#|\/\/)$/, 'comment.php'],
-        [/(#|\/\/)/, 'comment.php', '@phpLineComment'],
-
-        // block comments
-        [/\/\*/, 'comment.php', '@phpComment'],
-
-        // strings
-        [/"/, 'string.php', '@phpDoubleQuoteString'],
-        [/'/, 'string.php', '@phpSingleQuoteString'],
-
-        // delimiters
-        [/[\+\-\*\%\&\|\^\~\!\=\<\>\/\?\;\:\.\,\@]/, 'delimiter.php'],
-
-        // numbers
-        [/\d*\d+[eE]([\-+]?\d+)?/, 'number.float.php'],
-        [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float.php'],
-        [/0[xX][0-9a-fA-F']*[0-9a-fA-F]/, 'number.hex.php'],
-        [/0[0-7']*[0-7]/, 'number.octal.php'],
-        [/0[bB][0-1']*[0-1]/, 'number.binary.php'],
-        [/\d[\d']*/, 'number.php'],
-        [/\d/, 'number.php'],
-      ],
+  ],
 
       phpComment: [
         [/\*\//, 'comment.php', '@pop'],
@@ -514,21 +479,11 @@ export default function createPhpSyntax(monaco: Monaco, range: any) {
     },
 
     {
-        label: 'include kit',
+        label: 'include "@kit";',
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: "Includes a Bellissimo PHP kit.",
         detail: 'string',
         insertText: 'include_once "../../containers/PHP/Kit.php";',
-        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        range: range
-    },
-
-    {
-        label: "TelegramBot",
-        kind: monaco.languages.CompletionItemKind.Class,
-        documentation: "Telegram Bot class.",
-        detail: 'TelegramBot',
-        insertText: 'TelegramBot',
         insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range
     },
@@ -635,7 +590,7 @@ export default function createPhpSyntax(monaco: Monaco, range: any) {
 
     {
         label: "TelegramBot::sendMessage()",
-        kind: monaco.languages.CompletionItemKind.Method,
+        kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: "Send message to user into Telegram chat.",
         detail: 'TelegramBot::sendMessage',
         insertText: 'TelegramBot::sendMessage(chat_id: ${1:}, message: "${2:}");',
@@ -645,7 +600,7 @@ export default function createPhpSyntax(monaco: Monaco, range: any) {
 
     {
         label: "TelegramBot::sendPhoto()",
-        kind: monaco.languages.CompletionItemKind.Method,
+        kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: "Send photo to user into Telegram chat.",
         detail: 'TelegramBot::sendPhoto',
         insertText: 'TelegramBot::sendPhoto(chat_id: ${1:}, photo: "${2:}");',
@@ -655,7 +610,7 @@ export default function createPhpSyntax(monaco: Monaco, range: any) {
 
     {
         label: "TelegramBot::sendDocument()",
-        kind: monaco.languages.CompletionItemKind.Method,
+        kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: "Send document to user into Telegram chat.",
         detail: 'TelegramBot::sendDocument',
         insertText: 'TelegramBot::sendDocument(chat_id: ${1:}, document: "${2:}");',
@@ -665,7 +620,7 @@ export default function createPhpSyntax(monaco: Monaco, range: any) {
 
     {
         label: "TelegramBot::setToken()",
-        kind: monaco.languages.CompletionItemKind.Method,
+        kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: "Set token for bot.",
         detail: 'TelegramBot::setToken',
         insertText: 'TelegramBot::setToken(token: "${1:}");',
@@ -675,7 +630,7 @@ export default function createPhpSyntax(monaco: Monaco, range: any) {
 
     {
         label: "TelegramBot::setWebhook()",
-        kind: monaco.languages.CompletionItemKind.Method,
+        kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: "Set webhook for bot.",
         detail: 'TelegramBot::setWebhook',
         insertText: 'TelegramBot::setWebhook(url: "${1:}");',
@@ -684,7 +639,7 @@ export default function createPhpSyntax(monaco: Monaco, range: any) {
     },
     {
         label: "TelegramBot::getWebhookInfo()",
-        kind: monaco.languages.CompletionItemKind.Method,
+        kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: "Get webhook info for bot.",
         detail: 'TelegramBot::getWebhookInfo',
         insertText: 'TelegramBot::getWebhookInfo();',
@@ -694,7 +649,7 @@ export default function createPhpSyntax(monaco: Monaco, range: any) {
 
     {
         label: "TelegramBot::getMe()",
-        kind: monaco.languages.CompletionItemKind.Method,
+        kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: "Get information about bot.",
         detail: 'TelegramBot::getMe',
         insertText: 'TelegramBot::getMe();',
@@ -704,10 +659,10 @@ export default function createPhpSyntax(monaco: Monaco, range: any) {
 
     {
         label: "Aggregate::mergeSelfRequests()",
-        kind: monaco.languages.CompletionItemKind.Method,
+        kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: "Merge self requests.",
         detail: 'Array',
-        insertText: 'Aggregate::mergeSelfRequests(attr_window: ${1:}, key: "headers")',
+        insertText: 'Aggregate::mergeSelfRequests(attr_window: ${1:}, key: "headers");',
         insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range
     },
@@ -717,7 +672,15 @@ export default function createPhpSyntax(monaco: Monaco, range: any) {
         kind: monaco.languages.CompletionItemKind.Method,
         documentation: "Track event.",
         detail: 'FacebookCAPI::trackEventLite',
-        insertText: 'FacebookCAPI::trackEventLite(fbcid: "${1:}", ua: "${2:}", dataset: "${3:}", access_token: "${4:}", event_name: "${5:}", data: ${6:});',
+        insertText:  '// Track event in facebook ad api' + "\n" +
+        'FacebookCAPI::trackEventLite(' + "\n" +
+        '    fbcid: "${1:}",' + "\n" +
+        '    ua: "${2:}",' + "\n" +
+        '    dataset: "${3:}",' + "\n" +
+        '    access_token: "${4:}",' + "\n" +
+        '    event_name: "${5:}",' + "\n" +
+        '    data: ${6:}' + "\n" +
+        ');',
         insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range
     },
@@ -727,12 +690,46 @@ export default function createPhpSyntax(monaco: Monaco, range: any) {
         kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: "Call payload function.",
         detail: '',
-        insertText: 'Playground::call(' + "\n" +
+        insertText:  '// Call payload function' + "\n" +
+        'Playground::call(' + "\n" +
         '    function_name: "${1:}",' + "\n" +
         '    argv: []' + "\n" +
         ');',
         insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range
     },
+
+    {
+        label: "FCM::sendNotification()",
+        kind: monaco.languages.CompletionItemKind.Method,
+        documentation: "Send notification.",
+        detail: 'sendNotification',
+        insertText: '// Send notification via FCM' + "\n" +
+        'FCM::sendNotification(' + "\n" +
+        '    to: "${1:}",' + "\n" +
+        '    token: "${2:}",' + "\n" +
+        '    message: "${3:}",' + "\n" +
+        '    title: "${4:}"' + "\n" +
+        ');',
+        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range
+    },
+
+    // Aggregate::explore($database, $collection, $pipeline) 
+
+    {
+        label: "Aggregate::explore()",
+        kind: monaco.languages.CompletionItemKind.Method,
+        documentation: "Explore database.",
+        detail: 'explore',
+        insertText: '// Explore database' + "\n" +
+        'Aggregate::explore(' + "\n" +
+        '    database: "${1:}",' + "\n" +
+        '    collection: "${2:}",' + "\n" +
+        '    pipeline: [${3:}]' + "\n" +
+        ');',
+        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range
+    }
   ]
 }

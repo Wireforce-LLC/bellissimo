@@ -10,13 +10,14 @@ import Resources from "../fragments/resources";
 import Routes from "../fragments/routes";
 import Widgets from "~/fragments/widgets";
 import _ from "lodash";
-import { ReactNode, Suspense, useCallback, useMemo, useState } from "react";
+import createPhpSyntax, { createHighlightRules } from "~/syntax/php";
+import themeMonaco from "monaco-themes/themes/GitHub Light.json";
+import { useMonaco } from "@monaco-editor/react";
+import { type MetaFunction } from "@remix-run/node";
+import { ReactNode, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 
-import {
-  type MetaFunction
-} from "@remix-run/node";
+export const meta: MetaFunction = () => {;
 
-export const meta: MetaFunction = () => {
   return [
     { title: "Bellissimo" },
     {
@@ -27,6 +28,68 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Dashboard() {
+  const monaco = useMonaco();
+
+  useEffect(() => {
+    if (!monaco) {
+      return;
+    }
+
+    createHighlightRules(monaco!!);
+
+    // like GitHub light theme
+    monaco?.editor?.defineTheme("bellissimo", {
+      base: "vs",
+      inherit: true,
+      rules: [...themeMonaco?.rules, 
+        {
+          "foreground": "005cc5",
+          "token": "variable.other.constant",
+          "fontStyle": "bold"
+        },
+        {
+          "foreground": "005cc5",
+          "token": "variable.language",
+          "fontStyle": "bold"
+        },
+        { token: 'class-method', foreground: '008080', fontStyle: 'bold' },
+        { token: 'class-name', foreground: '0000FF', fontStyle: 'bold' },
+      ],
+      colors: themeMonaco?.colors
+    });
+
+    monaco?.languages.registerCompletionItemProvider('php', {
+      
+      provideCompletionItems(model, position, context, token) {
+        // find out if we are completing a property in the 'dependencies' object.
+        var word = model.getWordUntilPosition(position);
+
+        var range = {
+            startLineNumber: position.lineNumber,
+            endLineNumber: position.lineNumber,
+            startColumn: word.startColumn,
+            endColumn: word.endColumn
+        };
+
+        return {
+            suggestions: createPhpSyntax(monaco, range)
+        };
+      },
+      // provideCompletionItems: (model, position) => {
+      //   return [
+      //     {
+      //       label: 'substr',
+      //       kind: monaco.languages.CompletionItemKind.Function,
+      //       documentation: "Finds a substring of a string.",
+      //       detail: 'string'
+      //     }
+      //   ];
+      // }
+    });
+
+  }, [monaco]);
+
+  
   // const [route, setRoute] = useState("/routes")
   const [currentPath, setCurrentPathValue] = useState(
     () => {

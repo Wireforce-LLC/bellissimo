@@ -3,7 +3,7 @@ use chrono::Utc;
 use mongodb::sync::Collection;
 use serde::{Serialize, Deserialize};
 use rocket::form::FromForm;
-use crate::{mongo_sdk::MongoDatabase, remote_function::Trigger, scenario_sdk::Scenario};
+use crate::{mongo_sdk::MongoDatabase, remote_function::Trigger};
 
 #[derive(FromForm)]
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -39,8 +39,6 @@ impl Click {
         params.insert("name".to_string(), name.to_string());
         params.insert("time".to_string(), Click::now().to_string());
         params.insert("namespace".to_string(), namespace.to_string());
-
-        // Scenario::execute_once(name, params.to_owned()).await;   
 
         Trigger::call_with_params(
             format!("click::{}", name).as_str(),

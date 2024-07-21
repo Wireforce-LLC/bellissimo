@@ -22,3 +22,5 @@ config.local.toml
 ipsum.txt
 containers/ipsum.txt
 registry
+
+web/build

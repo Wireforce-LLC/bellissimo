@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use rocket::{form::Form, http::{ContentType, Status}};
 use serde::{Deserialize, Serialize};
-use crate::{remote_function::{CreateRemoteFunction, RemoteFunction, RemoteFunctions, Trigger, TriggerFunction}, scenario_sdk::Scenario};
+use crate::{remote_function::{CreateRemoteFunction, RemoteFunctions, Trigger, TriggerFunction}};
 
 #[derive(Debug, FromForm)]
 pub struct GetRemoteFunction {
@@ -408,30 +408,6 @@ pub async fn run_function(input: String) -> (Status, (ContentType, String)) {
     let value = serde_json::json!({
         "isOk": true,
         "value": data,
-        "error": null
-    });
-
-    let result = value.to_string();
-    
-    return (Status::Ok, (ContentType::JSON, result));
-}
-
-/**
- * Get scenario logs
- * @param limit Limit of logs to retrieve
- * @skip Skip the first n logs
- * @return List of scenario logs
- */
-#[get("/scenario/logs/list")]
-pub fn get_scenario_logs() -> (Status, (ContentType, String)) {
-    let limit = 512;
-    let skip = 0;
-
-    let logs = Scenario::get_logs(limit, skip);
-
-    let value = serde_json::json!({
-        "isOk": true,
-        "value": logs,
         "error": null
     });
 

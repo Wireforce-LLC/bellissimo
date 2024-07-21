@@ -28,7 +28,6 @@ use std::{collections::HashMap, process, thread, time::Duration};
 #[path = "libs/Widget.rs"] mod widget_sdk;
 #[path = "libs/MongoDatabase.rs"] mod mongo_sdk;
 #[path = "libs/Click.rs"] mod click_sdk;
-#[path = "libs/Scenario.rs"] mod scenario_sdk;
 #[path = "libs/System.rs"] mod system;
 #[path = "libs/Statistica.rs"] mod statistica_sdk;
 #[path = "libs/Router.rs"] mod router_sdk;
@@ -151,7 +150,6 @@ async fn register_routes_and_attach_server() {
       .mount(http_api_uri_path, routes![api_click::get_clicks_by_ip])
       .mount(http_api_uri_path, routes![api_funnel::funnel_by_clicks_to_schemas])
       .mount(http_api_uri_path, routes![api_funnel::funnel_by_date])
-      .mount(http_api_uri_path, routes![api_scenario::get_scenario_logs])
       .mount(http_api_uri_path, routes![api_dataset::create_dataset])
       .mount(http_api_uri_path, routes![api_dataset::get_dataset_data_by_id])
       .mount(http_api_uri_path, routes![api_dataset::get_all_datasets])
@@ -278,6 +276,8 @@ async fn main() {
   });
 
   info!("Starting server...");
+
+  Trigger::call_delayed("server::boot").unwrap();
 
   // Register default filters
   register_filters::register_default_filters();

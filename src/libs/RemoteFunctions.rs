@@ -7,7 +7,7 @@ use futures::{StreamExt, TryStreamExt};
 use mongodb::bson::doc;
 use paris::{info, log};
 use serde::{Deserialize, Serialize};
-use tokio::{io, net::TcpStream, runtime::Runtime, spawn, task::{self, spawn_blocking}};
+use tokio::{io, net::TcpStream, runtime::Runtime, spawn, task::{self, spawn_blocking}, time::Instant};
 
 use crate::{http_over_sdk::HttpOver, mongo_sdk::MongoDatabase, system};
 
@@ -29,6 +29,18 @@ pub struct ExecutionResult {
     pub success: bool,
     pub args: HashMap<String, String>,
     pub runtime: u8,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FunctionExecutionLog {
+    pub time: i64,
+    pub function_id: String,
+    pub args: HashMap<String, String>,
+    pub output: Option<String>,
+    pub success: bool,
+    pub duration_in_millis: i64,
+    pub runtime: u8,
+    pub processor: String
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -155,7 +167,7 @@ pub fn init_func() {
 pub struct Trigger {}
 
 impl Trigger {
-    pub fn call(
+    pub fn call_delayed(
         trigger_event: &str,
     ) -> Result<(), String> {
         let collection = MongoDatabase::use_trigger_collection();
@@ -400,18 +412,48 @@ impl RemoteFunctions {
         return args;
     }
 
-
+    /**
+     * Call remote function
+     */
     pub async fn call(
         function_id: &str,
         args: Option<HashMap<String, String>>,
     ) -> Result<serde_json::Value, String> {
-        let result = RemoteFunctions::execute_function_in_runtime(function_id, args.unwrap_or(HashMap::new())).await;
+        let collection = MongoDatabase::use_async_collection::<FunctionExecutionLog>(
+            "pipeline",
+            "logs"
+        );
+
+        let args = args.unwrap_or(HashMap::new());
+        let start = Instant::now();
+        let result = RemoteFunctions::execute_function_in_runtime(function_id, args.clone()).await;
+        let duration = start.elapsed();
+        let duration_in_millis = duration.as_millis();
 
         if result.is_err() {
             return Err(result.err().unwrap());
         }
 
         let result = result.unwrap();
+
+        let log_record = FunctionExecutionLog {
+            time: Utc::now().timestamp_micros(),
+            function_id: function_id.to_string(),
+            args: args,
+            duration_in_millis: i64::try_from(duration_in_millis).unwrap_or(0),
+            success: result.success.clone(),
+            output: result.output.clone(),
+            runtime: RuntimeEnum::Php as u8,
+            processor: "php-fpm".to_string(),
+        };
+
+        collection
+            .insert_one(
+                log_record,
+                None
+            )
+            .await
+            .unwrap();
 
         if result.success {
             let output = &result

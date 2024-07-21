@@ -4,13 +4,16 @@ use crate::click_sdk::Click;
 use crate::dynamic_router::Route;
 use crate::filter::Filter;
 use crate::guard_kit::GuardScore;
+use crate::http_over_sdk::HttpOver;
 use crate::remote_function::{RemoteFunction, TriggerFunction};
 use crate::resource_kit::Resource;
+use mongodb::bson::Document;
 use mongodb::{options::ClientOptions, bson::doc};
 use mongodb::sync::{Client, Collection, Database};
 use mongodb::Client as AsyncClient;
 use mongodb::Collection as AsyncCollection;
 use paris::{info, log};
+use std::collections::HashMap;
 use std::env;
 use std::sync::Arc;
 
@@ -26,6 +29,67 @@ pub fn init_func() {
   MongoDatabase::get_pool_of_clients().iter().for_each(|client| {
     client;
   });
+
+  HttpOver::register(
+    "aggregate_pipeline",
+    "",
+    |params| {
+      if !params.contains_key("pipeline") {
+        return Err("Missing 'pipeline' parameter".to_string());
+      }
+
+      if !params.contains_key("database") {
+        return Err("Missing 'database' parameter".to_string());
+      }
+
+      if !params.contains_key("collection") {
+        return Err("Missing 'collection' parameter".to_string());
+      }
+
+      let database = params.get("database").unwrap();
+      let collection = params.get("collection").unwrap();
+     
+      let pipeline = params.get("pipeline").unwrap();
+      let pipeline = serde_json::from_str::<Vec<Document>>(&pipeline);
+
+      if pipeline.is_err() {
+        return Err("Invalid 'pipeline' parameter. Must be an array".to_string());
+      }
+
+      let collection = MongoDatabase::use_collection::<HashMap<String, serde_json::Value>>(
+        database,
+        collection
+      );
+
+      let data = collection.aggregate(pipeline.unwrap(), None);
+
+      if data.is_err() {
+        return Err(data.unwrap_err().to_string());
+      }
+
+      let data = data.unwrap();
+      let mut results = Vec::new();
+
+      for document in data {
+        if document.is_err() {
+          continue;
+        }
+
+        results.push(document.unwrap());
+      }
+
+      let mut return_value = HashMap::new();
+      let serde_value_result = serde_json::to_value(results);
+      
+      if serde_value_result.is_err() {
+        return Err(serde_value_result.unwrap_err().to_string());
+      }
+
+      return_value.insert("results".to_string(), serde_value_result.unwrap());
+
+      Ok(Some(return_value))
+    }
+  ).unwrap();
 }
 
 #[derive(Default, Debug)]
