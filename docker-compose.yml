@@ -62,6 +62,10 @@ services:
     volumes:
       - ./public:/usr/src/app/public
       - ./containers:/usr/src/app/containers
+    environment:
+      PHP_ENABLE_OPCACHE: false
+      PHP_MEMORY_LIMIT: '1g'
+      
 
 
   bellissimo:
