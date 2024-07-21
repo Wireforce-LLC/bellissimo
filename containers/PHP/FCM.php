@@ -17,13 +17,17 @@ class FCM
         string $token,
         string $message,
         string $title
-    ): string {
+    ): array|null {
         if (!is_string($to) || !is_string($token) || !is_string($message) || !is_string($title)) {
             throw new TypeError();
         }
 
         if ($token == "") {
             throw new Exception("FCM token not set");
+        }
+
+        if (substr_count($token, ":") == 0) {
+            throw new Exception("FCM token not formatted correctly. Format should be project_id:api_key");
         }
 
         if ($to == "") {
