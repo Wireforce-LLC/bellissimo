@@ -17,7 +17,7 @@ class Aggregate extends Base
     string $database,
     string $collection, 
     array $pipeline
-  ): array|null
+  )
   {
     // Connect to MongoDB and call the 'aggregate_pipeline' function.
     self::construct();

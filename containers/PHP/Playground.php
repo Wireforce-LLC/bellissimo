@@ -10,7 +10,7 @@ class Playground extends Base
      * @param array $data The data to pass to the function.
      * @return array The JSON-decoded response from the API.
      */
-    public static function call($function_name, $argv): array
+    public static function call($function_name, $argv)
     {
         self::construct();
 

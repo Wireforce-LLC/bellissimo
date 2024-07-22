@@ -17,7 +17,8 @@ class FCM
         string $token,
         string $message,
         string $title
-    ): array|null {
+    )
+    {
         if (!is_string($to) || !is_string($token) || !is_string($message) || !is_string($title)) {
             throw new TypeError();
         }
