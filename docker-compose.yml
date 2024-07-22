@@ -59,7 +59,7 @@ services:
   phpfpm:
     container_name: phpfpm
     # image: 'bitnami/php-fpm:8.3.9'
-    image: '8.4-rc-fpm-alpine3.20'
+    image: 'php:8.4-rc-fpm-alpine3.20'
     volumes:
       - ./public:/usr/src/app/public
       - ./containers:/usr/src/app/containers
