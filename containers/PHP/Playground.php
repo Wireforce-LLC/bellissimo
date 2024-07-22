@@ -1,5 +1,5 @@
 <?php
-include_once (__DIR__ . "/Base.php");
+include_once __DIR__ . "/Base.php";
 
 class Playground extends Base
 {
@@ -12,8 +12,6 @@ class Playground extends Base
      */
     public static function call(string $function_name, array $argv)
     {
-        self::construct();
-
         // Initialize a cURL session
         $curl = curl_init();
 
@@ -46,10 +44,6 @@ class Playground extends Base
         // Execute the cURL session and get the response
         $response = curl_exec($curl);
 
-        if (isset($_GET['debugger']) && $_GET['debugger'] == "unwrap") {
-            var_dump($response);
-        }
-        
         // Close the cURL session
         curl_close($curl);
 

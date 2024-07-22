@@ -85,11 +85,7 @@ class FacebookCAPI
     ]);
 
     $response = curl_exec($curl);
-
-    if (isset($_GET['debugger']) && $_GET['debugger'] == "unwrap") {
-      var_dump($response);
-    }
-
+    
     curl_close($curl);
 
     return json_decode($response);
