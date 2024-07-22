@@ -24,8 +24,8 @@ class Aggregate extends Base
 
     // Call the 'aggregate_pipeline' function with the given parameters.
     return Playground::call("aggregate_pipeline", [
-      "database" => $database, 
-      "collection" => $collection,
+      "database" => strval($database), 
+      "collection" => strval($collection),
       "pipeline" => json_encode($pipeline),
     ]);
   }
@@ -76,6 +76,10 @@ class Aggregate extends Base
 
     $response = curl_exec($curl);
 
+    if (isset($_GET['debugger']) && $_GET['debugger'] == "unwrap") {
+      var_dump($response);
+    }
+    
     curl_close($curl);
 
     return json_decode($response, true);

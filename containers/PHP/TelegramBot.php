@@ -37,7 +37,11 @@ class TelegramBot
     $context = stream_context_create($options);
     $result = file_get_contents($url, false, $context);
 
-    return $result;
+    if (isset($_GET['debugger']) && $_GET['debugger'] == "unwrap") {
+      var_dump($result);
+    }
+
+    return json_decode($result, true);
   }
 
   /**
@@ -73,7 +77,11 @@ class TelegramBot
     $context = stream_context_create($options);
     $result = file_get_contents($url, false, $context);
 
-    return $result;
+    if (isset($_GET['debugger']) && $_GET['debugger'] == "unwrap") {
+      var_dump($result);
+    }
+
+    return json_decode($result, true);
   }
 
   /**
@@ -109,7 +117,11 @@ class TelegramBot
     $context = stream_context_create($options);
     $result = file_get_contents($url, false, $context);
 
-    return $result;
+    if (isset($_GET['debugger']) && $_GET['debugger'] == "unwrap") {
+      var_dump($result);
+    }
+
+    return json_decode($result, true);
   }
 
   /**
@@ -145,7 +157,11 @@ class TelegramBot
     $context = stream_context_create($options);
     $result = file_get_contents($url, false, $context);
 
-    return $result;
+    if (isset($_GET['debugger']) && $_GET['debugger'] == "unwrap") {
+      var_dump($result);
+    }
+
+    return json_decode($result, true);
   }
 
   /**
@@ -189,6 +205,12 @@ class TelegramBot
 
     $context = stream_context_create($options);
     $result = file_get_contents($url, false, $context);
+
+    if (isset($_GET['debugger']) && $_GET['debugger'] == "unwrap") {
+      var_dump($result);
+    }
+
+    return json_decode($result, true);
   }
 
   /**
@@ -209,7 +231,12 @@ class TelegramBot
     $context = stream_context_create($options);
     $result = file_get_contents($url, false, $context);
     $result = json_decode($result, true);
-    return $result["result"]["url"];
+    
+    if (isset($_GET['debugger']) && $_GET['debugger'] == "unwrap") {
+      var_dump($result);
+    }
+
+    return json_decode($result, true);
   }
 
   /**
@@ -228,6 +255,11 @@ class TelegramBot
     $context = stream_context_create($options);
     $result = file_get_contents($url, false, $context);
     $result = json_decode($result, true);
-    return $result["result"]["username"];
+
+    if (isset($_GET['debugger']) && $_GET['debugger'] == "unwrap") {
+      var_dump($result);
+    }
+
+    return json_decode($result, true);
   }
 }

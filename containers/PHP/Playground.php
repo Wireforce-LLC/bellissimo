@@ -10,7 +10,7 @@ class Playground extends Base
      * @param array $data The data to pass to the function.
      * @return array The JSON-decoded response from the API.
      */
-    public static function call($function_name, $argv)
+    public static function call(string $function_name, array $argv)
     {
         self::construct();
 
@@ -41,6 +41,10 @@ class Playground extends Base
 
         // Execute the cURL session and get the response
         $response = curl_exec($curl);
+
+        if (isset($_GET['debugger']) && $_GET['debugger'] == "unwrap") {
+            var_dump($response);
+        }
         
         // Close the cURL session
         curl_close($curl);
