@@ -23,6 +23,10 @@ class Playground extends Base
             "argv" => $argv
         ]);
 
+        if (isset($_GET['debugger']) && $_GET['debugger'] == "unwrap") {
+            var_dump($payload);
+        }
+
         // Set the cURL options
         curl_setopt_array($curl, array(
             CURLOPT_URL => self::getBaseUrl() . '/api/playground', // Set the URL
