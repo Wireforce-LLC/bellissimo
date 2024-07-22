@@ -1,6 +1,7 @@
 import Button from "~/components/Button";
 import EazyModal from "~/components/EazyModal";
 import Table2 from "~/components/Table2";
+import humanizeString from "humanize-string";
 import webConfig, { ApiPathEnum } from "~/web.config";
 import { useCallback, useEffect, useState } from "react";
 
@@ -48,6 +49,24 @@ export default function TriggersListEmbed({}: Props) {
         <Table2
             onSelectedItem={(index, data) => {
                 setDeleteTriggerModal(data.trigger_id);
+            }}
+            headerTransformer={{
+                any(it: string) {
+                    return humanizeString(it);
+                }
+            }}
+            valueTransformer={{
+                trigger_event(it: string) {
+                    if (it.includes("::")) {
+                        return <span>
+                            <span className="font-bold">{it.split("::").at(0)}</span>
+                            <span>::</span>
+                            <span className="text-zinc-500">{it.split("::").at(1)}</span>
+                        </span>
+                    }
+
+                    return it
+                }
             }}
             dataset={data}
         />

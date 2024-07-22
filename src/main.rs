@@ -240,41 +240,6 @@ async fn main() {
     register_background_service().await;
   });
 
-  task::spawn(async {
-    info!("Creating 'clokwerk' scheduler...");
-
-    let mut scheduler = Scheduler::new();
-
-    scheduler
-      .every(clokwerk::Interval::Days(1))
-      .at("6:00 pm")
-      .run(|| {
-        info!("Calling schedule task at 6:00 pm");
-        Trigger::call_delayed("schedule::(6:00pm)").unwrap();
-      });
-    
-    scheduler
-      .every(clokwerk::Interval::Days(1))
-      .at("6:00 am")
-      .run(|| {
-        info!("Calling schedule task at 6:00 am");
-        Trigger::call_delayed("schedule::(6:00am)").unwrap();
-      });
-
-    scheduler
-      .every(clokwerk::Interval::Days(1))
-      .at("12:00 pm")
-      .run(|| {
-        info!("Calling schedule task at 12:00 pm");
-        Trigger::call_delayed("schedule::(12:00pm)").unwrap();
-      });
-
-    loop {
-      scheduler.run_pending();
-      thread::sleep(Duration::from_millis(10));     
-    }
-  });
-
   task::spawn(async move {
     info!("Starting scheduler...");
 
