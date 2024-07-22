@@ -56,6 +56,7 @@ use std::{collections::HashMap, process, thread, time::Duration};
 #[path = "dto/filter.rs"] pub mod filter;
 #[path = "dto/asn_record.rs"] pub mod asn_record;
 
+use clokwerk::{Job, Scheduler};
 use config::CONFIG;
 // use initialization_sdk::Initialization;
 use paris::{info, log};
@@ -239,19 +240,54 @@ async fn main() {
     register_background_service().await;
   });
 
+  task::spawn(async {
+    info!("Creating 'clokwerk' scheduler...");
+
+    let mut scheduler = Scheduler::new();
+
+    scheduler
+      .every(clokwerk::Interval::Days(1))
+      .at("6:00 pm")
+      .run(|| {
+        info!("Calling schedule task at 6:00 pm");
+        Trigger::call_delayed("schedule::(6:00pm)").unwrap();
+      });
+    
+    scheduler
+      .every(clokwerk::Interval::Days(1))
+      .at("6:00 am")
+      .run(|| {
+        info!("Calling schedule task at 6:00 am");
+        Trigger::call_delayed("schedule::(6:00am)").unwrap();
+      });
+
+    scheduler
+      .every(clokwerk::Interval::Days(1))
+      .at("12:00 pm")
+      .run(|| {
+        info!("Calling schedule task at 12:00 pm");
+        Trigger::call_delayed("schedule::(12:00pm)").unwrap();
+      });
+
+    loop {
+      scheduler.run_pending();
+      thread::sleep(Duration::from_millis(10));     
+    }
+  });
+
   task::spawn(async move {
     info!("Starting scheduler...");
 
-    let mut times = 0;
+    let mut times = (0, 0);
 
     loop {
       let mut params = HashMap::new();
 
-      params.insert("times".to_string(), times.to_string());
+      params.insert("times".to_string(), times.0.to_string());
 
       Trigger
         ::call_with_params(
-          format!("every::{}m", times).as_str(),
+          format!("every::{}m", times.0).as_str(),
           params.clone()
         )
         .await
@@ -263,12 +299,33 @@ async fn main() {
           params.clone()
         )
         .await
-        .unwrap();
+        .unwrap();      
 
-      times += 1;
+      times.0 += 1;
 
-      if (times % 60) == 0 {
-        times = 0;
+      if (times.0 % 60) == 0 {
+        Trigger
+          ::call_with_params(
+            format!("every::{}h", times.1).as_str(),
+            params.clone()
+          )
+          .await
+          .unwrap();
+        
+        Trigger
+          ::call_with_params(
+            format!("every::{}", "hour").as_str(),
+            params.clone()
+          )
+          .await
+          .unwrap(); 
+
+        times.0 = 0;
+        times.1 += 1;
+      }
+
+      if (times.1 % 60) == 0 {
+        times.1 = 0;
       }
       
       sleep(Duration::from_secs(60)).await;

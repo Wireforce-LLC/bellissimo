@@ -424,7 +424,13 @@ impl RemoteFunctions {
             "logs"
         );
 
-        let args = args.unwrap_or(HashMap::new());
+        let mut args = args.unwrap_or(HashMap::new());
+
+        args.insert(
+            "__function_id__".to_string(),
+            function_id.to_string(),
+        );
+
         let start = Instant::now();
         let result = RemoteFunctions::execute_function_in_runtime(function_id, args.clone()).await;
         let duration = start.elapsed();

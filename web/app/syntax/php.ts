@@ -773,6 +773,20 @@ export default function createPhpSyntax(monaco: Monaco, range: any) {
         insertText: 'RemoteFunction::call(function_name: "${1:}", argv: (object) [${2:}]);',
         insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range
+    },
+
+  //   foreach ($arr as &$value) {
+  //     $value = $value * 2;
+  // }
+
+    {
+        label: "foreach()",
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: "Map array",
+        detail: 'foreach',
+        insertText: 'foreach((array) [${1:}] as $key => $value) {${2:}}',
+        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range
     }
   ]
 }

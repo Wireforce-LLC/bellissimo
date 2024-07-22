@@ -41,12 +41,30 @@ export default function CreateTriggerEmbed({funcId} : Props) {
             </p>
         }
 
+        if (triggerEvent.startsWith("schedule::") && triggerEvent.length > 10) {
+            return <p className="text-xs text-gray-500">
+                <p>When the schedule with '<b>{triggerEvent.replace("schedule::", "")}</b>' occurs, the function will be triggered.</p>
+                <p>Available schedules:</p>
+                <ul>
+                    <li>schedule::(12:00pm) - The function will be triggered at 12:00pm</li>
+                    <li>schedule::(6:00pm) - The function will be triggered at 6:00pm</li>
+                    <li>schedule::(6:00am) - The function will be triggered at 6:00am</li>
+                </ul>
+            </p>
+        }
+
         if (triggerEvent.startsWith("every::") && triggerEvent.length > 7) {
             if (triggerEvent.replace("every::", "") === "minute") {
                 return <p className="text-xs text-gray-500">
                     The function will be triggered every '<b>1</b>' minutes.
                 </p>
             } 
+
+            if (triggerEvent.replace("every::", "") === "hour") {
+                return <p className="text-xs text-gray-500">
+                    The function will be triggered every '<b>1</b>' hour.
+                </p>
+            }
             
             if (parseInt(triggerEvent.replace("every::", ""))) {
                 return <p className="text-xs text-gray-500">
@@ -56,7 +74,7 @@ export default function CreateTriggerEmbed({funcId} : Props) {
         }
 
         return <p className="text-xs text-gray-500">
-            Use 'click::' or 'dataset::' to set trigger event.
+            Use 'click::' or 'dataset::' or 'schedule::' or 'every::' to set trigger event.
         </p>
     }, [triggerId, functionId, triggerEvent]);
 

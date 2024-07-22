@@ -14,6 +14,12 @@ class RemoteFunction extends Base
     public static function call(string $function_name, object $argv)
     {
 
+        if (isset($_GET['__function_id__'])) {
+            if ($function_name = $_GET['__function_id__']) {
+                throw new Exception("Recursive function call detected: " . $function_name);
+            }
+        }
+
         $curl = curl_init();
 
         curl_setopt_array($curl, array(
