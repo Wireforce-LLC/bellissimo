@@ -90,7 +90,7 @@ services:
       - MONGO_URI=mongodb://mongo:27017
       - PHP_FPM_HOST=phpfpm
       - PHP_FPM_PORT=9000
-      - REMOTE_FUNCTION_ENDPOINT=http://localhost:8000
+      - REMOTE_FUNCTION_ENDPOINT=http://bellissimo:8000
     depends_on:
       redis:
         condition: service_healthy
