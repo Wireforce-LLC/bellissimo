@@ -15,13 +15,12 @@ class Aggregate extends Base
    */
   public static function explore(
     string $database,
-    string $collection, 
+    string $collection,
     array $pipeline
-  )
-  {
+  ) {
     // Call the 'aggregate_pipeline' function with the given parameters.
-    return Playground::call("aggregate_pipeline", [
-      "database" => strval($database), 
+    return Playground::call("aggregate_pipeline", (object) [
+      "database" => strval($database),
       "collection" => strval($collection),
       "pipeline" => json_encode($pipeline),
     ]);

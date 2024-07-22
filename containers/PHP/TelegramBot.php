@@ -4,7 +4,6 @@ class TelegramBot
 {
   private static $token = "";
 
-
   /**
    * Sends a message to a Telegram chat
    * 

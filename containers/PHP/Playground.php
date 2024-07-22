@@ -7,10 +7,10 @@ class Playground extends Base
      * Calls a remote function with the given function name and data.
      *
      * @param string $function The name of the function to call.
-     * @param array $data The data to pass to the function.
+     * @param object $data The data to pass to the function.
      * @return array The JSON-decoded response from the API.
      */
-    public static function call(string $function_name, array $argv)
+    public static function call(string $function_name, object $argv)
     {
         // Initialize a cURL session
         $curl = curl_init();
@@ -20,11 +20,7 @@ class Playground extends Base
             "function" => $function_name,
             "argv" => $argv
         ]);
-
-        if (isset($_GET['debugger']) && $_GET['debugger'] == "unwrap") {
-            var_dump($payload);
-        }
-
+        
         // Set the cURL options
         curl_setopt_array($curl, array(
             CURLOPT_URL => self::getBaseUrl() . '/api/playground', // Set the URL
@@ -50,5 +46,4 @@ class Playground extends Base
         // Decode the JSON response and return it
         return json_decode($response, true);
     }
-    
 }

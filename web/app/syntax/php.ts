@@ -701,7 +701,7 @@ export default function createPhpSyntax(monaco: Monaco, range: any) {
 
     {
         label: "FCM::sendNotification()",
-        kind: monaco.languages.CompletionItemKind.Method,
+        kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: "Send notification.",
         detail: 'sendNotification',
         insertText: '// Send notification via FCM' + "\n" +
@@ -719,7 +719,7 @@ export default function createPhpSyntax(monaco: Monaco, range: any) {
 
     {
         label: "Aggregate::explore()",
-        kind: monaco.languages.CompletionItemKind.Method,
+        kind: monaco.languages.CompletionItemKind.Snippet,
         documentation: "Explore database.",
         detail: 'explore',
         insertText: '// Explore database' + "\n" +
@@ -728,6 +728,49 @@ export default function createPhpSyntax(monaco: Monaco, range: any) {
         '    collection: "${2:}",' + "\n" +
         '    pipeline: [${3:}]' + "\n" +
         ');',
+        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range
+    },
+
+    // Dataset::getDatasets(): array,
+    // Dataset::writeDataset(string $datasetName, object $data)
+
+    {
+        label: "Dataset::getDatasets()",
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: "Get datasets from Playground API",
+        detail: 'getDatasets',
+        insertText: 'Dataset::getDatasets();',
+        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range
+    },
+
+    {
+        label: "Dataset::writeDataset()",
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: "Write dataset to Playground API",
+        detail: 'writeDataset',
+        insertText: 'Dataset::writeDataset(dataset_name: "${1:}", data: (object) [${2:}]);',
+        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range
+    },
+
+    {
+        label: "array_map()",
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: "Map array",
+        detail: 'array_map',
+        insertText: 'array_map(callback: function(...) {${1:}}, array: (array) [${2:}]);',
+        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range
+    },
+
+    {
+        label: "RemoteFunction::call()",
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        documentation: "Call remote function",
+        detail: 'call',
+        insertText: 'RemoteFunction::call(function_name: "${1:}", argv: (object) [${2:}]);',
         insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
         range: range
     }
